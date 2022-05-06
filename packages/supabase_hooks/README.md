@@ -15,6 +15,53 @@ Supabase life cycle adaptation for flutter_hooks.
 See more in the original package:
 https://github.com/supabase/supabase-flutter
 
+The idea is the same as in LifeHook, except that you can override more methods,
+specific to Supabase Auth life cycle
+
+```dart
+AuthState useAuthState({
+  required final ScreenLayout screenLayout,
+}) =>
+    use(
+      LifeHook(
+        debugLabel: 'SettingsState',
+        state: AuthState(
+          screenLayout: screenLayout,
+        ),
+      ),
+    );
+
+class AuthState implements SupabaseAuthLifeState {
+  AuthState({
+    required this.screenLayout,
+  });
+  final ScreenLayout screenLayout;
+  @override
+  VoidCallback setState;
+
+  @override
+  void initState() {}
+
+  @override
+  void dispose() {}
+
+  @override
+  void onUnauthenticated() {}
+
+  /// Callback when user is authenticated
+  @override
+  void onAuthenticated(final Session session) {}
+
+  /// Callback when authentication deeplink is recovery password type
+  @override
+  void onPasswordRecovery(final Session session) {}
+
+  /// Callback when recovering session from authentication deeplink throws error
+  @override
+  void onErrorAuthenticating(final String message) {}
+}
+```
+
 <!-- ## Features -->
 
 <!-- TODO: List what your package can do. Maybe include images, gifs, or videos.

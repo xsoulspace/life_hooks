@@ -1,5 +1,5 @@
 name: supabase_hooks
-description: A new Flutter package project.
+description: Flutter Supabase life cycle adaptation for flutter_hooks.
 version: 0.0.1
 # homepage:
 
@@ -20,7 +20,7 @@ dependencies:
   life_hooks:
     git:
       url: git@github.com:Arenukvern/life_hook.git
-      path: packages/life-hooks
+      path: packages/life_hooks
 
 dev_dependencies:
   flutter_test:

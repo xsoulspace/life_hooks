@@ -2,10 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
+import 'package:life_hooks/life_hooks.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uni_links/uni_links.dart';
 
-mixin SupabaseDeepLinkingMixin<T extends StatefulWidget> on State<T> {
+mixin SupabaseDeepLinkingLifeMixin on LifeState {
   StreamSubscription? _sub;
 
   void startDeeplinkObserver() {

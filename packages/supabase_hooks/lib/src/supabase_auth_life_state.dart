@@ -1,11 +1,14 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'supabase_deep_linking_life_mixin.dart';
+import 'supabase_life_state.dart';
 
 /// Interface for user authentication screen
 /// It supports deeplink authentication
-abstract class SupabaseAuthState<T extends StatefulWidget>
-    extends SupabaseState<T> with SupabaseDeepLinkingMixin {
+abstract class SupabaseAuthLifeState extends SupabaseLifeState
+    with SupabaseDeepLinkingLifeMixin {
   @override
   void startAuthObserver() {
     Supabase.instance.log('***** SupabaseAuthState startAuthObserver');

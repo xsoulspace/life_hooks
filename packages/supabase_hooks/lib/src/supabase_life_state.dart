@@ -1,7 +1,7 @@
-import 'package:flutter/widgets.dart';
+import 'package:life_hooks/life_hooks.dart';
 
 /// Interface for screen that requires an authenticated user
-abstract class SupabaseState<T extends StatefulWidget> extends State<T> {
+abstract class SupabaseLifeState extends LifeState {
   @override
   void initState() {
     super.initState();

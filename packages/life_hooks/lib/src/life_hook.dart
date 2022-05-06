@@ -2,9 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
 abstract class LifeState {
-  void initState();
-  void dispose();
+  @mustCallSuper
+  void initState() {
+    mounted = true;
+  }
+
+  @mustCallSuper
+  void dispose() {
+    mounted = false;
+  }
+
+  /// Called everytime the [HookState] is requested.
+  /// Equals to [HookState.build].
+  ///
+  /// This method is where a [HookState] may use other hooks.
+  /// This restriction is made to ensure that hooks are always
+  /// unconditionally requested.
+  ///
+  /// Copied from [HookState].
+  void registerHooks(final BuildContext context);
+
   late VoidCallback setState;
+
+  /// Equals to [HookState.context]
+  /// Equivalent of [State.context] for [HookState]
+  ///
+  /// Copied from [HookState].
+  late BuildContext context;
+  bool mounted = false;
 }
 
 class LifeHook<T extends LifeState> extends Hook<T> {
@@ -26,6 +51,7 @@ class _LifeHookState<T extends LifeState> extends HookState<T, LifeHook<T>> {
   @override
   void initHook() {
     _innerState
+      ..context = context
       ..setState = () {
         setState(() {});
       }
@@ -34,13 +60,17 @@ class _LifeHookState<T extends LifeState> extends HookState<T, LifeHook<T>> {
   }
 
   @override
-  T build(final BuildContext context) => _innerState;
+  T build(final BuildContext context) {
+    _innerState.registerHooks(context);
+    return _innerState;
+  }
 
   @override
   void dispose() {
     _innerState
       ..setState = () {}
       ..dispose();
+    super.dispose();
   }
 
   @override
