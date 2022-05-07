@@ -1,3 +1,7 @@
+## 0.0.5
+
+fix: remove register hooks
+
 ## 0.0.4
 
 fix: register hooks override should be optional

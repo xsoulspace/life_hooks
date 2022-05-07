@@ -14,16 +14,6 @@ abstract class LifeState {
     mounted = false;
   }
 
-  /// Called everytime the [HookState] is requested.
-  /// Equals to [HookState.build].
-  ///
-  /// This method is where a [HookState] may use other hooks.
-  /// This restriction is made to ensure that hooks are always
-  /// unconditionally requested.
-  ///
-  /// Copied from [HookState].
-  void registerHooks(final BuildContext context) {}
-
   late VoidCallback setState;
 
   bool mounted = false;
@@ -56,10 +46,7 @@ class _LifeHookState<T extends LifeState> extends HookState<T, LifeHook<T>> {
   }
 
   @override
-  T build(final BuildContext context) {
-    _innerState.registerHooks(context);
-    return _innerState;
-  }
+  T build(final BuildContext context) => _innerState;
 
   @override
   void dispose() {
