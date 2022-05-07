@@ -21,44 +21,60 @@ The idea is the same as in LifeHook, except that you can override more methods,
 specific to Supabase Auth life cycle
 
 ```dart
-AuthState useAuthState({
-  required final ScreenLayout screenLayout,
-}) =>
-    use(
-      LifeHook(
-        debugLabel: 'SettingsState',
-        state: AuthState(
-          screenLayout: screenLayout,
-        ),
+AuthRequiredState useAuthRequiredState() => use(
+      ContextfulLifeHook(
+        debugLabel: 'AuthRequiredState',
+        state: AuthRequiredState(),
+      ),
+    );
+
+class AuthRequiredState extends SupabaseAuthRequiredLifeState {
+  @override
+  void onUnauthenticated() {
+    /// Users will be sent back to the LoginPage if they sign out.
+    if (mounted) {
+      /// Users will be sent back to the LoginPage if they sign out.
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil('/login', (final route) => false);
+    }
+  }
+}
+```
+
+or use
+
+```dart
+AuthState useAuthState() => use(
+      ContextfulLifeHook(
+        debugLabel: 'AuthState',
+        state: AuthState(),
       ),
     );
 
 class AuthState extends SupabaseAuthLifeState {
-  AuthState({
-    required this.screenLayout,
-  });
-  final ScreenLayout screenLayout;
+  @override
+  void onUnauthenticated() {
+    if (mounted) {
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil('/', (final route) => false);
+    }
+  }
 
   @override
-  void initState() {}
+  void onAuthenticated(final Session session) {
+    if (mounted) {
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil('/', (final route) => false);
+    }
+  }
 
-  @override
-  void dispose() {}
-
-  @override
-  void onUnauthenticated() {}
-
-  /// Callback when user is authenticated
-  @override
-  void onAuthenticated(final Session session) {}
-
-  /// Callback when authentication deeplink is recovery password type
   @override
   void onPasswordRecovery(final Session session) {}
 
-  /// Callback when recovering session from authentication deeplink throws error
   @override
-  void onErrorAuthenticating(final String message) {}
+  void onErrorAuthenticating(final String message) {
+    context.showErrorSnackBar(message: message);
+  }
 }
 ```
 
