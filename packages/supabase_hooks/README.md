@@ -11,7 +11,7 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages).
 -->
 
-Supabase life cycle adaptation for flutter_hooks.
+Unofficial Supabase life cycle adaptation for flutter_hooks.
 See more in the original package:
 https://github.com/supabase/supabase-flutter
 
