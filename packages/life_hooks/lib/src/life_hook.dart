@@ -22,7 +22,7 @@ abstract class LifeState {
   /// unconditionally requested.
   ///
   /// Copied from [HookState].
-  void registerHooks(final BuildContext context);
+  void registerHooks(final BuildContext context) {}
 
   late VoidCallback setState;
 

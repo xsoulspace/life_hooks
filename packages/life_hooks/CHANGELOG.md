@@ -1,3 +1,7 @@
+## 0.0.4
+
+fix: register hooks override should be optional
+
 ## 0.0.3
 
 fix: flutter_lints
