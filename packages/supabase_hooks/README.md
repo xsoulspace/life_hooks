@@ -33,13 +33,11 @@ AuthState useAuthState({
       ),
     );
 
-class AuthState implements SupabaseAuthLifeState {
+class AuthState extends SupabaseAuthLifeState {
   AuthState({
     required this.screenLayout,
   });
   final ScreenLayout screenLayout;
-  @override
-  VoidCallback setState;
 
   @override
   void initState() {}

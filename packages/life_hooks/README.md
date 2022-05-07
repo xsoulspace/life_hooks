@@ -30,13 +30,11 @@ SettingsState useSettingsState({
       ),
     );
 
-class SettingsState implements LifeState {
+class SettingsState extends LifeState {
   SettingsState({
     required this.screenLayout,
   });
   final ScreenLayout screenLayout;
-  @override
-  VoidCallback setState;
 
   @override
   void initState() {}
