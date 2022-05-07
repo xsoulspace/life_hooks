@@ -13,6 +13,8 @@ and the Flutter guide for
 
 Simplifies flutter_hook creation.
 
+Note: This library is completely experimental and not recommended for production usage.
+
 See example below:
 
 ```dart

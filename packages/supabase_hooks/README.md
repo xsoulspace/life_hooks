@@ -15,6 +15,8 @@ Supabase life cycle adaptation for flutter_hooks.
 See more in the original package:
 https://github.com/supabase/supabase-flutter
 
+Note: This library is completely experimental and not recommended for production usage.
+
 The idea is the same as in LifeHook, except that you can override more methods,
 specific to Supabase Auth life cycle
 

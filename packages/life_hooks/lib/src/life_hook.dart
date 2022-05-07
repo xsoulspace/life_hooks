@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+part 'contextful_life_hook.dart';
+
 abstract class LifeState {
   @mustCallSuper
   void initState() {
@@ -24,11 +26,6 @@ abstract class LifeState {
 
   late VoidCallback setState;
 
-  /// Equals to [HookState.context]
-  /// Equivalent of [State.context] for [HookState]
-  ///
-  /// Copied from [HookState].
-  late BuildContext context;
   bool mounted = false;
 }
 
@@ -51,7 +48,6 @@ class _LifeHookState<T extends LifeState> extends HookState<T, LifeHook<T>> {
   @override
   void initHook() {
     _innerState
-      ..context = context
       ..setState = () {
         setState(() {});
       }
