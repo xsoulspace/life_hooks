@@ -14,7 +14,8 @@ abstract class SupabaseAuthRequiredLifeState extends SupabaseLifeState
   void initState() {
     super.initState();
 
-    _authStateListener = SupabaseAuth.instance.onAuthChange.listen((event) {
+    _authStateListener =
+        SupabaseAuth.instance.onAuthChange.listen((final event) {
       if (event == AuthChangeEvent.signedOut) {
         onUnauthenticated();
       }
@@ -46,7 +47,7 @@ abstract class SupabaseAuthRequiredLifeState extends SupabaseLifeState
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+  void didChangeAppLifecycleState(final AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
         onResumed();
@@ -83,7 +84,7 @@ abstract class SupabaseAuthRequiredLifeState extends SupabaseLifeState
     final response =
         await Supabase.instance.client.auth.recoverSession(jsonStr);
     if (response.error != null) {
-      SupabaseAuth.instance.localStorage.removePersistedSession();
+      await SupabaseAuth.instance.localStorage.removePersistedSession();
       onUnauthenticated();
       return false;
     } else {
@@ -93,7 +94,7 @@ abstract class SupabaseAuthRequiredLifeState extends SupabaseLifeState
   }
 
   /// Callback when user session is ready
-  void onAuthenticated(Session session) {}
+  void onAuthenticated(final Session session) {}
 
   /// Callback when user is unauthenticated
   void onUnauthenticated();

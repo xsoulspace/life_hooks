@@ -27,12 +27,12 @@ mixin SupabaseDeepLinkingLifeMixin on LifeState {
       // It will handle app links while the app is already started - be it in
       // the foreground or in the background.
       _sub = uriLinkStream.listen(
-        (Uri? uri) {
+        (final uri) {
           if (mounted && uri != null) {
             handleDeeplink(uri);
           }
         },
-        onError: (Object err) {
+        onError: (final err) {
           if (!mounted) return;
           onErrorReceivingDeeplink(err.toString());
         },
@@ -64,8 +64,8 @@ mixin SupabaseDeepLinkingLifeMixin on LifeState {
   }
 
   /// Callback when deeplink receiving succeeds
-  void handleDeeplink(Uri uri);
+  void handleDeeplink(final Uri uri);
 
   /// Callback when deeplink receiving throw error
-  void onErrorReceivingDeeplink(String message);
+  void onErrorReceivingDeeplink(final String message);
 }

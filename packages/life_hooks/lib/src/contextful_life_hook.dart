@@ -18,7 +18,7 @@ class ContextfulLifeHook<T extends ContextfulLifeState> extends LifeHook<T> {
 class _ContextfulLifeHookState<T extends ContextfulLifeState>
     extends _LifeHookState<T> {
   _ContextfulLifeHookState({
-    required T state,
+    required final T state,
   }) : super(
           state: state,
         );

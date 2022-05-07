@@ -22,7 +22,7 @@ abstract class SupabaseAuthLifeState extends SupabaseLifeState
   }
 
   @override
-  Future<bool> handleDeeplink(Uri uri) async {
+  Future<bool> handleDeeplink(final Uri uri) async {
     if (!SupabaseAuth.instance.isAuthCallbackDeeplink(uri)) return false;
 
     Supabase.instance.log('***** SupabaseAuthState handleDeeplink $uri');
@@ -34,7 +34,7 @@ abstract class SupabaseAuthLifeState extends SupabaseLifeState
   }
 
   @override
-  void onErrorReceivingDeeplink(String message) {
+  void onErrorReceivingDeeplink(final String message) {
     Supabase.instance.log('onErrorReceivingDeppLink message: $message');
   }
 
@@ -42,7 +42,8 @@ abstract class SupabaseAuthLifeState extends SupabaseLifeState
 
   @override
   void initState() {
-    _authStateListener = SupabaseAuth.instance.onAuthChange.listen((event) {
+    _authStateListener =
+        SupabaseAuth.instance.onAuthChange.listen((final event) {
       if (event == AuthChangeEvent.signedOut) {
         onUnauthenticated();
       }
@@ -56,7 +57,7 @@ abstract class SupabaseAuthLifeState extends SupabaseLifeState
     super.dispose();
   }
 
-  Future<bool> recoverSessionFromUrl(Uri uri) async {
+  Future<bool> recoverSessionFromUrl(final Uri uri) async {
     final uriParameters = SupabaseAuth.instance.parseUriParameters(uri);
     final type = uriParameters['type'] ?? '';
 
@@ -94,7 +95,7 @@ abstract class SupabaseAuthLifeState extends SupabaseLifeState
     final response =
         await Supabase.instance.client.auth.recoverSession(jsonStr);
     if (response.error != null) {
-      SupabaseAuth.instance.localStorage.removePersistedSession();
+      await SupabaseAuth.instance.localStorage.removePersistedSession();
       onUnauthenticated();
       return false;
     } else {
@@ -104,7 +105,7 @@ abstract class SupabaseAuthLifeState extends SupabaseLifeState
   }
 
   /// Callback when deeplink received and is processing. Optional
-  void onReceivedAuthDeeplink(Uri uri) {
+  void onReceivedAuthDeeplink(final Uri uri) {
     Supabase.instance.log('onReceivedAuthDeeplink uri: $uri');
   }
 
@@ -112,11 +113,11 @@ abstract class SupabaseAuthLifeState extends SupabaseLifeState
   void onUnauthenticated();
 
   /// Callback when user is authenticated
-  void onAuthenticated(Session session);
+  void onAuthenticated(final Session session);
 
   /// Callback when authentication deeplink is recovery password type
-  void onPasswordRecovery(Session session);
+  void onPasswordRecovery(final Session session);
 
   /// Callback when recovering session from authentication deeplink throws error
-  void onErrorAuthenticating(String message);
+  void onErrorAuthenticating(final String message);
 }
