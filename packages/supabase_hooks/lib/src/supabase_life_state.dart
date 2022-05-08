@@ -1,7 +1,7 @@
 import 'package:life_hooks/life_hooks.dart';
 
 /// Interface for screen that requires an authenticated user
-abstract class SupabaseLifeState extends ContextfulLifeState {
+abstract class SupabaseLifeState extends LifeState {
   @override
   void initState() {
     super.initState();

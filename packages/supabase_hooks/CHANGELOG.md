@@ -1,3 +1,7 @@
+## 0.0.4
+
+- fix: now hooks don't have a context
+
 ## 0.0.3
 
 - docs: readme example update
