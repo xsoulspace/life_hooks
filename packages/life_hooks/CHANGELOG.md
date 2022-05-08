@@ -1,3 +1,7 @@
+## 0.0.6
+
+fix: remove contextful hook
+
 ## 0.0.5
 
 fix: remove register hooks
