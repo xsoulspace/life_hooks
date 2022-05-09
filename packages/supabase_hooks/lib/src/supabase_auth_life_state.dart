@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'supabase_deep_linking_life_mixin.dart';
@@ -42,10 +43,22 @@ abstract class SupabaseAuthLifeState extends SupabaseLifeState
 
   @override
   void initState() {
+    final supabaseClient = Supabase.instance.client.auth;
     _authStateListener =
         SupabaseAuth.instance.onAuthChange.listen((final event) {
-      if (event == AuthChangeEvent.signedOut) {
-        onUnauthenticated();
+      switch (event) {
+        case AuthChangeEvent.signedOut:
+          onUnauthenticated();
+          break;
+        case AuthChangeEvent.signedIn:
+          onAuthenticated(supabaseClient.currentSession!);
+          break;
+        case AuthChangeEvent.passwordRecovery:
+          onPasswordRecovery(supabaseClient.currentSession!);
+          break;
+        case AuthChangeEvent.userUpdated:
+        case AuthChangeEvent.tokenRefreshed:
+          debugPrint(event.toString());
       }
     });
     super.initState();

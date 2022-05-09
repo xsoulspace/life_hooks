@@ -1,6 +1,6 @@
 name: supabase_hooks
 description: Unofficial Flutter Supabase life cycle adaptation for flutter_hooks.
-version: 0.0.4
+version: 0.0.5
 homepage: https://github.com/xsoulspace/life_hooks/tree/main/packages/supabase_hooks
 
 environment:

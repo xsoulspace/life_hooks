@@ -1,3 +1,7 @@
+## 0.0.5
+
+- fix: call functions on auth events
+
 ## 0.0.4
 
 - fix: now hooks don't have a context
