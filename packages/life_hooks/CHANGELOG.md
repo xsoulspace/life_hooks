@@ -1,3 +1,7 @@
+## 0.0.7
+
+fix: restore contextful hook
+
 ## 0.0.6
 
 fix: remove contextful hook

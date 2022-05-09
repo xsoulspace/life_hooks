@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+part 'contextful_life_hook.dart';
+
 abstract class LifeState {
   @mustCallSuper
   void initState() {
