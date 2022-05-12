@@ -1,3 +1,7 @@
+## 0.0.6
+
+- chore: update flutter to 3.0
+
 ## 0.0.5
 
 - fix: call functions on auth events
