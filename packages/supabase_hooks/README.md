@@ -21,20 +21,28 @@ The idea is the same as in LifeHook, except that you can override more methods,
 specific to Supabase Auth life cycle
 
 ```dart
-AuthRequiredState useAuthRequiredState() => use(
-      ContextfulLifeHook(
+AuthRequiredState useAuthRequiredState({
+  required final NavigatorState navigator,
+}) => use(
+      LifeHook(
         debugLabel: 'AuthRequiredState',
-        state: AuthRequiredState(),
+        state: AuthRequiredState(
+          navigator: navigator,
+        ),
       ),
     );
 
 class AuthRequiredState extends SupabaseAuthRequiredLifeState {
+  AuthRequiredState({
+    required this.navigator,
+  });
+  final NavigatorState navigator;
   @override
   void onUnauthenticated() {
     /// Users will be sent back to the LoginPage if they sign out.
     if (mounted) {
       /// Users will be sent back to the LoginPage if they sign out.
-      Navigator.of(context)
+      navigator
           .pushNamedAndRemoveUntil('/login', (final route) => false);
     }
   }
@@ -44,18 +52,26 @@ class AuthRequiredState extends SupabaseAuthRequiredLifeState {
 or use
 
 ```dart
-AuthState useAuthState() => use(
-      ContextfulLifeHook(
+AuthState useAuthState({
+  required NavigatorState navigator,
+}) => use(
+      LifeHook(
         debugLabel: 'AuthState',
-        state: AuthState(),
+        state: AuthState(
+          navigator: navigator,
+        ),
       ),
     );
 
 class AuthState extends SupabaseAuthLifeState {
+  AuthRequiredState({
+    required this.navigator,
+  });
+  final NavigatorState navigator;
   @override
   void onUnauthenticated() {
     if (mounted) {
-      Navigator.of(context)
+      navigator
           .pushNamedAndRemoveUntil('/', (final route) => false);
     }
   }
@@ -63,7 +79,7 @@ class AuthState extends SupabaseAuthLifeState {
   @override
   void onAuthenticated(final Session session) {
     if (mounted) {
-      Navigator.of(context)
+      navigator
           .pushNamedAndRemoveUntil('/', (final route) => false);
     }
   }
@@ -73,7 +89,7 @@ class AuthState extends SupabaseAuthLifeState {
 
   @override
   void onErrorAuthenticating(final String message) {
-    context.showErrorSnackBar(message: message);
+    navigator.context.showErrorSnackBar(message: message);
   }
 }
 ```

@@ -1,3 +1,7 @@
+## 0.0.7
+
+- docs: readme and docs
+
 ## 0.0.6
 
 - chore: update flutter to 3.0
