@@ -1,3 +1,10 @@
+## 0.0.8
+
+feat: useIsBool hook
+feat: StateLoader widget with StateInitializer class to simplify any loading logic
+
+chore: xsoulspace_lints with flutter_lints
+
 ## 0.0.7
 
 fix: restore contextful hook

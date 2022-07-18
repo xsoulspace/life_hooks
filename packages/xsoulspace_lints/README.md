@@ -1,0 +1,1 @@
+Strict lint rules for Flutter and Dart.
