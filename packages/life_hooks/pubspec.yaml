@@ -1,6 +1,6 @@
 name: life_hooks
 description: A small class to use flutter_hooks easier
-version: 0.0.8
+version: 0.0.9
 homepage: https://github.com/xsoulspace/life_hooks/tree/main/packages/life_hooks
 
 environment:
