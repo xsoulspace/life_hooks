@@ -7,3 +7,5 @@ abstract class Loadable {
   /// instance initialization
   Future<void> onLoad({required final BuildContext context});
 }
+
+typedef FutureVoidCallback = Future<void> Function();
