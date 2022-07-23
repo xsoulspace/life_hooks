@@ -1,3 +1,7 @@
+## 0.0.11
+
+- fix: Loadable now has no BuildContext in onLoad. BuildContext now in ContextfulLoadable
+
 ## 0.0.10
 
 - feat: useFormHelper

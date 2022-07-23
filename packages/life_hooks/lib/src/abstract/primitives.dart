@@ -5,7 +5,15 @@ abstract class Loadable {
 
   /// Use this function to load something on
   /// instance initialization
-  Future<void> onLoad({required final BuildContext context});
+  Future<void> onLoad();
+}
+
+abstract class ContextfulLoadable {
+  ContextfulLoadable();
+
+  /// Use this function to load something on
+  /// instance initialization
+  Future<void> onLoad(final BuildContext context);
 }
 
 typedef FutureVoidCallback = Future<void> Function();

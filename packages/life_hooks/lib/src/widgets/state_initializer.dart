@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import '../abstract/abstract.dart';
 import '../hooks/hooks.dart';
 
-abstract class StateInitializer extends Loadable {}
+abstract class StateInitializer extends ContextfulLoadable {}
 
 class StateLoader extends HookWidget {
   const StateLoader({
@@ -84,7 +84,7 @@ class StateLoader extends HookWidget {
                     if (loading.value) return false;
                     loading.value = true;
                     loaded.value = true;
-                    await initializer.onLoad(context: context);
+                    await initializer.onLoad(context);
                     renderAllowed.value = true;
                     await animationController.forward();
                     loading.value = false;
