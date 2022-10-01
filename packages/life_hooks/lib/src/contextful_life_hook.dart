@@ -1,7 +1,7 @@
 part of 'life_hook.dart';
 
 abstract class ContextfulLifeState extends LifeState {
-  late BuildContext context;
+  late ValueGetter<BuildContext> getContext;
 }
 
 class ContextfulLifeHook<T extends ContextfulLifeState> extends LifeHook<T> {
@@ -19,13 +19,11 @@ class _ContextfulLifeHookState<T extends ContextfulLifeState>
     extends _LifeHookState<T> {
   _ContextfulLifeHookState({
     required final T state,
-  }) : super(
-          state: state,
-        );
+  }) : super(state: state);
 
   @override
   void initHook() {
-    _innerState.context = context;
+    _innerState.getContext = () => context;
     super.initHook();
   }
 }

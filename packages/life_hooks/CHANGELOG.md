@@ -1,3 +1,9 @@
+## 0.0.12
+
+BREAKING CHANGE:
+
+- fix: context in ContextfulLifeHook now removed and replaced with the getContext method.
+
 ## 0.0.11
 
 - fix: Loadable now has no BuildContext in onLoad. BuildContext now in ContextfulLoadable
