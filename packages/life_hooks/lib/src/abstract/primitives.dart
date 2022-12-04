@@ -1,5 +1,10 @@
 import 'package:flutter/widgets.dart';
 
+abstract class Disposable {
+  Disposable();
+  void dispose();
+}
+
 abstract class Loadable {
   Loadable();
 

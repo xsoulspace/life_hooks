@@ -14,12 +14,24 @@ FormHelperState useFormHelper() => use(
 
 class FormHelperState extends LifeState {
   FormHelperState();
+  final formHelper = FormHelper();
+  @override
+  void dispose() {
+    super.dispose();
+    formHelper.dispose();
+  }
+
+  late final validate = formHelper.validate;
+  late final submit = formHelper.submit;
+}
+
+class FormHelper implements Disposable {
+  FormHelper();
   final formKey = GlobalKey<FormState>();
   final loading = ValueNotifier(false);
 
   @override
   void dispose() {
-    super.dispose();
     loading.dispose();
   }
 
@@ -31,12 +43,10 @@ class FormHelperState extends LifeState {
     try {
       if (validate()) {
         loading.value = true;
-        setState();
         await onValide();
       }
     } finally {
       loading.value = false;
-      setState();
     }
   }
 }

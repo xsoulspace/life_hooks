@@ -1,3 +1,12 @@
+## 0.0.14
+
+- chore:
+  dart sdk: 2.18
+  flutter_hooks: ^0.18.5+1
+  flutter: ">=3.3.0"
+- perf: FormHelper now is independent class and can be used outside useFormHelper hook.
+- feat: simple Disposable abstract class with dispose method
+
 ## 0.0.12
 
 BREAKING CHANGE:
