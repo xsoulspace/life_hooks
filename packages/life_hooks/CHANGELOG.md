@@ -1,3 +1,7 @@
+## 0.0.15
+
+- exposed build and didUpdateHook for LifeState
+
 ## 0.0.14
 
 - chore:
