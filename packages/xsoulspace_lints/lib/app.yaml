@@ -45,7 +45,6 @@ linter:
     test_types_in_equals: true
     no_adjacent_strings_in_list: true
     literal_only_boolean_expressions: true
-    invariant_booleans: true
     diagnostic_describe_all_properties: false
     comment_references: false
     close_sinks: true
@@ -58,7 +57,7 @@ linter:
     # Style
     use_super_parameters: true
     prefer_function_declarations_over_variables: true
-    prefer_iterable_wheretype: true
+    # prefer_iterable_wheretype: true
     unnecessary_late: true
     conditional_uri_does_not_exist: true
     avoid_void_async: true

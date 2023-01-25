@@ -6,9 +6,9 @@ abstract class ContextfulLifeState extends LifeState {
 
 class ContextfulLifeHook<T extends ContextfulLifeState> extends LifeHook<T> {
   const ContextfulLifeHook({
-    required final String debugLabel,
-    required final T state,
-  }) : super(debugLabel: debugLabel, state: state);
+    required super.debugLabel,
+    required super.state,
+  });
 
   @override
   _ContextfulLifeHookState<T> createState() =>
@@ -18,8 +18,8 @@ class ContextfulLifeHook<T extends ContextfulLifeState> extends LifeHook<T> {
 class _ContextfulLifeHookState<T extends ContextfulLifeState>
     extends _LifeHookState<T> {
   _ContextfulLifeHookState({
-    required final T state,
-  }) : super(state: state);
+    required super.state,
+  });
 
   @override
   void initHook() {

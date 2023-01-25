@@ -1,11 +1,11 @@
 name: life_hooks
 description: A small classes to use flutter_hooks easier
-version: 0.0.15
+version: 0.0.16
 homepage: https://github.com/xsoulspace/life_hooks/tree/main/packages/life_hooks
 
 environment:
-  sdk: ">=2.18.0 <3.0.0"
-  flutter: ">=3.3.0"
+  sdk: ">=2.19.0 <3.0.0"
+  flutter: ">=3.7.0"
 
 dependencies:
   flutter:
@@ -16,7 +16,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.1
-  xsoulspace_lints: ^0.0.1
+  xsoulspace_lints:
+    path: ../xsoulspace_lints
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

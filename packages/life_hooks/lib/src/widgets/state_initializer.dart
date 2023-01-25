@@ -13,8 +13,8 @@ class StateLoader extends HookWidget {
     required this.loader,
     this.background = Colors.black,
     this.backgroundIsTransparent = false,
-    final Key? key,
-  }) : super(key: key);
+    super.key,
+  });
   final Widget child;
   final StateInitializer initializer;
   final Widget loader;

@@ -43,7 +43,6 @@ linter:
     test_types_in_equals: true
     no_adjacent_strings_in_list: true
     literal_only_boolean_expressions: true
-    invariant_booleans: true
     diagnostic_describe_all_properties: false
     comment_references: false
     close_sinks: true

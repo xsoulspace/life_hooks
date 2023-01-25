@@ -7,7 +7,9 @@ import 'supabase_life_state.dart';
 
 /// Interface for screen that requires an authenticated user
 abstract class SupabaseAuthRequiredLifeState extends SupabaseLifeState
-    with WidgetsBindingObserver {
+    with
+        // ignore: prefer_mixin
+        WidgetsBindingObserver {
   late final StreamSubscription<AuthChangeEvent> _authStateListener;
 
   @override

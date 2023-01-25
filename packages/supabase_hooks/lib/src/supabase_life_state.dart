@@ -15,7 +15,8 @@ abstract class SupabaseLifeState extends ContextfulLifeState {
   }
 
   /// enable auth observer
-  /// e.g. on nested authentication flow, call this method on navigation push.then()
+  /// e.g. on nested authentication flow, call this method on navigation
+  /// push.then()
   ///
   /// ```dart
   /// Navigator.pushNamed(context, '/signUp').then((_) => startAuthObserver());
@@ -23,7 +24,8 @@ abstract class SupabaseLifeState extends ContextfulLifeState {
   void startAuthObserver();
 
   /// disable auth observer
-  /// e.g. on nested authentication flow, call this method before navigation push
+  /// e.g. on nested authentication flow, call this method before navigation
+  ///  push
   ///
   /// ```dart
   /// stopAuthObserver();
