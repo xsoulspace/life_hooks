@@ -16,8 +16,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.1
-  xsoulspace_lints:
-    path: ../xsoulspace_lints
+  xsoulspace_lints: ^0.0.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

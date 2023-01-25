@@ -1,3 +1,8 @@
+## 0.0.16
+
+- chore: xsoulspace_lints up to 0.0.3
+- chore: dart sdk up to 2.19.0
+
 ## 0.0.15
 
 - exposed build and didUpdateHook for LifeState
