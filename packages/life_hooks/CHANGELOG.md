@@ -1,3 +1,7 @@
+## 0.0.17
+
+- chore: max dart sdk up to 4.0.0
+
 ## 0.0.16
 
 - chore: xsoulspace_lints up to 0.0.3

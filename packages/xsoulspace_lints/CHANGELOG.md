@@ -1,3 +1,7 @@
+# 0.0.4
+
+- chore: max dart sdk up to 4.0.0
+
 # 0.0.3
 
 - chore: dart sdk up to 2.19.0
