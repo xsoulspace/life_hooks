@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_hooks/flutter_hooks.dart' as flutter_hooks;
 
 part 'contextful_life_hook.dart';
 
@@ -65,35 +64,6 @@ abstract class LifeState {
   late ValueGetter<LifeState> getHookState;
 }
 
-// ignore: avoid_classes_with_only_static_members
-class HookProvider {
-  static TLifeState Function() use<TLifeState extends LifeState, TDiDto>({
-    required final TLifeState Function(TDiDto diDto) stateBuilder,
-    required final String debugLabel,
-    required final TDiDto Function() diDtoBuilder,
-  }) {
-    return () {
-      final diDto = diDtoBuilder();
-      final state = stateBuilder(diDto);
-      final hook = LifeHook(debugLabel: debugLabel, state: state);
-      return flutter_hooks.use(hook);
-    };
-  }
-}
-
-class DDiDto {}
-
-class D extends LifeState {
-  D(this.diDto);
-  final DDiDto diDto;
-}
-
-final d = HookProvider.use(
-  stateBuilder: D.new,
-  diDtoBuilder: DDiDto.new,
-  debugLabel: '',
-);
-
 class LifeHook<T extends LifeState> extends Hook<T> {
   const LifeHook({
     required this.debugLabel,
@@ -144,3 +114,34 @@ class _LifeHookState<T extends LifeState> extends HookState<T, LifeHook<T>> {
   @override
   String get debugLabel => hook.debugLabel;
 }
+
+
+
+// // ignore: avoid_classes_with_only_static_members
+// class HookProvider {
+//   static TLifeState Function() use<TLifeState extends LifeState, TDiDto>({
+//     required final TLifeState Function(TDiDto diDto) stateBuilder,
+//     required final String debugLabel,
+//     required final TDiDto Function() diDtoBuilder,
+//   }) {
+//     return () {
+//       final diDto = diDtoBuilder();
+//       final state = stateBuilder(diDto);
+//       final hook = LifeHook(debugLabel: debugLabel, state: state);
+//       return flutter_hooks.use(hook);
+//     };
+//   }
+// }
+
+// class DDiDto {}
+
+// class D extends LifeState {
+//   D(this.diDto);
+//   final DDiDto diDto;
+// }
+
+// final d = HookProvider.use(
+//   stateBuilder: D.new,
+//   diDtoBuilder: DDiDto.new,
+//   debugLabel: '',
+// );

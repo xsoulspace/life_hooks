@@ -1,3 +1,7 @@
+## 0.0.18
+
+- chore: flutter constraints removed
+
 ## 0.0.17
 
 - chore: max dart sdk up to 4.0.0
