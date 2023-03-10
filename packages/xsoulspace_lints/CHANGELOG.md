@@ -1,3 +1,8 @@
+## 0.0.6
+
+- reviewed all lint rules, removed useless and enabled some experimental features.
+- added new lint: public_library - the purpose to use this lint if you developing a library which will be published to pub.dev
+
 ## 0.0.5
 
 - chore: flutter constraints removed

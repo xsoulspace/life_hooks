@@ -7,7 +7,7 @@
 
 # The following line activates a set of recommended lints for Flutter apps,
 # packages, and plugins designed to encourage good coding practices.
-include: app.yaml
+include: library.yaml
 
 analyzer:
 linter:
@@ -23,7 +23,5 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
-    always_use_package_imports: false
-    library_annotations: true
-    prefer_relative_imports: true
-    dangling_library_doc_comments: true
+    public_member_api_docs: true
+    package_api_docs: true

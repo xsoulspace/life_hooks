@@ -22,8 +22,9 @@ analyzer:
     unrelated_type_equality_checks: error
     avoid_type_to_string: error
     avoid_slow_async_io: error
-    avoid_returning_null_for_future: error
     avoid_dynamic_calls: error
+    discarded_futures: error
+    collection_methods_unrelated_type: error
 
 linter:
   # The lint rules applied to this project can be customized in the
@@ -43,6 +44,8 @@ linter:
     unnecessary_statements: true
     throw_in_finally: true
     test_types_in_equals: true
+    discarded_futures: true
+    invalid_case_patterns: true
     no_adjacent_strings_in_list: true
     literal_only_boolean_expressions: true
     diagnostic_describe_all_properties: false
@@ -53,27 +56,31 @@ linter:
     avoid_slow_async_io: true
     avoid_returning_null_for_future: true
     avoid_dynamic_calls: true
+    use_to_and_as_if_applicable: true
     always_use_package_imports: true
+    sort_pub_dependencies: true
     # Style
     use_super_parameters: true
     prefer_function_declarations_over_variables: true
     # prefer_iterable_wheretype: true
     unnecessary_late: true
+    combinators_ordering: true
     conditional_uri_does_not_exist: true
     avoid_void_async: true
     no_leading_underscores_for_library_prefixes: true
     no_leading_underscores_for_local_identifiers: true
     secure_pubspec_urls: true
+    prefer_null_aware_method_calls: true
     sized_box_shrink_expand: true
     use_decorated_box: true
     avoid_setters_without_getters: true
     avoid_returning_this: true
-    avoid_returning_null: true
     avoid_redundant_argument_values: true
     avoid_private_typedef_functions: true
     avoid_positional_boolean_parameters: true
     avoid_multiple_declarations_per_line: true
     avoid_js_rounded_ints: true
+    avoid_annotating_with_dynamic: true
     avoid_implementing_value_types: true
     avoid_field_initializers_in_const_classes: true
     avoid_escaping_inner_quotes: true
@@ -92,6 +99,11 @@ linter:
     deprecated_consistency: true
     directives_ordering: true
     flutter_style_todos: true
+    eol_at_end_of_file: true
+    do_not_use_environment: true
+    always_specify_types: true
+    no_default_cases: true
+    implicit_call_tearoffs: true
     join_return_with_assignment: true
     leading_newlines_in_multiline_strings: true
     library_private_types_in_public_api: false
@@ -109,14 +121,15 @@ linter:
     prefer_asserts_with_message: true
     prefer_constructors_over_static_methods: true
     prefer_single_quotes: true
-    prefer_expression_function_bodies: false
+    prefer_expression_function_bodies: true
     prefer_final_in_for_each: true
     prefer_final_locals: true
     prefer_final_parameters: true
     prefer_if_elements_to_conditional_expressions: true
     prefer_interpolation_to_compose_strings: true
     prefer_mixin: true
-    prefer_null_aware_method_calls: true
+    prefer_foreach: true
+    prefer_int_literals: true
     public_member_api_docs: false
     require_trailing_commas: true
     sort_child_properties_last: true
@@ -127,18 +140,24 @@ linter:
     unawaited_futures: true
     unnecessary_await_in_return: true
     unnecessary_lambdas: true
+    unnecessary_breaks: true
     unnecessary_null_aware_assignments: true
     unnecessary_null_checks: true
+    unnecessary_library_directive: true
+    unnecessary_to_list_in_spreads: true
     unnecessary_nullable_for_final_variable_declarations: true
     unnecessary_parenthesis: true
+    use_string_in_part_of_directives: true
     unnecessary_raw_strings: true
+    use_colored_box: true
     use_is_even_rather_than_modulo: true
     use_named_constants: true
+    use_enums: true
+    use_full_hex_values_for_flutter_colors: true
     use_raw_strings: true
     use_setters_to_change_properties: true
     use_string_buffers: true
     use_test_throws_matchers: true
-    use_to_and_as_if_applicable: true
     depend_on_referenced_packages: true
     # avoid_classes_with_only_static_members: false
     # avoid_print: false  # Uncomment to disable the `avoid_print` rule
