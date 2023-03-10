@@ -21,30 +21,30 @@ class StateLoader extends HookWidget {
   final Color background;
   final bool backgroundIsTransparent;
 
-  static const _transitionDuration = Duration(milliseconds: 450);
-  static const _minScale = 0.98;
-  static const _maxScale = 1.0;
-  static const _scaleDiff = _maxScale - _minScale;
+  static const Duration _transitionDuration = Duration(milliseconds: 450);
+  static const double _minScale = 0.98;
+  static const double _maxScale = 1;
+  static const double _scaleDiff = _maxScale - _minScale;
 
   @override
   Widget build(final BuildContext context) {
-    final loaded = useIsBool();
-    final renderAllowed = useIsBool();
-    final loading = useIsBool();
-    final homeOpacity = useState(0.0);
-    final loaderOpacity = useState(1.0);
-    final loaderScale = useState(1.0);
+    final ValueNotifier<bool> loaded = useIsBool();
+    final ValueNotifier<bool> renderAllowed = useIsBool();
+    final ValueNotifier<bool> loading = useIsBool();
+    final ValueNotifier<double> homeOpacity = useState(0);
+    final ValueNotifier<double> loaderOpacity = useState(1);
+    final ValueNotifier<double> loaderScale = useState(1);
 
-    final animationController = useAnimationController(
+    final AnimationController animationController = useAnimationController(
       duration: _transitionDuration,
       initialValue: _minScale,
       lowerBound: _minScale,
     );
-    final animation = useAnimation(animationController);
+    final double animation = useAnimation(animationController);
 
     useEffect(
       () {
-        final progressPercent = (animation - _minScale) / _scaleDiff;
+        final double progressPercent = (animation - _minScale) / _scaleDiff;
         homeOpacity.value = progressPercent;
         loaderOpacity.value = 1 - progressPercent;
         loaderScale.value = animation + 0.1;
@@ -80,6 +80,7 @@ class StateLoader extends HookWidget {
               child: Transform.scale(
                 scale: loaderScale.value,
                 child: FutureBuilder<bool>(
+                  // ignore: discarded_futures
                   future: () async {
                     if (loading.value) return false;
                     loading.value = true;

@@ -1,3 +1,11 @@
+## 0.0.8
+
+- remove always_specify_types
+
+## 0.0.7
+
+- fix conflicts
+
 ## 0.0.6
 
 - reviewed all lint rules, removed useless and enabled some experimental features.

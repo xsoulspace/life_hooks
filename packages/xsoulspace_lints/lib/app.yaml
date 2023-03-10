@@ -101,7 +101,7 @@ linter:
     flutter_style_todos: true
     eol_at_end_of_file: true
     do_not_use_environment: true
-    always_specify_types: true
+    always_specify_types: false
     no_default_cases: true
     implicit_call_tearoffs: true
     join_return_with_assignment: true

@@ -1,3 +1,8 @@
+## 0.0.19
+
+- chore: flutter hooks to ^0.18.6
+- chore: xsoulspace_lints: ^0.0.8
+
 ## 0.0.18
 
 - chore: flutter constraints removed
