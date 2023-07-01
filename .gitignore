@@ -27,3 +27,5 @@
 .dart_tool/
 .packages
 build/
+packages/supabase_hooks/.flutter-plugins
+packages/supabase_hooks/.flutter-plugins-dependencies
