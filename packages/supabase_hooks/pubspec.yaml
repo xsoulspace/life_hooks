@@ -1,11 +1,10 @@
 name: supabase_hooks
 description: Unofficial Flutter Supabase life cycle adaptation for flutter_hooks.
-version: 0.0.7
+version: 0.0.8
 homepage: https://github.com/xsoulspace/life_hooks/tree/main/packages/supabase_hooks
 
 environment:
-  sdk: ">=2.17.0 <3.0.0"
-  flutter: ">=3.0.0"
+  sdk: ">=3.0.5 <4.0.0"
 
 dependencies:
   flutter:
@@ -17,12 +16,12 @@ dependencies:
   uni_links: ^0.5.1
   url_launcher: ^6.1.0
   supabase_flutter: ^0.3.0
-  life_hooks: ^0.0.7
+  life_hooks: ^0.0.8
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^1.0.4
+  flutter_lints: ^2.0.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

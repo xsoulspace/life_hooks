@@ -1,3 +1,7 @@
+## 0.0.9
+
+- updated dart sdk to upper constraint sdk: ">=3.0.5 <4.0.0"
+
 ## 0.0.8
 
 - remove always_specify_types
