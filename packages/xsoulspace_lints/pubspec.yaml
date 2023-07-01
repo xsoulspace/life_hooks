@@ -4,7 +4,7 @@ version: 0.0.9
 homepage: https://github.com/xsoulspace/life_hooks/tree/main/packages/xsoulspace_lints
 
 environment:
-  sdk: ">=3.0.5 <4.0.0"
+  sdk: ">=3.0.1 <4.0.0"
 
 dependencies:
   flutter:
