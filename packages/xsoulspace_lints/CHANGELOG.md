@@ -1,3 +1,17 @@
+## 0.0.10
+
+BREAKING:
+
+- updated dart sdk to upper constraint sdk: ">=3.1.0 <4.0.0"
+- updated flutter_lints to 3.0.0
+- removed redundant rules from code metrics
+
+added:
+
+- implicit_reopen
+- type_literal_in_constant_pattern
+- use_late_for_private_fields_and_variables
+
 ## 0.0.9
 
 - updated dart sdk to upper constraint sdk: ">=3.0.1 <4.0.0"
