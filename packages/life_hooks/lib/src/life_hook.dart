@@ -36,8 +36,6 @@ abstract class LifeState {
   @mustCallSuper
   void build() {}
 
-  @mustCallSuper
-
   /// Equivalent of [State.didUpdateWidget] for [HookState].
   ///
   /// Copied from [HookState]
@@ -49,6 +47,7 @@ abstract class LifeState {
   /// }
   ///
   /// T will be the same class as the state
+  @mustCallSuper
   void didUpdateState(final LifeState oldState) {}
 
   /// Equivalent of [State.widget] for [HookState].

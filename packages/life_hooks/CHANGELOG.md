@@ -1,3 +1,9 @@
+## 0.0.21
+
+- chore: dart 3.2.0
+- chore: flutter_hooks: ^0.20.3
+- chore: xsoulspace_lints: ^0.0.10
+
 ## 0.0.19
 
 - chore: flutter hooks to ^0.18.6

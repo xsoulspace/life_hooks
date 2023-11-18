@@ -36,6 +36,7 @@ class FormHelper implements Disposable {
   }
 
   bool validate() => formKey.currentState?.validate() ?? false;
+  void reset() => formKey.currentState?.reset();
 
   Future<void> submit({
     required final FutureVoidCallback onValide,

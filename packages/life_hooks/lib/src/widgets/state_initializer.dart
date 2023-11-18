@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import '../abstract/abstract.dart';
 import '../hooks/hooks.dart';
 
-abstract class StateInitializer extends ContextfulLoadable {}
+abstract interface class StateInitializer implements ContextfulLoadable {}
 
 class StateLoader extends HookWidget {
   const StateLoader({
@@ -58,10 +58,7 @@ class StateLoader extends HookWidget {
       textDirection: TextDirection.ltr,
       child: Stack(
         children: [
-          if (!backgroundIsTransparent)
-            Container(
-              color: background,
-            ),
+          if (!backgroundIsTransparent) Container(color: background),
           if (backgroundIsTransparent && loaderOpacity.value > 0.0)
             Opacity(
               opacity: loaderOpacity.value,
