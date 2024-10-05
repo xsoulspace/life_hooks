@@ -8,6 +8,7 @@
 .buildlog/
 .history
 .svn/
+migrate_working_dir/
 
 # IntelliJ related
 *.iml
@@ -27,7 +28,3 @@
 .dart_tool/
 .packages
 build/
-packages/supabase_hooks/.flutter-plugins
-packages/supabase_hooks/.flutter-plugins-dependencies
-packages/xsoulspace_foundation/.flutter-plugins
-packages/xsoulspace_foundation/.flutter-plugins-dependencies

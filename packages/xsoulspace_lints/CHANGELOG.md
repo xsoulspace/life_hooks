@@ -1,3 +1,14 @@
+## 0.0.11
+
+BREAKING:
+
+- updated dart sdk to upper constraint sdk: ">=3.5.3 <4.0.0"
+- updated flutter_lints to 5.0.0
+
+DEV:
+
+- added Makefile for managing the package
+
 ## 0.0.10
 
 BREAKING:
