@@ -1,4 +1,4 @@
-publish-dry-run:
+publish-dry:
 	flutter pub publish --dry-run
 
 publish:
