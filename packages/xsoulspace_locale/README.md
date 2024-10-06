@@ -1,4 +1,13 @@
-# UI Locale Package
+# Xsoulspace Locale
+
+I've developed this package as I've tried to simplify work with localizations.
+The most complicated problem with all packages - it is easy to create strings and translations, but quite hard to manage them.
+
+To fix this problem this package uses LocalizedMap which utilizes current locale to get the string.
+
+Also added boilerplate for keyboard languages and languages changes.
+
+## Overview
 
 This package provides a flexible and easy-to-use localization solution for Flutter applications. It allows you to manage multiple languages, keyboard languages, and localized strings efficiently.
 
@@ -15,13 +24,13 @@ This package provides a flexible and easy-to-use localization solution for Flutt
 
 ```yaml
 dependencies:
-  ui_locale: ^0.0.1
+  xsoulspace_locale: ^0.0.2
 ```
 
 ### Step 2: Import the package in your Dart code
 
 ```dart
-import 'package:ui_locale/ui_locale.dart';
+import 'package:xsoulspace_locale/xsoulspace_locale.dart';
 ```
 
 ### Step 3: Initialize the `LocalizationConfig`
@@ -107,7 +116,7 @@ class MyAppState extends State<MyApp> {
 To manage localized strings, use the `LocalizedMap` class. Here's an example of how to create a `LocalizedMap` and retrieve a localized string based on the current locale:
 
 ```dart
-final localizedString = LocalizedMap(
+final localizedMap = LocalizedMap(
   value: {
     languages.en: 'Hello',
     languages.es: 'Hola',
@@ -116,7 +125,7 @@ final localizedString = LocalizedMap(
 );
 
 // Retrieve the greeting based on the current locale
-String greeting = localizedString.getValue(context.locale);
+String greeting = localizedMap.getValue(context.locale);
 ```
 
 ### Keyboard Language
@@ -146,7 +155,7 @@ This package is designed to work alongside Flutter's built-in localization syste
 
 ## Contributing
 
-Contributions to improve the UI Locale package are welcome. Please feel free to submit issues, feature requests, or pull requests on our GitHub repository.
+Contributions to improve this package are welcome. Please feel free to submit issues, feature requests, or pull requests on our GitHub repository.
 
 ## License
 
