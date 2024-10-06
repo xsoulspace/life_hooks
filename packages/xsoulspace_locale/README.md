@@ -9,7 +9,7 @@ Also added boilerplate for keyboard languages and languages changes.
 
 ## Overview
 
-This package provides a flexible and easy-to-use localization solution for Flutter applications. It allows you to manage multiple languages, keyboard languages, and localized strings efficiently.
+Boilerplate for localization, keyboard languages, locale changes to use side by side with Intl or other localization solutions.
 
 ## Features
 
@@ -101,6 +101,7 @@ class MyAppState extends State<MyApp> {
       newLocale: newLocale,
       oldLocale: currentLocale,
       uiLocale: currentLocale,
+      onLocaleChanged: S.delegate.load, // S is your generated localization class
     );
     if (result != null) {
       setState(() {

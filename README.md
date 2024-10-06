@@ -10,7 +10,8 @@ This repository contains several packages that serve different purposes:
 
 - **[xsoulspace_lints](https://pub.dev/packages/xsoulspace_lints)**: A set of linting rules and code formatting guidelines to ensure code quality and consistency across projects.
 - **[xsoulspace_foundation](https://pub.dev/packages/xsoulspace_foundation)**: A shared library of utilities, extensions, and helpers that can be used across multiple projects.
-- **[life_hooks](https://pub.dev/packages/life_hooks)**: A package that provides useful hooks for managing state and lifecycle in Flutter applications.
+- **[xsoulspace_locale](https://pub.dev/packages/xsoulspace_locale)**: Boilerplate for localization, keyboard languages, locale changes.
+- **[life_hooks](https://pub.dev/packages/life_hooks)**: Useful hooks for managing state and lifecycle in Flutter applications.
 
 ## Outdated and maybe will be deprecated:
 
