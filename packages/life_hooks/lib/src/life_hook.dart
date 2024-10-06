@@ -3,82 +3,99 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 
 part 'contextful_life_hook.dart';
 
+/// An abstract class representing the state of a life hook.
+///
+/// This class provides lifecycle methods similar to [State] for use
+/// in hooks, including initialization, disposal, and state updates.
+///
+/// @ai When implementing this class, ensure that lifecycle methods
+/// are properly overridden to manage state effectively.
 abstract class LifeState {
   /// Equivalent of [State.initState] for [HookState].
   ///
+  /// This method is called when the hook is initialized.
   /// Copied from [HookState].
+  ///
+  /// @ai Ensure that the state is properly initialized and that any
+  /// necessary setup is performed in this method.
   @mustCallSuper
   void initState() {
     mounted = true;
   }
 
   /// Equivalent of [State.dispose] for [HookState].
-  ///
   /// Copied from [HookState].
+  ///
+  /// This method is called when the hook is disposed.
   @mustCallSuper
   void dispose() {
     mounted = false;
   }
 
   /// Equivalent of [State.setState] for [HookState].
-  ///
   /// Copied from [HookState].
+  ///
+  /// This method is used to trigger a rebuild of the hook.
   late VoidCallback setState;
 
+  /// Whether the hook is currently mounted.
   bool mounted = false;
 
   /// Called everytime the [HookState] is requested.
-  /// [build] is where a [HookState] may use other hooks.
-  /// This restriction is made to ensure that hooks are always
-  /// unconditionally requested.
-  ///
   /// Copied from [HookState]
+  /// This method is where hooks may use other hooks.
   @mustCallSuper
   void build() {}
 
   /// Equivalent of [State.didUpdateWidget] for [HookState].
+  /// Copied from [HookState].
   ///
-  /// Copied from [HookState]
-  ///
-  /// For generic states use
-  ///
-  /// if([oldState] is T){
-  ///   do something with the [oldState]
-  /// }
-  ///
-  /// T will be the same class as the state
+  /// This method is called when the hook's state is updated.
   @mustCallSuper
   void didUpdateState(final LifeState oldState) {}
 
   /// Equivalent of [State.widget] for [HookState].
+  /// Copied from [HookState].
   ///
-  /// Copied from [HookState]
-  /// For generic states use
-  ///
-  /// if([oldState] is T){
-  ///   do something with the [oldState]
-  /// }
-  ///
-  /// T will be the same class as the state
+  /// This method provides access to the current hook state.
   late ValueGetter<LifeState> getHookState;
 }
 
+/// A hook that manages the lifecycle of a [LifeState].
+///
+/// This class provides a mechanism to create and manage the state
+/// of a life hook, including initialization and disposal.
+///
+/// @ai Ensure that the state is properly managed and that lifecycle
+/// methods are overridden as needed.
 class LifeHook<T extends LifeState> extends Hook<T> {
+  /// Creates a [LifeHook].
   const LifeHook({
     required this.debugLabel,
     required this.state,
   });
 
+  /// A label for debugging purposes.
   final String debugLabel;
+
+  /// The state associated with this hook.
   final T state;
 
   @override
   _LifeHookState<T> createState() => _LifeHookState<T>(state: state);
 }
 
+/// The state class for [LifeHook].
+///
+/// This class manages the lifecycle of the associated state and
+/// provides mechanisms for rebuilding and disposing of the state.
+///
+/// @ai Ensure that the state is properly managed and that lifecycle
+/// methods are overridden as needed.
 class _LifeHookState<T extends LifeState> extends HookState<T, LifeHook<T>> {
   _LifeHookState({required final T state}) : _innerState = state;
   final T _innerState;
+
   @override
   void initHook() {
     _innerState
@@ -113,34 +130,3 @@ class _LifeHookState<T extends LifeState> extends HookState<T, LifeHook<T>> {
   @override
   String get debugLabel => hook.debugLabel;
 }
-
-
-
-// // ignore: avoid_classes_with_only_static_members
-// class HookProvider {
-//   static TLifeState Function() use<TLifeState extends LifeState, TDiDto>({
-//     required final TLifeState Function(TDiDto diDto) stateBuilder,
-//     required final String debugLabel,
-//     required final TDiDto Function() diDtoBuilder,
-//   }) {
-//     return () {
-//       final diDto = diDtoBuilder();
-//       final state = stateBuilder(diDto);
-//       final hook = LifeHook(debugLabel: debugLabel, state: state);
-//       return flutter_hooks.use(hook);
-//     };
-//   }
-// }
-
-// class DDiDto {}
-
-// class D extends LifeState {
-//   D(this.diDto);
-//   final DDiDto diDto;
-// }
-
-// final d = HookProvider.use(
-//   stateBuilder: D.new,
-//   diDtoBuilder: DDiDto.new,
-//   debugLabel: '',
-// );

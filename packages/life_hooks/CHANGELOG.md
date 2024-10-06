@@ -1,3 +1,22 @@
+## 0.0.20
+
+BREAKING CHANGE:
+
+- The project now utilizes the xsoulspace_foundation package for primitive interfaces.
+  Loadable, Disposable are moved to xsoulspace_foundation.
+
+Updated Dependencies:
+
+- chore: dart_sdk up to 3.5.3
+- chore: flutter_hooks: ^0.20.5
+- chore: added flutter_keyboard_visibility, xsoulspace_foundation
+
+Added:
+
+- docs: Basic documentation for most classes (Work In Progress).
+- use_keyboard_visibility
+- use_state_builder
+
 ## 0.0.19
 
 - chore: dart 3.2.0

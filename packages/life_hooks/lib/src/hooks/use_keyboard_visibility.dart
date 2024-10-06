@@ -3,8 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-
-import '../utils/device_runtime_type.dart';
+import 'package:xsoulspace_foundation/xsoulspace_foundation.dart';
 
 /// A hook that provides a [ValueNotifier] for keyboard visibility.
 ///

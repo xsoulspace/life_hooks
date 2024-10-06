@@ -4,9 +4,33 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import '../abstract/abstract.dart';
 import '../hooks/hooks.dart';
 
+/// An abstract interface for state initializers that can load contextually.
+///
+/// This interface extends [ContextfulLoadable] to ensure that any
+/// implementing class can perform loading operations that require
+/// a [BuildContext].
+///
+/// @ai When implementing this interface, ensure that the loading logic
+/// is context-aware and handles any potential exceptions gracefully.
 abstract interface class StateInitializer implements ContextfulLoadable {}
 
+/// A widget that manages the loading state of its child based on the
+/// provided [StateInitializer].
+///
+/// This widget displays a loading indicator while the [initializer]
+/// is performing its loading operations. Once loading is complete,
+/// it transitions to display the [child] widget.
+///
+/// @ai Ensure that the [StateInitializer] is properly implemented
+/// to handle loading logic and that the [loader] widget is visually
+/// appropriate for your application.
 class StateLoader extends HookWidget {
+  /// Creates a [StateLoader] widget.
+  ///
+  /// The [child] is displayed once loading is complete, and the
+  /// [initializer] is responsible for loading the necessary state.
+  ///
+  /// [loader] is displayed while loading is in progress.
   const StateLoader({
     required this.child,
     required this.initializer,
@@ -15,10 +39,20 @@ class StateLoader extends HookWidget {
     this.backgroundIsTransparent = false,
     super.key,
   });
+
+  /// The widget to display once loading is complete.
   final Widget child;
+
+  /// The initializer responsible for loading state.
   final StateInitializer initializer;
+
+  /// The widget to display while loading.
   final Widget loader;
+
+  /// The background color of the loader.
   final Color background;
+
+  /// Whether the background is transparent during loading.
   final bool backgroundIsTransparent;
 
   static const Duration _transitionDuration = Duration(milliseconds: 450);

@@ -8,7 +8,7 @@
 /// @ai When generating code for classes implementing [Disposable], ensure that
 /// the [dispose] method properly releases all resources and cancels any ongoing
 /// operations or subscriptions.
-abstract class Disposable {
+abstract interface class Disposable {
   Disposable._();
 
   /// Releases the resources used by this object.
@@ -28,7 +28,7 @@ abstract class Disposable {
 ///
 /// @ai When generating code for classes implementing [Loadable], ensure that
 /// the [onLoad] method properly initializes all necessary data and state.
-abstract class Loadable {
+abstract interface class Loadable {
   Loadable._();
 
   /// Asynchronously loads the object's data or initializes its state.
