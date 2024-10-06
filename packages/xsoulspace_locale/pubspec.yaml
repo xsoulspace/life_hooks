@@ -1,0 +1,22 @@
+name: xsoulspace_locale
+description: Unified locale wrapper to make localization easier.
+version: 0.0.1
+homepage: https://github.com/xsoulspace/life_hooks
+
+environment:
+  sdk: ">=3.5.3 <4.0.0"
+
+dependencies:
+  collection: ^1.18.0
+  equatable: ^2.0.5
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.19.0
+  xsoulspace_foundation: ^0.0.2
+
+dev_dependencies:
+  build_runner: ^2.4.13
+  flutter_lints: ^5.0.0
+  xsoulspace_lints: ^0.0.11
