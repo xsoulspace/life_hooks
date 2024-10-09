@@ -1,3 +1,8 @@
+## 0.0.3
+
+- Added:
+  - AppStoreUtils with StoreChecker package
+
 ## 0.0.2
 
 - Added:
