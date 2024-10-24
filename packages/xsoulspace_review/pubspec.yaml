@@ -1,5 +1,5 @@
 name: xsoulspace_review
-publish_to: none
+repository: https://github.com/xsoulspace/life_hooks/tree/main/packages/xsoulspace_review
 description: Useful tools for review for stores and user feedback
 
 version: 0.1.0
