@@ -1,6 +1,6 @@
 name: xsoulspace_foundation
 description: Shared utils, extensions, and helpers.
-version: 0.0.3
+version: 0.0.4
 homepage: https://github.com/xsoulspace/life_hooks/packages/xsoulspace_foundation
 environment:
   sdk: ">=3.5.3 <4.0.0"

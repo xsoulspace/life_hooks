@@ -33,3 +33,6 @@ packages/xsoulspace_foundation/.flutter-plugins
 packages/xsoulspace_foundation/.flutter-plugins-dependencies
 packages/life_hooks/.flutter-plugins
 packages/life_hooks/.flutter-plugins-dependencies
+packages/xsoulspace_review/.flutter-plugins
+packages/xsoulspace_review/.flutter-plugins-dependencies
+packages/xsoulspace_review/pubspec.lock

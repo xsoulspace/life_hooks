@@ -1,0 +1,25 @@
+name: xsoulspace_review
+publish_to: none
+description: Useful tools for review for stores and user feedback
+
+version: 0.1.0
+
+environment:
+  sdk: ">=3.5.3 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_rustore_review: ^6.1.0
+  in_app_review: ^2.0.9
+  meta: ^1.15.0
+  universal_io: ^2.2.2
+  url_launcher: ^6.3.1
+  wiredash: ^2.2.2
+  xsoulspace_foundation: ^0.0.3
+  xsoulspace_locale: ^0.0.2
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  lint: ^2.3.0
+  xsoulspace_lints: ^0.0.11

@@ -6,7 +6,7 @@ import 'package:flutter/widgets.dart';
 /// capabilities for various use cases.
 ///
 /// @ai Use this extension to simplify widget operations in your code.
-extension WidgetX on Widget {
+extension XSWidgetX on Widget {
   /// Converts the widget to a [Sliver] using a [SliverToBoxAdapter].
   ///
   /// @returns A [SliverToBoxAdapter] containing this widget.

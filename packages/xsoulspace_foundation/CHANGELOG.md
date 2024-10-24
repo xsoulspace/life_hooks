@@ -1,3 +1,9 @@
+## 0.0.4
+
+- Changed:
+  - Names of the extensions to exclude conflicts with other packages
+  - Added `context.viewPadding` extension to simplify getting specific to view padding
+
 ## 0.0.3
 
 - Added:

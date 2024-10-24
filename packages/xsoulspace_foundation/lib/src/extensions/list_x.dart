@@ -4,7 +4,7 @@
 /// capabilities for various use cases.
 ///
 /// @ai Use this extension to simplify operations on lists in your code.
-extension ListExtension<E> on List<E> {
+extension XSListExtension<E> on List<E> {
   /// Reorders the list by moving an item from one index to another.
   ///
   /// [oldIndex] The current index of the item to move.

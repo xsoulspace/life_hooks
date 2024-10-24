@@ -8,7 +8,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 /// capabilities for various use cases.
 ///
 /// @ai Use this extension to simplify string operations in your code.
-extension StringX on String {
+extension XSStringX on String {
   /// Converts a hex color string to a [Color] object.
   ///
   /// @returns A [Color] object representing the hex color.

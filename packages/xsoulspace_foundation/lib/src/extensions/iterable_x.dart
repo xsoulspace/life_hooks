@@ -10,7 +10,7 @@ typedef IterableConverter<TOld, TNew> = Future<TNew> Function(TOld item);
 /// iterables, enhancing their capabilities for various use cases.
 ///
 /// @ai Use this extension to simplify operations on iterables in your code.
-extension IterableX<E> on Iterable<E> {
+extension XSIterableX<E> on Iterable<E> {
   /// Converts the iterable to a map with indexed keys.
   ///
   /// This method creates a map where the keys are generated from the provided
