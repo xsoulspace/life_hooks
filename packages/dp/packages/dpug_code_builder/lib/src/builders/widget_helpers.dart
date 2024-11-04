@@ -88,4 +88,21 @@ class WidgetHelpers {
   }) {
     return withChildren('ListView', children: children, properties: properties);
   }
+
+  /// Add new helper method
+  static DpugWidgetBuilder gridView({
+    List<DpugWidgetBuilder> children = const [],
+    Map<String, DpugExpressionSpec> properties = const {},
+  }) {
+    return withChildren('GridView', children: children, properties: properties);
+  }
+
+  /// For widgets with named constructor
+  static DpugWidgetBuilder gridViewBuilder({
+    List<DpugWidgetBuilder> children = const [],
+    Map<String, DpugExpressionSpec> properties = const {},
+  }) {
+    return withChildren('GridView.builder',
+        children: children, properties: properties);
+  }
 }

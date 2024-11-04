@@ -84,6 +84,22 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
         .writeln('${_formatter.config.indent * currentIndent}${spec.name}');
     _indent = currentIndent + 1;
 
+    // Handle properties
+    for (final entry in spec.properties.entries) {
+      final value = entry.value;
+      if (value is DpugWidgetExpressionSpec) {
+        // Keep widget values at same level as property
+        localBuffer
+            .write('${_formatter.config.indent * _indent}..${entry.key}: ');
+        // Remove leading whitespace but keep the rest of formatting
+        final widgetCode = value.builder.build().accept(this);
+        localBuffer.write(widgetCode.trimLeft());
+      } else {
+        localBuffer.writeln(
+            '${_formatter.config.indent * _indent}..${entry.key}: ${value.accept(this)}');
+      }
+    }
+
     // Handle positional cascade arguments
     for (final arg in spec.positionalCascadeArgs) {
       if (arg is DpugStringLiteralSpec) {
@@ -95,20 +111,6 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
       }
     }
 
-    // Handle properties
-    for (final entry in spec.properties.entries) {
-      final value = entry.value.accept(this);
-      if (entry.value is DpugWidgetSpec) {
-        // For widget values, write the property name and let the widget handle its own indentation
-        localBuffer.writeln(
-            '${_formatter.config.indent * _indent}..${entry.key}: $value');
-      } else {
-        // For other values, write them inline
-        localBuffer.writeln(
-            '${_formatter.config.indent * _indent}..${entry.key}: $value');
-      }
-    }
-
     // Handle positional arguments
     if (spec.positionalArgs.isNotEmpty) {
       final args = spec.positionalArgs.map((a) => a.accept(this)).join(', ');
@@ -117,9 +119,7 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
     }
 
     // Handle automatic child/children syntax sugar
-    if (spec.children.isNotEmpty &&
-        !spec.properties.containsKey('child') &&
-        !spec.properties.containsKey('children')) {
+    if (spec.shouldUseChildSugar) {
       for (final child in spec.children) {
         final childCode = child.accept(this);
         localBuffer.write(childCode);

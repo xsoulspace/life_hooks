@@ -91,7 +91,7 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
     final properties = <String, cb.Expression>{};
     final positionalArgs = <cb.Expression>[];
 
-    // Convert all positional arguments (both regular and cascade)
+    // Convert all positional arguments
     for (final arg in [...spec.positionalArgs, ...spec.positionalCascadeArgs]) {
       final value = arg.accept(this);
       if (value is cb.Expression) {
@@ -101,7 +101,7 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
       }
     }
 
-    // Convert properties to expressions
+    // Convert properties
     for (final entry in spec.properties.entries) {
       final value = entry.value.accept(this);
       if (value is cb.Expression) {
@@ -111,13 +111,13 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
       }
     }
 
-    // Build the widget expression
+    // Build widget expression
     final expression = cb.refer(spec.name).call(
       positionalArgs,
       {
         ...properties,
-        if (spec.children.isNotEmpty)
-          if (spec.children.length == 1 && _isSingleChildWidget(spec.name))
+        if (spec.shouldUseChildSugar)
+          if (spec.isSingleChild)
             'child': _processChild(spec.children.first)
           else
             'children': cb.literalList(
@@ -126,7 +126,6 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
       },
     );
 
-    // Convert to properly formatted code without additional formatting
     return cb.Code(expression.accept(_emitter).toString());
   }
 
@@ -148,37 +147,6 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
       return cb.CodeExpression(childSpec);
     }
     throw StateError('Unexpected child spec type: ${childSpec.runtimeType}');
-  }
-
-  bool _isSingleChildWidget(String name) {
-    return const {
-      'SizedBox',
-      'Container',
-      'Center',
-      'Padding',
-      'Align',
-      'FractionallySizedBox',
-      'AspectRatio',
-      'FittedBox',
-      'Baseline',
-      'SizedOverflowBox',
-      'Transform',
-      'ConstrainedBox',
-      'UnconstrainedBox',
-      'LimitedBox',
-      'OverflowBox',
-      'DecoratedBox',
-      'RotatedBox',
-      'ClipRect',
-      'ClipRRect',
-      'ClipOval',
-      'ClipPath',
-      'Offstage',
-      'Opacity',
-      'Card',
-      'Tooltip',
-      'SingleChildScrollView',
-    }.contains(name);
   }
 
   @override

@@ -10,6 +10,12 @@ class DpugWidgetSpec extends DpugSpec {
   final BuiltList<DpugExpressionSpec> positionalArgs;
   final BuiltList<DpugExpressionSpec> positionalCascadeArgs;
 
+  bool get hasExplicitChild => properties.containsKey('child');
+  bool get hasExplicitChildren => properties.containsKey('children');
+  bool get shouldUseChildSugar =>
+      children.isNotEmpty && !hasExplicitChild && !hasExplicitChildren;
+  bool get isSingleChild => children.length == 1;
+
   factory DpugWidgetSpec({
     required String name,
     Iterable<DpugWidgetSpec> children = const [],

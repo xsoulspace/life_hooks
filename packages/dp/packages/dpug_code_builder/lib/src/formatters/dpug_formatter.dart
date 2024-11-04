@@ -91,7 +91,8 @@ class DpugFormatter {
   }
 
   bool _isWidgetName(String line) {
-    return RegExp(r'^[A-Z][a-zA-Z]*$').hasMatch(line);
+    final trimmed = line.trim();
+    return RegExp(r'^[A-Z][a-zA-Z]*(?:\.[a-zA-Z]+)?$').hasMatch(trimmed);
   }
 
   bool _isCascadeNotation(String line) {
@@ -103,7 +104,14 @@ class DpugFormatter {
   }
 
   bool _isPropertyAssignment(String line) {
-    return line.contains(':') && !line.contains('=>');
+    if (line.contains(':')) {
+      final parts = line.split(':');
+      if (parts.length == 2 && _isWidgetName(parts[1].trim())) {
+        return false;
+      }
+      return !line.contains('=>');
+    }
+    return false;
   }
 
   bool _isBlockEnd(String line) {
@@ -120,6 +128,14 @@ class DpugFormatter {
   }
 
   String _formatLine(String line, int indent) {
+    // Handle widget names in property values
+    if (line.contains(':')) {
+      final parts = line.split(':');
+      if (parts.length == 2 && _isWidgetName(parts[1].trim())) {
+        return '${config.indent * indent}${parts[0].trim()}: ${parts[1].trim()}';
+      }
+    }
+
     // Don't indent annotations at root level
     if (_isAnnotation(line) && indent == 0) {
       return line;
