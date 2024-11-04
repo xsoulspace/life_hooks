@@ -13,28 +13,82 @@ DartPug is a preprocessor and syntax extension for Flutter/Dart that enables Swi
 - Source mapping for debugging
 - Hot reload support
 - IDE integration
+- import from dart files and to dart files
 
 ## Syntax Example
 
-.dpug file
+### Idea 1
 
-```Dart
+```dartpug
 @stateful
-class TodoList {
-  @listen List<Todo> todos = [];
-  @listen String newTodo = '';
-  @state String searchQuery = '';
+class TodoList
+  @listen List<Todo> todos = []
+  @listen String newTodo = ''
 
   Widget get build =>
     Column
       TextField
         value: newTodo
         onChanged: (value) => newTodo = value
-      ..padding(16)
+```
+
+equivalent dart code:
+
+```dart
+class TodoList extends StatefulWidget {
+  TodoList({
+    required this.todos,
+    required this.newTodo,
+    super.key,
+  });
+  final List<Todo> todos;
+  final String newTodo;
+  @override
+  State<TodoList> createState() => _TodoListState();
+}
+
+class _TodoListState extends State<TodoList> {
+  late List<Todo> _todos = widget.todos;
+  List<Todo> get todos => _todos;
+  set todos(List<Todo> value) => setState(() => _todos = value);
+  late String _newTodo = widget.newTodo;
+  String get newTodo => _newTodo;
+  set newTodo(String value) => setState(() => _newTodo = value);
+
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TextField(
+          value: newTodo,
+          onChanged: (value) => newTodo = value,
+        ),
+      ],
+    );
+  }
+}
+```
+
+### Idea 2
+
+.dpug file
+
+```dartpug
+import 'package:flutter/material.dart';
+
+@stateful
+class TodoList {
+  @listen List<Todo> todos = [];
+  @listen String newTodo = '';
+
+  Widget get build =>
+    Column
+      TextField
+        value: newTodo
+        onChanged: (value) => newTodo = value
       Button
         "Add Todo"
         action: () {
-          todos.add(Todo(newTodo));
+          todos = [...todos, Todo(newTodo)];
           newTodo = '';
         }
       ListView.builder
@@ -44,29 +98,9 @@ class TodoList {
             title: Text(todo.title)
             trailing: IconButton
               icon: Icon(Icons.delete)
-              onPressed: () => todos.removeAt(index)
+              onPressed: () => todos = [...todos]..removeAt(index)
 }
 ```
-
-## Project Structurelib/
-
-├── dpug/
-│ ├── compiler/
-│ │ ├── lexer.dart
-│ │ ├── parser.dart
-│ │ ├── ast_builder.dart
-│ │ └── dart_generator.dart
-│ └── analysis_server/
-│ └── server_plugin.dart
-└── builder.dart
-
-## Core Components
-
-1. **Lexer**: Tokenizes DPug syntax
-2. **Parser**: Converts tokens to AST
-3. **AST Builder**: Creates type-safe AST
-4. **Dart Generator**: Generates Dart code
-5. **Analyzer Plugin**: Provides IDE support
 
 ## State Management
 
