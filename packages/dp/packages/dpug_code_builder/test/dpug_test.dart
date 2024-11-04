@@ -126,12 +126,7 @@ void main() {
       final dpugCode = widget.accept(DpugGeneratingVisitor());
 
       final expectedDartCode = '''
-Column(
-  children: [
-    Text('Hello'),
-    Text('World'),
-  ]
-)''';
+Column(children: [Text('Hello'), Text('World'), ])''';
 
       final expectedDpugCode = '''
 Column

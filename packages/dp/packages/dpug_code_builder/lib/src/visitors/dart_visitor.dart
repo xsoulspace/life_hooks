@@ -6,7 +6,9 @@ import 'visitor.dart';
 
 class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
   final _emitter = cb.DartEmitter();
-  final _formatter = ds.DartFormatter();
+  final _formatter = ds.DartFormatter(
+    languageVersion: ds.DartFormatter.latestLanguageVersion,
+  );
 
   @override
   cb.Spec visitClass(DpugClassSpec spec) {
@@ -89,7 +91,7 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
     final properties = <String, cb.Expression>{};
     final positionalArgs = <cb.Expression>[];
 
-    // Convert all positional arguments
+    // Convert all positional arguments (both regular and cascade)
     for (final arg in [...spec.positionalArgs, ...spec.positionalCascadeArgs]) {
       final value = arg.accept(this);
       if (value is cb.Expression) {
@@ -99,7 +101,7 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
       }
     }
 
-    // Convert properties
+    // Convert properties to expressions
     for (final entry in spec.properties.entries) {
       final value = entry.value.accept(this);
       if (value is cb.Expression) {
@@ -109,8 +111,8 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
       }
     }
 
-    // Build widget expression
-    final expression = cb.refer(spec.name).newInstance(
+    // Build the widget expression
+    final expression = cb.refer(spec.name).call(
       positionalArgs,
       {
         ...properties,
@@ -124,7 +126,8 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
       },
     );
 
-    return expression;
+    // Convert to properly formatted code without additional formatting
+    return cb.Code(expression.accept(_emitter).toString());
   }
 
   @override
