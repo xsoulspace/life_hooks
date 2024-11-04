@@ -17,6 +17,7 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
 
     for (final method in spec.methods) {
       method.accept(this);
+      _writeLine('');
     }
 
     _indent--;
@@ -66,10 +67,28 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
     _writeLine(spec.name);
     _indent++;
 
-    for (final entry in spec.properties.entries) {
-      _writeLine('${entry.key}: ${entry.value.accept(this)}');
+    // Handle positional cascade arguments
+    for (final arg in spec.positionalCascadeArgs) {
+      if (arg is DpugStringLiteralSpec) {
+        _writeLine('..\'${arg.value}\'');
+      } else {
+        _writeLine('..${arg.accept(this)}');
+      }
     }
 
+    // Handle regular positional arguments
+    if (spec.positionalArgs.isNotEmpty) {
+      final args = spec.positionalArgs.map((a) => a.accept(this)).join(', ');
+      _buffer.write('(${args})');
+      _buffer.writeln();
+    }
+
+    // Handle properties
+    for (final entry in spec.properties.entries) {
+      _writeLine('..${entry.key}: ${entry.value.accept(this)}');
+    }
+
+    // Handle children
     for (final child in spec.children) {
       child.accept(this);
     }
@@ -111,13 +130,17 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
     return '${spec.target} = ${spec.value.accept(this)}';
   }
 
-  void _writeAnnotations(List<DpugAnnotationSpec> annotations) {
+  void _writeAnnotations(Iterable<DpugAnnotationSpec> annotations) {
     for (final annotation in annotations) {
       _writeLine(annotation.accept(this));
     }
   }
 
   void _writeLine(String line) {
-    _buffer.writeln('${'  ' * _indent}$line');
+    if (line.isNotEmpty) {
+      _buffer.writeln('${'  ' * _indent}$line');
+    } else {
+      _buffer.writeln();
+    }
   }
 }

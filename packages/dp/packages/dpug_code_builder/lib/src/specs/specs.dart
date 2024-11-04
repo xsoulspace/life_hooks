@@ -1,3 +1,4 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:source_span/source_span.dart';
 
 import '../visitors/visitors.dart';
@@ -18,12 +19,28 @@ abstract class DpugSpec {
 
 class DpugClassSpec extends DpugSpec {
   final String name;
-  final List<DpugAnnotationSpec> annotations;
-  final List<DpugStateFieldSpec> stateFields;
-  final List<DpugMethodSpec> methods;
+  final BuiltList<DpugAnnotationSpec> annotations;
+  final BuiltList<DpugStateFieldSpec> stateFields;
+  final BuiltList<DpugMethodSpec> methods;
   final FileSpan span;
 
-  const DpugClassSpec({
+  factory DpugClassSpec({
+    required String name,
+    Iterable<DpugAnnotationSpec> annotations = const [],
+    Iterable<DpugStateFieldSpec> stateFields = const [],
+    Iterable<DpugMethodSpec> methods = const [],
+    required FileSpan span,
+  }) {
+    return DpugClassSpec._(
+      name: name,
+      annotations: BuiltList<DpugAnnotationSpec>.of(annotations),
+      stateFields: BuiltList<DpugStateFieldSpec>.of(stateFields),
+      methods: BuiltList<DpugMethodSpec>.of(methods),
+      span: span,
+    );
+  }
+
+  const DpugClassSpec._({
     required this.name,
     required this.annotations,
     required this.stateFields,

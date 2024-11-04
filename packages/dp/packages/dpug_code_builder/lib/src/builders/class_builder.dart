@@ -1,12 +1,15 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:source_span/source_span.dart';
 
 import '../specs/specs.dart';
 
 class DpugClassBuilder {
   String? _name;
-  final List<DpugAnnotationSpec> _annotations = [];
-  final List<DpugStateFieldSpec> _stateFields = [];
-  final List<DpugMethodSpec> _methods = [];
+  final ListBuilder<DpugAnnotationSpec> _annotations =
+      ListBuilder<DpugAnnotationSpec>();
+  final ListBuilder<DpugStateFieldSpec> _stateFields =
+      ListBuilder<DpugStateFieldSpec>();
+  final ListBuilder<DpugMethodSpec> _methods = ListBuilder<DpugMethodSpec>();
   FileSpan? span;
 
   DpugClassBuilder name(String name) {
@@ -61,15 +64,12 @@ class DpugClassBuilder {
       throw StateError('Class name must be set');
     }
 
-    // Create a default FileSpan if none is provided
-    final defaultSpan = SourceFile.fromString('').span(0);
-
     return DpugClassSpec(
       name: _name!,
-      annotations: _annotations,
-      stateFields: _stateFields,
-      methods: _methods,
-      span: span ?? defaultSpan,
+      annotations: _annotations.build(),
+      stateFields: _stateFields.build(),
+      methods: _methods.build(),
+      span: span ?? SourceFile.fromString('').span(0),
     );
   }
 }

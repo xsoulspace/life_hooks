@@ -1,88 +1,198 @@
 import 'package:dpug/dpug.dart';
 import 'package:test/test.dart';
 
+final _dartCode = '''
+class TodoList extends StatefulWidget {
+  TodoList({
+    super.key,
+    required this.todos,
+    required this.newTodo,
+  });
+  final List<Todo> todos;
+  final String newTodo;
+  @override
+  State<TodoList> createState() => _TodoListState();
+}
+
+class _TodoListState extends State<TodoList> {
+  late List<Todo> _todos = widget.todos;
+  List<Todo> get todos => _todos;
+  set todos(List<Todo> value) => setState(() => _todos = value);
+  late String _newTodo = widget.newTodo;
+  String get newTodo => _newTodo;
+  set newTodo(String value) => setState(() => _newTodo = value);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        TextFormField(
+          initialValue: newTodo,
+          onChanged: (value) => newTodo = value,
+        ),
+      ],
+    );
+  }
+}
+''';
+
+final _dpugCode = '''
+@stateful
+class TodoList
+  @listen List<Todo> todos = []
+  @listen String newTodo = ''
+
+  Widget get build =>
+    Column
+      ..mainAxisAlignment: MainAxisAlignment.center
+      TextFormField
+        ..initialValue: newTodo
+        ..onChanged: (value) => newTodo = value
+''';
+
 void main() {
   group('Dpug Syntax Tests', () {
     test('Basic stateful widget', () {
-      final todoList = Dpug.classBuilder()
-        ..name('TodoList')
-        ..annotation(DpugAnnotationSpec.stateful())
-        ..listenField(
-          name: 'todos',
-          type: 'List<Todo>',
-          initializer: DpugExpressionSpec.listLiteral([]),
-        )
-        ..listenField(
-          name: 'newTodo',
-          type: 'String',
-          initializer: DpugExpressionSpec.stringLiteral(''),
-        )
-        ..buildGetter(
-          name: 'build',
-          returnType: 'Widget',
-          body: Dpug.widgetBuilder()
-            ..name('Column')
-            ..child(Dpug.widgetBuilder()
-                  ..name('TextField')
-                  ..property('value', DpugExpressionSpec.reference('newTodo'))
+      final todoList = (Dpug.classBuilder()
+            ..name('TodoList')
+            ..annotation(DpugAnnotationSpec.stateful())
+            ..listenField(
+              name: 'todos',
+              type: 'List<Todo>',
+              initializer: DpugExpressionSpec.listLiteral([]),
+            )
+            ..listenField(
+              name: 'newTodo',
+              type: 'String',
+              initializer: DpugExpressionSpec.stringLiteral(''),
+            )
+            ..buildGetter(
+              name: 'build',
+              returnType: 'Widget',
+              body: Dpug.widgetBuilder()
+                ..name('Column')
+                ..property(
+                  'mainAxisAlignment',
+                  DpugExpressionSpec.reference('MainAxisAlignment.center'),
+                )
+                ..child(Dpug.widgetBuilder()
+                  ..name('TextFormField')
+                  ..property(
+                    'initialValue',
+                    DpugExpressionSpec.reference('newTodo'),
+                  )
                   ..property(
                     'onChanged',
                     DpugExpressionSpec.lambda(
                       ['value'],
                       DpugExpressionSpec.assignment(
-                          'newTodo', DpugExpressionSpec.reference('value')),
+                        'newTodo',
+                        DpugExpressionSpec.reference('value'),
+                      ),
                     ),
-                  ))
-                .build(),
-        ).build();
+                  )),
+            ))
+          .build();
 
-      final dartCode = Dpug.generateDart(todoList);
-      final dpugCode = Dpug.generateDpug(todoList);
+      final dartCode = todoList.accept(DartGeneratingVisitor()).toString();
+      final dpugCode = todoList.accept(DpugGeneratingVisitor());
 
-      expect(dartCode, contains('class TodoList extends StatefulWidget'));
-      expect(
-          dartCode, contains('class _TodoListState extends State<TodoList>'));
-      expect(dartCode, contains('late List<Todo> _todos = widget.todos'));
-      expect(dartCode, contains('late String _newTodo = widget.newTodo'));
-      expect(dartCode, contains('Widget build(BuildContext context)'));
-      expect(dartCode, contains('TextField('));
-      expect(dartCode, contains('value: newTodo'));
-      expect(dartCode, contains('onChanged: (value) => newTodo = value'));
-
-      expect(dpugCode, contains('@stateful'));
-      expect(dpugCode, contains('class TodoList'));
-      expect(dpugCode, contains('@listen List<Todo> todos = []'));
-      expect(dpugCode, contains('@listen String newTodo = \'\''));
-      expect(dpugCode, contains('Widget get build =>'));
-      expect(dpugCode, contains('Column'));
-      expect(dpugCode, contains('TextField'));
-      expect(dpugCode, contains('value: newTodo'));
-      expect(dpugCode, contains('onChanged: (value) => newTodo = value'));
+      expect(_normalizeWhitespace(dartCode),
+          equals(_normalizeWhitespace(_dartCode)));
+      expect(_normalizeWhitespace(dpugCode),
+          equals(_normalizeWhitespace(_dpugCode)));
     });
 
     test('Widget with multiple children', () {
-      final widget = Dpug.widgetBuilder()
-        ..name('Column')
-        ..child(Dpug.widgetBuilder()
-          ..name('Text')
-          ..property('data', DpugExpressionSpec.stringLiteral('Hello')))
-        ..child(Dpug.widgetBuilder()
+      final widget = (Dpug.widgetBuilder()
+            ..name('Column')
+            ..child(Dpug.widgetBuilder()
               ..name('Text')
-              ..property('data', DpugExpressionSpec.stringLiteral('World')))
-            .build();
+              ..positionalCascadeArgument(
+                  DpugExpressionSpec.stringLiteral('Hello')))
+            ..child(Dpug.widgetBuilder()
+              ..name('Text')
+              ..positionalArgument(DpugExpressionSpec.stringLiteral('World'))))
+          .build();
 
-      final dartCode = widget.accept(DartGeneratingVisitor());
+      final dartCode = widget.accept(DartGeneratingVisitor()).toString();
       final dpugCode = widget.accept(DpugGeneratingVisitor());
 
-      expect(dartCode.toString(), contains('Column('));
-      expect(dartCode.toString(), contains('children: ['));
-      expect(dartCode.toString(), contains('Text(data: \'Hello\')'));
-      expect(dartCode.toString(), contains('Text(data: \'World\')'));
+      final expectedDartCode = '''
+Column(
+  children: [
+    Text('Hello'),
+    Text('World'),
+  ]
+)''';
 
-      expect(dpugCode, contains('Column'));
-      expect(dpugCode, contains('Text'));
-      expect(dpugCode, contains('data: \'Hello\''));
-      expect(dpugCode, contains('data: \'World\''));
+      final expectedDpugCode = '''
+Column
+  Text
+    ..'Hello'
+  Text('World')
+''';
+
+      expect(_normalizeWhitespace(dartCode),
+          equals(_normalizeWhitespace(expectedDartCode)));
+      expect(_normalizeWhitespace(dpugCode),
+          equals(_normalizeWhitespace(expectedDpugCode)));
+    });
+
+    test('Widget with multiple children and different argument styles', () {
+      final widget = (Dpug.widgetBuilder()
+            ..name('Column')
+            ..child(Dpug.widgetBuilder()
+              ..name('Text')
+              ..positionalCascadeArgument(
+                  DpugExpressionSpec.stringLiteral('Hello')))
+            ..child(Dpug.widgetBuilder()
+              ..name('Text')
+              ..positionalArgument(DpugExpressionSpec.stringLiteral('World')))
+            ..child(Dpug.widgetBuilder()
+              ..name('Text')
+              ..positionalCascadeArgument(
+                  DpugExpressionSpec.stringLiteral('!'))))
+          .build();
+
+      final dartCode = widget.accept(DartGeneratingVisitor()).toString();
+      final dpugCode = widget.accept(DpugGeneratingVisitor());
+
+      final expectedDartCode = '''
+Column(
+  children: [
+    Text('Hello'),
+    Text('World'),
+    Text('!'),
+  ]
+)''';
+
+      final expectedDpugCode = '''
+Column
+  Text
+    ..'Hello'
+  Text('World')
+  Text
+    ..'!'
+''';
+
+      expect(_normalizeWhitespace(dartCode),
+          equals(_normalizeWhitespace(expectedDartCode)));
+      expect(_normalizeWhitespace(dpugCode),
+          equals(_normalizeWhitespace(expectedDpugCode)));
     });
   });
+}
+
+String _normalizeWhitespace(String code) {
+  return code
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .replaceAll('{ ', '{')
+      .replaceAll(' }', '}')
+      .replaceAll('[ ', '[')
+      .replaceAll(' ]', ']')
+      .replaceAll('( ', '(')
+      .replaceAll(' )', ')')
+      .trim();
 }

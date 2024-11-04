@@ -8,9 +8,10 @@ class TodoList
 
   Widget get build =>
     Column
-      TextField
-        value: newTodo
-        onChanged: (value) => newTodo = value
+      ..mainAxisAlignment: MainAxisAlignment.center
+      TextFormField
+        ..initialValue: newTodo
+        ..onChanged: (value) => newTodo = value
 ```
 
 equivalent dart code:
@@ -36,15 +37,58 @@ class _TodoListState extends State<TodoList> {
   String get newTodo => _newTodo;
   set newTodo(String value) => setState(() => _newTodo = value);
 
+  @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        TextField(
-          value: newTodo,
+        TextFormField(
+          initialValue: newTodo,
           onChanged: (value) => newTodo = value,
         ),
       ],
     );
   }
 }
+```
+
+### Syntax exceptions:
+
+- children would be a list of widgets
+  For example:
+
+```dartpug
+Column
+  TextFormField
+    ..initialValue: newTodo
+    ..onChanged: (value) => newTodo = value
+```
+
+- child would be a widget
+
+```dartpug
+SizedBox
+  TextFormField
+    ..initialValue: newTodo
+    ..onChanged: (value) => newTodo = value
+```
+
+### Positioned arguments:
+
+```dartpug
+Column
+  Text
+    ..'Hello'
+  Text('World')
+```
+
+will be equivalent to dart code:
+
+```dart
+Column(
+  children: [
+    Text('Hello'),
+    Text('World'),
+  ]
+)
 ```
