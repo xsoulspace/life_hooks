@@ -85,32 +85,22 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
     _writeLine(spec.name);
     _indent++;
 
-    // Handle positional cascade arguments
+    // Process cascade arguments first
     for (final arg in spec.positionalCascadeArgs) {
-      if (arg is DpugStringLiteralSpec) {
-        _writeLine('..\'${arg.value}\'');
-      } else {
-        _writeLine('..${arg.accept(this)}');
-      }
+      _writeLine('..\'${arg.accept(this)}\'');
     }
 
-    // Handle regular positional arguments
-    if (spec.positionalArgs.isNotEmpty) {
-      final args = spec.positionalArgs.map((a) => a.accept(this)).join(', ');
-      _buffer.write('(${args})');
-      _buffer.writeln();
-    }
-
-    // Handle properties
+    // Process properties
     for (final entry in spec.properties.entries) {
-      if (entry.key == 'child') {
-        entry.value.accept(this);
-      } else {
-        _writeLine('..${entry.key}: ${entry.value.accept(this)}');
-      }
+      _writeLine('..${entry.key}: ${entry.value.accept(this)}');
     }
 
-    // Handle children
+    // Process positional arguments at same level
+    for (final arg in spec.positionalArgs) {
+      _writeLine('(${arg.accept(this)})');
+    }
+
+    // Process children
     for (final child in spec.children) {
       child.accept(this);
     }
