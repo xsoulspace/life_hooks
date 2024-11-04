@@ -91,9 +91,14 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
         // Keep widget values at same level as property
         localBuffer
             .write('${_formatter.config.indent * _indent}..${entry.key}: ');
-        // Remove leading whitespace but keep the rest of formatting
         final widgetCode = value.builder.build().accept(this);
         localBuffer.write(widgetCode.trimLeft());
+      } else if (value is DpugReferenceSpec && value.name.contains('{')) {
+        // Handle method bodies with proper indentation
+        localBuffer
+            .write('${_formatter.config.indent * _indent}..${entry.key}: ');
+        final methodBody = _formatMethodBody(value.name, _indent - 1);
+        localBuffer.writeln(methodBody);
       } else {
         localBuffer.writeln(
             '${_formatter.config.indent * _indent}..${entry.key}: ${value.accept(this)}');
@@ -188,5 +193,45 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
     final annotation = spec.annotation.accept(this);
     final initializer = _formatInitializer(spec);
     return '${_formatter.config.indent * _indent}$annotation ${spec.type} ${spec.name}$initializer';
+  }
+
+  String _formatMethodBody(String code, int baseIndent) {
+    final lines = code.split('\n');
+    final formattedLines = <String>[];
+    var currentIndent = baseIndent;
+    var bracketCount = 0;
+
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i].trim();
+      if (line.isEmpty) continue;
+
+      // First line (usually contains the method signature)
+      if (i == 0) {
+        formattedLines.add(line);
+        if (line.endsWith('{')) bracketCount++;
+        continue;
+      }
+
+      // Count opening and closing braces
+      bracketCount += '{'.allMatches(line).length;
+      bracketCount -= '}'.allMatches(line).length;
+
+      // Handle closing braces
+      if (line.startsWith('}')) {
+        currentIndent = baseIndent + bracketCount;
+        formattedLines.add('${_formatter.config.indent * currentIndent}$line');
+      } else {
+        // Regular lines get indented based on bracket depth
+        currentIndent = baseIndent + bracketCount;
+        formattedLines.add('${_formatter.config.indent * currentIndent}$line');
+      }
+
+      // If this line contains an opening brace, next line will be indented
+      if (line.endsWith('{')) {
+        bracketCount++;
+      }
+    }
+
+    return formattedLines.join('\n');
   }
 }
