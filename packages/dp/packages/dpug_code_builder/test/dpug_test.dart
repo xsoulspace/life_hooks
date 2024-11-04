@@ -34,8 +34,7 @@ class _TodoListState extends State<TodoList> {
       ],
     );
   }
-}
-''';
+}''';
 
 final _dpugCode = '''
 @stateful
@@ -43,7 +42,7 @@ class TodoList
   @listen List<Todo> todos = []
   @listen String newTodo = ''
 
-  Widget get build =>
+  Widget build(BuildContext context) =>
     Column
       ..mainAxisAlignment: MainAxisAlignment.center
       TextFormField
@@ -53,6 +52,8 @@ class TodoList
 
 void main() {
   group('Dpug Syntax Tests', () {
+    final formatter = DpugFormatter();
+
     test('Basic stateful widget', () {
       final todoList = (Dpug.classBuilder()
             ..name('TodoList')
@@ -67,41 +68,37 @@ void main() {
               type: 'String',
               initializer: DpugExpressionSpec.stringLiteral(''),
             )
-            ..buildGetter(
-              name: 'build',
-              returnType: 'Widget',
-              body: Dpug.widgetBuilder()
-                ..name('Column')
-                ..property(
-                  'mainAxisAlignment',
-                  DpugExpressionSpec.reference('MainAxisAlignment.center'),
-                )
-                ..child(Dpug.widgetBuilder()
-                  ..name('TextFormField')
-                  ..property(
-                    'initialValue',
-                    DpugExpressionSpec.reference('newTodo'),
-                  )
-                  ..property(
-                    'onChanged',
-                    DpugExpressionSpec.lambda(
-                      ['value'],
-                      DpugExpressionSpec.assignment(
-                        'newTodo',
-                        DpugExpressionSpec.reference('value'),
+            ..buildMethod(
+              body: WidgetHelpers.column(
+                properties: {
+                  'mainAxisAlignment':
+                      DpugExpressionSpec.reference('MainAxisAlignment.center'),
+                },
+                children: [
+                  DpugWidgetBuilder()
+                    ..name('TextFormField')
+                    ..property(
+                        'initialValue', DpugExpressionSpec.reference('newTodo'))
+                    ..property(
+                      'onChanged',
+                      DpugExpressionSpec.lambda(
+                        ['value'],
+                        DpugExpressionSpec.assignment(
+                          'newTodo',
+                          DpugExpressionSpec.reference('value'),
+                        ),
                       ),
                     ),
-                  )),
+                ],
+              ),
             ))
           .build();
 
       final dartCode = todoList.accept(DartGeneratingVisitor()).toString();
       final dpugCode = todoList.accept(DpugGeneratingVisitor());
 
-      expect(_normalizeWhitespace(dartCode),
-          equals(_normalizeWhitespace(_dartCode)));
-      expect(_normalizeWhitespace(dpugCode),
-          equals(_normalizeWhitespace(_dpugCode)));
+      expect(dartCode, equals(_dartCode));
+      expect(formatter.format(dpugCode), equals(_dpugCode));
     });
 
     test('Widget with multiple children', () {
@@ -131,13 +128,10 @@ Column(
 Column
   Text
     ..'Hello'
-  Text('World')
-''';
+  Text('World')''';
 
-      expect(_normalizeWhitespace(dartCode),
-          equals(_normalizeWhitespace(expectedDartCode)));
-      expect(_normalizeWhitespace(dpugCode),
-          equals(_normalizeWhitespace(expectedDpugCode)));
+      expect(dartCode, equals(expectedDartCode));
+      expect(formatter.format(dpugCode), equals(expectedDpugCode));
     });
 
     test('Widget with multiple children and different argument styles', () {
@@ -177,22 +171,8 @@ Column
     ..'!'
 ''';
 
-      expect(_normalizeWhitespace(dartCode),
-          equals(_normalizeWhitespace(expectedDartCode)));
-      expect(_normalizeWhitespace(dpugCode),
-          equals(_normalizeWhitespace(expectedDpugCode)));
+      expect(formatter.format(dpugCode), equals(expectedDpugCode));
+      expect(dartCode, equals(expectedDartCode));
     });
   });
-}
-
-String _normalizeWhitespace(String code) {
-  return code
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .replaceAll('{ ', '{')
-      .replaceAll(' }', '}')
-      .replaceAll('[ ', '[')
-      .replaceAll(' ]', ']')
-      .replaceAll('( ', '(')
-      .replaceAll(' )', ')')
-      .trim();
 }

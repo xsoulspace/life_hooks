@@ -1,8 +1,10 @@
+import '../formatters/dpug_formatter.dart';
 import '../specs/specs.dart';
 import 'visitor.dart';
 
 class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
   final StringBuffer _buffer = StringBuffer();
+  final _formatter = DpugFormatter();
   int _indent = 0;
 
   @override
@@ -21,7 +23,7 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
     }
 
     _indent--;
-    return _buffer.toString();
+    return _formatter.format(_buffer.toString());
   }
 
   @override

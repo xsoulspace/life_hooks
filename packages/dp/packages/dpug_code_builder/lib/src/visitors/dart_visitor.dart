@@ -192,8 +192,7 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
           ...spec.stateFields.map((f) => cb.Parameter((b) => b
             ..name = f.name
             ..named = true
-            ..required = true
-            ..toThis = true))
+            ..required = true))
         ])))
       ..fields.addAll(spec.stateFields.map((f) => cb.Field((b) => b
         ..name = f.name
@@ -214,17 +213,7 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
       ..fields.addAll(spec.stateFields.map(_buildStateField))
       ..methods.addAll([
         ...spec.stateFields.expand(_buildStateAccessors),
-        ...spec.methods.map((m) {
-          final method = m.accept(this) as cb.Method;
-          if (method.name == 'build') {
-            return method.rebuild((b) => b
-              ..annotations.add(cb.refer('override'))
-              ..requiredParameters.add(cb.Parameter((b) => b
-                ..name = 'context'
-                ..type = cb.refer('BuildContext'))));
-          }
-          return method;
-        }),
+        ...spec.methods.map((m) => m.accept(this) as cb.Method),
       ]));
   }
 

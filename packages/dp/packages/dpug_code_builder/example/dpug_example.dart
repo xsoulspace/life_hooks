@@ -14,28 +14,29 @@ void main() {
           type: 'String',
           initializer: DpugExpressionSpec.stringLiteral(''),
         )
-        ..buildGetter(
-          name: 'build',
-          returnType: 'Widget',
-          body: Dpug.widgetBuilder()
-            ..name('Column')
-            ..property(
-              'mainAxisAlignment',
-              DpugExpressionSpec.reference('MainAxisAlignment.center'),
-            )
-            ..child(Dpug.widgetBuilder()
-              ..name('TextField')
-              ..property('value', DpugExpressionSpec.reference('newTodo'))
-              ..property(
-                'onChanged',
-                DpugExpressionSpec.lambda(
-                  ['value'],
-                  DpugExpressionSpec.assignment(
-                    'newTodo',
-                    DpugExpressionSpec.reference('value'),
+        ..buildMethod(
+          body: WidgetHelpers.column(
+            properties: {
+              'mainAxisAlignment':
+                  DpugExpressionSpec.reference('MainAxisAlignment.center'),
+            },
+            children: [
+              DpugWidgetBuilder()
+                ..name('TextFormField')
+                ..property(
+                    'initialValue', DpugExpressionSpec.reference('newTodo'))
+                ..property(
+                  'onChanged',
+                  DpugExpressionSpec.lambda(
+                    ['value'],
+                    DpugExpressionSpec.assignment(
+                      'newTodo',
+                      DpugExpressionSpec.reference('value'),
+                    ),
                   ),
                 ),
-              )),
+            ],
+          ),
         ))
       .build();
 

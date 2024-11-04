@@ -59,6 +59,24 @@ class DpugClassBuilder {
     return this;
   }
 
+  DpugClassBuilder buildMethod({
+    required DpugSpec body,
+  }) {
+    method(DpugMethodSpec(
+      name: 'build',
+      returnType: 'Widget',
+      parameters: [
+        DpugParameterSpec(
+          name: 'context',
+          type: 'BuildContext',
+        ),
+      ],
+      body: body,
+      isGetter: false,
+    ));
+    return this;
+  }
+
   DpugClassSpec build() {
     if (_name == null) {
       throw StateError('Class name must be set');
