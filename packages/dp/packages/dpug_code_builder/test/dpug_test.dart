@@ -504,7 +504,8 @@ FloatingActionButton
                 initializer: DpugExpressionSpec.reference('0'),
               )
               ..buildMethod(
-                body: WidgetHelpers.column(
+                body: WidgetHelpers.withChildren(
+                  'Column',
                   children: [
                     DpugWidgetBuilder()
                       ..name('Text')

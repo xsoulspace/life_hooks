@@ -4,7 +4,6 @@ import '../specs/specs.dart';
 import 'visitor.dart';
 
 class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
-  final StringBuffer _buffer = StringBuffer();
   final DpugFormatter _formatter;
   int _indent = 0;
 
@@ -98,8 +97,16 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
 
     // Handle properties
     for (final entry in spec.properties.entries) {
-      localBuffer.writeln(
-          '${_formatter.config.indent * _indent}..${entry.key}: ${entry.value.accept(this)}');
+      final value = entry.value.accept(this);
+      if (entry.value is DpugWidgetSpec) {
+        // For widget values, write the property name and let the widget handle its own indentation
+        localBuffer.writeln(
+            '${_formatter.config.indent * _indent}..${entry.key}: $value');
+      } else {
+        // For other values, write them inline
+        localBuffer.writeln(
+            '${_formatter.config.indent * _indent}..${entry.key}: $value');
+      }
     }
 
     // Handle positional arguments
