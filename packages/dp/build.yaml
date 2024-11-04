@@ -1,0 +1,17 @@
+targets:
+  $default:
+    builders:
+      dpug_builder:
+        enabled: true
+        generate_for:
+          - lib/**/*.dpug
+        options:
+          analyzer_plugins: true
+
+builders:
+  dpug_builder:
+    import: "package:dpug_compiler/builder.dart"
+    builder_factories: ["dpugBuilder"]
+    build_extensions: { ".dpug": [".dpug.dart"] }
+    auto_apply: dependents
+    build_to: source
