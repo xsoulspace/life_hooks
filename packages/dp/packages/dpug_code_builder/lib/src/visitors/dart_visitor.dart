@@ -43,26 +43,37 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
   @override
   cb.Spec visitMethod(DpugMethodSpec spec) {
     return cb.Method((b) {
-      b
-        ..name = spec.name
-        ..returns = cb.refer(spec.returnType)
-        ..type = spec.isGetter ? cb.MethodType.getter : null;
+      b..name = spec.name;
 
-      // Handle parameters by creating them directly here
-      if (!spec.isGetter) {
-        b.requiredParameters.addAll(
-          spec.parameters.map((p) => cb.Parameter((pb) => pb
-            ..name = p.name
-            ..type = cb.refer(p.type)
-            ..named = p.isNamed
-            ..required = p.isRequired
-            ..toThis = p.isNamed)),
-        );
+      if (spec.name == 'build') {
+        b
+          ..annotations.add(cb.refer('override'))
+          ..returns = cb.refer('Widget')
+          ..requiredParameters.add(cb.Parameter((pb) => pb
+            ..name = 'context'
+            ..type = cb.refer('BuildContext')));
+      } else {
+        b
+          ..returns = cb.refer(spec.returnType)
+          ..type = spec.isGetter ? cb.MethodType.getter : null;
+
+        if (!spec.isGetter) {
+          b.requiredParameters.addAll(
+            spec.parameters.map((p) => cb.Parameter((pb) => pb
+              ..name = p.name
+              ..type = cb.refer(p.type)
+              ..named = p.isNamed
+              ..required = p.isRequired
+              ..toThis = p.isNamed)),
+          );
+        }
       }
 
       // Handle body
       final bodySpec = spec.body.accept(this);
-      if (spec.isGetter) {
+      if (spec.name == 'build') {
+        b..body = cb.Code('return ${bodySpec.accept(_emitter)};');
+      } else if (spec.isGetter) {
         b
           ..lambda = true
           ..body =
@@ -104,18 +115,67 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
       {
         ...properties,
         if (spec.children.isNotEmpty)
-          'children': cb.literalList(
-            spec.children.map((c) {
-              final childSpec = c.accept(this);
-              return childSpec is cb.Expression
-                  ? childSpec
-                  : cb.CodeExpression(childSpec as cb.Code);
-            }).toList(),
-          ),
+          if (spec.children.length == 1 && _isSingleChildWidget(spec.name))
+            'child': _processChild(spec.children.first)
+          else
+            'children': cb.literalList(
+              spec.children.map(_processChild).toList(),
+            ),
       },
     );
 
     return expression;
+  }
+
+  @override
+  cb.Spec visitStringLiteral(DpugStringLiteralSpec spec) {
+    return cb.literalString(spec.value);
+  }
+
+  @override
+  cb.Spec visitReference(DpugReferenceSpec spec) {
+    return cb.refer(spec.name);
+  }
+
+  cb.Expression _processChild(DpugWidgetSpec child) {
+    final childSpec = child.accept(this);
+    if (childSpec is cb.Expression) {
+      return childSpec;
+    } else if (childSpec is cb.Code) {
+      return cb.CodeExpression(childSpec);
+    }
+    throw StateError('Unexpected child spec type: ${childSpec.runtimeType}');
+  }
+
+  bool _isSingleChildWidget(String name) {
+    return const {
+      'SizedBox',
+      'Container',
+      'Center',
+      'Padding',
+      'Align',
+      'FractionallySizedBox',
+      'AspectRatio',
+      'FittedBox',
+      'Baseline',
+      'SizedOverflowBox',
+      'Transform',
+      'ConstrainedBox',
+      'UnconstrainedBox',
+      'LimitedBox',
+      'OverflowBox',
+      'DecoratedBox',
+      'RotatedBox',
+      'ClipRect',
+      'ClipRRect',
+      'ClipOval',
+      'ClipPath',
+      'Offstage',
+      'Opacity',
+      'Card',
+      'Tooltip',
+      'SingleChildScrollView',
+    }.contains(name);
   }
 
   @override
@@ -147,19 +207,9 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
   }
 
   @override
-  cb.Spec visitReference(DpugReferenceSpec spec) {
-    return cb.refer(spec.name);
-  }
-
-  @override
   cb.Spec visitListLiteral(DpugListLiteralSpec spec) {
     return cb
         .literalList(spec.values.map((v) => v.accept(this) as cb.Expression));
-  }
-
-  @override
-  cb.Spec visitStringLiteral(DpugStringLiteralSpec spec) {
-    return cb.literalString(spec.value);
   }
 
   cb.Class _buildWidgetClass(DpugClassSpec spec) {

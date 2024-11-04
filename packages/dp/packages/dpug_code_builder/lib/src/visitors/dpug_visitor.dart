@@ -9,6 +9,8 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
 
   @override
   String visitClass(DpugClassSpec spec) {
+    _buffer.clear();
+
     _writeAnnotations(spec.annotations);
     _writeLine('class ${spec.name}');
     _indent++;
@@ -19,7 +21,9 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
 
     for (final method in spec.methods) {
       method.accept(this);
-      _writeLine('');
+      if (method.name != 'build') {
+        _writeLine('');
+      }
     }
 
     _indent--;
@@ -28,15 +32,24 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
 
   @override
   String visitStateField(DpugStateFieldSpec spec) {
-    _writeAnnotations([spec.annotation]);
+    final annotation = spec.annotation.accept(this);
     final init =
         spec.initializer != null ? ' = ${spec.initializer!.accept(this)}' : '';
-    _writeLine('${spec.type} ${spec.name}$init');
+    _writeLine('$annotation ${spec.type} ${spec.name}$init');
     return _buffer.toString();
   }
 
   @override
   String visitMethod(DpugMethodSpec spec) {
+    if (spec.name == 'build') {
+      _writeLine('');
+      _writeLine('Widget get build =>');
+      _indent++;
+      _writeLine(spec.body.accept(this));
+      _indent--;
+      return _buffer.toString();
+    }
+
     if (spec.isGetter) {
       _writeLine('${spec.returnType} get ${spec.name} =>');
       _indent++;
@@ -46,11 +59,10 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
     }
 
     final params = spec.parameters.map((p) => p.accept(this)).join(', ');
-    _writeLine('${spec.returnType} ${spec.name}($params) {');
+    _writeLine('${spec.returnType} ${spec.name}($params) =>');
     _indent++;
     _writeLine(spec.body.accept(this));
     _indent--;
-    _writeLine('}');
     return _buffer.toString();
   }
 
@@ -87,7 +99,11 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
 
     // Handle properties
     for (final entry in spec.properties.entries) {
-      _writeLine('..${entry.key}: ${entry.value.accept(this)}');
+      if (entry.key == 'child') {
+        entry.value.accept(this);
+      } else {
+        _writeLine('..${entry.key}: ${entry.value.accept(this)}');
+      }
     }
 
     // Handle children

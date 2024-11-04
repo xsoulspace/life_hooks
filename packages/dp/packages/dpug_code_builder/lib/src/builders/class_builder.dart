@@ -62,17 +62,10 @@ class DpugClassBuilder {
   DpugClassBuilder buildMethod({
     required DpugSpec body,
   }) {
-    method(DpugMethodSpec(
+    method(DpugMethodSpec.getter(
       name: 'build',
       returnType: 'Widget',
-      parameters: [
-        DpugParameterSpec(
-          name: 'context',
-          type: 'BuildContext',
-        ),
-      ],
       body: body,
-      isGetter: false,
     ));
     return this;
   }

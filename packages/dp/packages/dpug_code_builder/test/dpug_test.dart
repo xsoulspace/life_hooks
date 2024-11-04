@@ -29,7 +29,8 @@ class _TodoListState extends State<TodoList> {
   String get newTodo => _newTodo;
 
   set newTodo(String value) => setState(() => _newTodo = value);
-
+  
+  @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -50,7 +51,7 @@ class TodoList
   @listen List<Todo> todos = []
   @listen String newTodo = ''
 
-  Widget build(BuildContext context) =>
+  Widget get build =>
     Column
       ..mainAxisAlignment: MainAxisAlignment.center
       TextFormField
@@ -105,8 +106,8 @@ void main() {
       final dartCode = todoList.accept(DartGeneratingVisitor()).toString();
       final dpugCode = todoList.accept(DpugGeneratingVisitor());
 
-      expect(dartCode, equals(_dartCode));
       expect(formatter.format(dpugCode), equals(_dpugCode));
+      expect(dartCode, equals(_dartCode));
     });
 
     test('Widget with multiple children', () {

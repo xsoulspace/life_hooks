@@ -22,6 +22,41 @@ class WidgetHelpers {
     return builder;
   }
 
+  /// Creates a widget with a single child, automatically using the child property
+  static DpugWidgetBuilder withChild(
+    String name, {
+    DpugWidgetBuilder? child,
+    Map<String, DpugExpressionSpec> properties = const {},
+  }) {
+    final builder = DpugWidgetBuilder()..name(name);
+
+    for (final prop in properties.entries) {
+      builder.property(prop.key, prop.value);
+    }
+
+    if (child != null) {
+      builder.property('child', DpugExpressionSpec.widget(child));
+    }
+
+    return builder;
+  }
+
+  /// Shorthand for SizedBox with single child
+  static DpugWidgetBuilder sizedBox({
+    DpugWidgetBuilder? child,
+    Map<String, DpugExpressionSpec> properties = const {},
+  }) {
+    return withChild('SizedBox', child: child, properties: properties);
+  }
+
+  /// Shorthand for Container with single child
+  static DpugWidgetBuilder container({
+    DpugWidgetBuilder? child,
+    Map<String, DpugExpressionSpec> properties = const {},
+  }) {
+    return withChild('Container', child: child, properties: properties);
+  }
+
   /// Shorthand for Column with children
   static DpugWidgetBuilder column({
     List<DpugWidgetBuilder> children = const [],

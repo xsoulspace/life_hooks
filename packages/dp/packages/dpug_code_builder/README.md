@@ -1,4 +1,16 @@
-inspired by [code_builder](https://github.com/dart-lang/tools/tree/main/pkgs/code_builder/lib) system to build classes for dpug easily
+# DPUG - Dart Pug-like Widget Builder
+
+Inspired by [code_builder](https://github.com/dart-lang/tools/tree/main/pkgs/code_builder/lib), DPUG provides a clean, indentation-based syntax for Flutter widgets.
+
+## Key Features
+
+- Pug-like indentation-based syntax
+- Automatic handling of children/child properties
+- Support for cascade notation (`..`) and positional arguments
+- State management helpers
+- Built using immutable collections
+
+## Basic Example
 
 ```dartpug
 @stateful
@@ -14,7 +26,7 @@ class TodoList
         ..onChanged: (value) => newTodo = value
 ```
 
-equivalent dart code:
+Generates:
 
 ```dart
 class TodoList extends StatefulWidget {
@@ -52,10 +64,11 @@ class _TodoListState extends State<TodoList> {
 }
 ```
 
-### Syntax exceptions:
+## Syntax Features
 
-- children would be a list of widgets
-  For example:
+### Children Property Handling
+
+Widgets that accept children automatically handle the children property:
 
 ```dartpug
 Column
@@ -64,7 +77,22 @@ Column
     ..onChanged: (value) => newTodo = value
 ```
 
-- child would be a widget
+Generates:
+
+```dart
+Column(
+  children: [
+    TextFormField(
+      initialValue: newTodo,
+      onChanged: (value) => newTodo = value,
+    ),
+  ],
+)
+```
+
+### Single Child Property
+
+Widgets with a single child property automatically handle it:
 
 ```dartpug
 SizedBox
@@ -73,16 +101,29 @@ SizedBox
     ..onChanged: (value) => newTodo = value
 ```
 
-### Positioned arguments:
+Generates:
+
+```dart
+SizedBox(
+  child: TextFormField(
+    initialValue: newTodo,
+    onChanged: (value) => newTodo = value,
+  ),
+)
+```
+
+### Positional Arguments
+
+Two styles supported:
 
 ```dartpug
 Column
   Text
-    ..'Hello'
-  Text('World')
+    ..'Hello'  # Cascade style
+  Text('World')  # Function call style
 ```
 
-will be equivalent to dart code:
+Generates:
 
 ```dart
 Column(
@@ -92,3 +133,93 @@ Column(
   ]
 )
 ```
+
+## Architecture
+
+### Core Components
+
+1. **Builders**:
+
+   - `DpugClassBuilder`: Builds stateful widget classes
+   - `DpugWidgetBuilder`: Builds widget instances
+   - `WidgetHelpers`: Provides syntax sugar for common widgets
+
+2. **Specs**:
+
+   - `DpugSpec`: Base specification
+   - `DpugClassSpec`: Class specification
+   - `DpugWidgetSpec`: Widget specification
+   - `DpugMethodSpec`: Method specification
+   - `DpugExpressionSpec`: Expression specifications
+
+3. **Visitors**:
+   - `DartGeneratingVisitor`: Generates Dart code
+   - `DpugGeneratingVisitor`: Generates DPUG code
+   - `DpugFormatter`: Handles indentation and formatting
+
+### Key Design Decisions
+
+1. Uses `built_collection` for immutable data structures
+2. Separates building, specification, and generation concerns
+3. Provides both high-level builders and low-level specs
+4. Uses visitor pattern for code generation
+5. Supports multiple output formats (Dart/DPUG)
+
+## Usage Examples
+
+### Creating a Stateful Widget
+
+```dart
+final widget = Dpug.classBuilder()
+  ..name('MyWidget')
+  ..annotation(DpugAnnotationSpec.stateful())
+  ..listenField(
+    name: 'count',
+    type: 'int',
+    initializer: DpugExpressionSpec.literal(0),
+  )
+  ..buildMethod(
+    body: WidgetHelpers.column(
+      children: [
+        // Add children here
+      ],
+    ),
+  );
+```
+
+### Using Widget Helpers
+
+```dart
+WidgetHelpers.column(
+  properties: {
+    'mainAxisAlignment': DpugExpressionSpec.reference('MainAxisAlignment.center'),
+  },
+  children: [
+    // Add children here
+  ],
+)
+```
+
+## Implementation Notes
+
+1. State Management:
+
+   - `@listen` generates getters/setters with setState
+   - State fields are automatically initialized from widget
+
+2. Code Generation:
+
+   - Uses code_builder for Dart output
+   - Custom formatter for DPUG output
+   - Maintains proper indentation and formatting
+
+3. Widget Building:
+
+   - Automatic children/child property handling
+   - Support for both cascade and function call styles
+   - Property and positional argument support
+
+4. Testing:
+   - Tests both Dart and DPUG output
+   - Verifies formatting and indentation
+   - Checks state management generation

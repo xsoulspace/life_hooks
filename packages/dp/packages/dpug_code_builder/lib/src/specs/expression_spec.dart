@@ -1,3 +1,4 @@
+import '../builders/builders.dart';
 import '../visitors/visitors.dart';
 import 'specs.dart';
 
@@ -17,6 +18,9 @@ abstract class DpugExpressionSpec extends DpugSpec {
 
   factory DpugExpressionSpec.assignment(
       String target, DpugExpressionSpec value) = DpugAssignmentSpec;
+
+  factory DpugExpressionSpec.widget(DpugWidgetBuilder builder) =
+      DpugWidgetExpressionSpec;
 }
 
 class DpugReferenceSpec extends DpugExpressionSpec {
@@ -61,4 +65,13 @@ class DpugAssignmentSpec extends DpugExpressionSpec {
 
   @override
   T accept<T>(DpugSpecVisitor<T> visitor) => visitor.visitAssignment(this);
+}
+
+class DpugWidgetExpressionSpec extends DpugExpressionSpec {
+  final DpugWidgetBuilder builder;
+
+  const DpugWidgetExpressionSpec(this.builder);
+
+  @override
+  T accept<T>(DpugSpecVisitor<T> visitor) => builder.accept(visitor);
 }
