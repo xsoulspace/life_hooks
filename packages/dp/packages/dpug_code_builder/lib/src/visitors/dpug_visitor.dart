@@ -1,11 +1,15 @@
+import '../formatters/dpug_config.dart';
 import '../formatters/dpug_formatter.dart';
 import '../specs/specs.dart';
 import 'visitor.dart';
 
 class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
   final StringBuffer _buffer = StringBuffer();
-  final _formatter = DpugFormatter();
+  final DpugFormatter _formatter;
   int _indent = 0;
+
+  DpugGeneratingVisitor([DpugConfig? config])
+      : _formatter = DpugFormatter(config ?? const DpugConfig());
 
   @override
   String visitClass(DpugClassSpec spec) {
@@ -156,7 +160,7 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
 
   void _writeLine(String line) {
     if (line.isNotEmpty) {
-      _buffer.writeln('${'  ' * _indent}$line');
+      _buffer.writeln('${_formatter.config.indent * _indent}$line');
     } else {
       _buffer.writeln();
     }

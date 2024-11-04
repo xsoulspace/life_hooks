@@ -134,6 +134,151 @@ Column(
 )
 ```
 
+## Formatting Rules
+
+### 1. Indentation Levels
+
+- **Class Level (0)**: Classes and their annotations start at level 0
+
+  ```dartpug
+  @stateful
+  class TodoList
+  ```
+
+- **Class Members (1)**: Fields, getters, and methods are indented one level
+
+  ```dartpug
+  class TodoList
+    @listen String name = ''
+    Widget get build =>
+  ```
+
+- **Widget Tree (Parent + 1)**: Each widget is indented one level from its parent
+  ```dartpug
+  Column
+    Container
+      Text
+  ```
+
+### 2. Properties and Arguments
+
+- **Named Properties**: Use cascade notation, indented one level from widget
+
+  ```dartpug
+  Container
+    ..width: 100
+    ..height: 200
+  ```
+
+- **Positional Arguments**: Two styles supported
+
+  ```dartpug
+  // Cascade style - indented one level
+  Text
+    ..'Hello'
+
+  // Function style - same level
+  Text('World')
+  ```
+
+### 3. Special Cases
+
+- **Build Method**: Special formatting for build method
+
+  ```dartpug
+  Widget get build =>
+    Column
+      Text('Hello')
+  ```
+
+- **Single Child Widgets**: Automatically handle child property
+
+  ```dartpug
+  Container
+    ..color: Colors.red
+    Center
+      Text('Centered')
+  ```
+
+- **Multi-Child Widgets**: Automatically handle children list
+  ```dartpug
+  Column
+    Text('First')
+    Text('Second')
+  ```
+
+### 4. State Management
+
+- **State Fields**: Annotations align with fields
+
+  ```dartpug
+  @listen String name = ''
+  @listen int count = 0
+  ```
+
+- **Getters and Setters**: Generated with proper indentation
+  ```dartpug
+  String get name => _name
+  set name(String value) => setState(() => _name = value)
+  ```
+
+### 5. Callbacks and Functions
+
+- **Lambda Expressions**: Maintain readability with proper indentation
+
+  ```dartpug
+  ElevatedButton
+    ..onPressed: () => setState(() => count++)
+    ..child: Text('Increment')
+  ```
+
+- **Multi-line Callbacks**: Indent body one level
+  ```dartpug
+  ElevatedButton
+    ..onPressed: () {
+      setState(() {
+        count++;
+        name = 'Clicked';
+      })
+    }
+  ```
+
+### 6. Nested Structures
+
+- **Nested Widgets**: Each level adds one indent
+
+  ```dartpug
+  Scaffold
+    ..appBar: AppBar
+      ..title: Text('Title')
+    ..body: Container
+      ..padding: EdgeInsets.all(16)
+      Column
+        Text('First')
+        Text('Second')
+  ```
+
+- **Complex Properties**: Maintain alignment with parent
+  ```dartpug
+  Container
+    ..decoration: BoxDecoration
+      ..color: Colors.blue
+      ..borderRadius: BorderRadius.circular(8)
+    Text('Content')
+  ```
+
+### 7. Configuration
+
+Indentation is configurable through `DpugConfig`:
+
+```dart
+final formatter = DpugFormatter(
+  DpugConfig(indent: '  '), // Two spaces
+  // or
+  DpugConfig(indent: '\t'), // Tab
+);
+```
+
 ## Architecture
 
 ### Core Components
