@@ -28,6 +28,11 @@ enum TokenType {
   parenthesisRight,
   arrow,
   indent,
+  genericLeft,
+  genericRight,
+  blockStart,
+  blockEnd,
+  methodName,
   dedent,
   newLine,
   string,
@@ -153,9 +158,21 @@ class DPugLexer {
       case '}':
         advance();
         return makeToken(TokenType.braceRight);
+      case '[':
+        advance();
+        return makeToken(TokenType.blockStart);
+      case ']':
+        advance();
+        return makeToken(TokenType.blockEnd);
       case ',':
         advance();
         return makeToken(TokenType.comma);
+      case '<':
+        advance();
+        return makeToken(TokenType.genericLeft);
+      case '>':
+        advance();
+        return makeToken(TokenType.genericRight);
     }
 
     if (isDigit(char)) {
