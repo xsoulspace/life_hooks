@@ -23,10 +23,10 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
     _indent++;
 
     for (final field in spec.stateFields) {
+      final annotation = field.annotation.accept(this);
+      final initializer = _formatInitializer(field);
       localBuffer.writeln(
-          '${_formatter.config.indent * _indent}${field.annotation.accept(this)}');
-      localBuffer.writeln(
-          '${_formatter.config.indent * _indent}${field.type} ${field.name}${_formatInitializer(field)}');
+          '${_formatter.config.indent * _indent}$annotation ${field.type} ${field.name}$initializer');
     }
 
     if (spec.methods.isNotEmpty) {
