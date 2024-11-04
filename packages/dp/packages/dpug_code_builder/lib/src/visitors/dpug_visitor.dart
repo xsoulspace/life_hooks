@@ -13,25 +13,64 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
 
   @override
   String visitClass(DpugClassSpec spec) {
-    _buffer.clear();
+    final localBuffer = StringBuffer();
+    _indent = 0;
 
-    _writeAnnotations(spec.annotations);
-    _writeLine('class ${spec.name}');
+    for (final annotation in spec.annotations) {
+      localBuffer.writeln(annotation.accept(this));
+    }
+    localBuffer.writeln('class ${spec.name}');
     _indent++;
 
     for (final field in spec.stateFields) {
-      field.accept(this);
+      localBuffer.writeln(
+          '${_formatter.config.indent * _indent}${field.annotation.accept(this)}');
+      localBuffer.writeln(
+          '${_formatter.config.indent * _indent}${field.type} ${field.name}${_formatInitializer(field)}');
     }
 
-    for (final method in spec.methods) {
-      method.accept(this);
-      if (method.name != 'build') {
-        _writeLine('');
+    if (spec.methods.isNotEmpty) {
+      localBuffer.writeln('');
+      for (final method in spec.methods) {
+        final methodCode = method.accept(this);
+        localBuffer.write(methodCode);
       }
     }
 
     _indent--;
-    return _formatter.format(_buffer.toString());
+    return localBuffer.toString();
+  }
+
+  @override
+  String visitMethod(DpugMethodSpec spec) {
+    final localBuffer = StringBuffer();
+
+    if (spec.name == 'build') {
+      localBuffer.writeln('');
+      localBuffer
+          .writeln('${_formatter.config.indent * _indent}Widget get build =>');
+      _indent++;
+      final bodyCode = spec.body.accept(this);
+      localBuffer.writeln('${_formatter.config.indent * _indent}$bodyCode');
+      _indent--;
+    } else if (spec.isGetter) {
+      localBuffer.writeln(
+          '${_formatter.config.indent * _indent}${spec.returnType} get ${spec.name} =>');
+      _indent++;
+      final bodyCode = spec.body.accept(this);
+      localBuffer.writeln('${_formatter.config.indent * _indent}$bodyCode');
+      _indent--;
+    } else {
+      final params = spec.parameters.map((p) => p.accept(this)).join(', ');
+      localBuffer.writeln(
+          '${_formatter.config.indent * _indent}${spec.returnType} ${spec.name}($params) =>');
+      _indent++;
+      final bodyCode = spec.body.accept(this);
+      localBuffer.writeln('${_formatter.config.indent * _indent}$bodyCode');
+      _indent--;
+    }
+
+    return localBuffer.toString();
   }
 
   @override
@@ -40,33 +79,6 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
     final init =
         spec.initializer != null ? ' = ${spec.initializer!.accept(this)}' : '';
     _writeLine('$annotation ${spec.type} ${spec.name}$init');
-    return _buffer.toString();
-  }
-
-  @override
-  String visitMethod(DpugMethodSpec spec) {
-    if (spec.name == 'build') {
-      _writeLine('');
-      _writeLine('Widget get build =>');
-      _indent++;
-      _writeLine(spec.body.accept(this));
-      _indent--;
-      return _buffer.toString();
-    }
-
-    if (spec.isGetter) {
-      _writeLine('${spec.returnType} get ${spec.name} =>');
-      _indent++;
-      _writeLine(spec.body.accept(this));
-      _indent--;
-      return _buffer.toString();
-    }
-
-    final params = spec.parameters.map((p) => p.accept(this)).join(', ');
-    _writeLine('${spec.returnType} ${spec.name}($params) =>');
-    _indent++;
-    _writeLine(spec.body.accept(this));
-    _indent--;
     return _buffer.toString();
   }
 
@@ -82,31 +94,48 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
 
   @override
   String visitWidget(DpugWidgetSpec spec) {
-    _writeLine(spec.name);
+    final localBuffer = StringBuffer();
+
+    // Write widget name
+    localBuffer.writeln('${_formatter.config.indent * _indent}${spec.name}');
     _indent++;
 
-    // Process cascade arguments first
+    // Handle positional cascade arguments
     for (final arg in spec.positionalCascadeArgs) {
-      _writeLine('..\'${arg.accept(this)}\'');
+      if (arg is DpugStringLiteralSpec) {
+        localBuffer
+            .writeln('${_formatter.config.indent * _indent}..\'${arg.value}\'');
+      } else {
+        localBuffer.writeln(
+            '${_formatter.config.indent * _indent}..${arg.accept(this)}');
+      }
     }
 
-    // Process properties
+    // Handle all properties including 'child' if explicitly set
     for (final entry in spec.properties.entries) {
-      _writeLine('..${entry.key}: ${entry.value.accept(this)}');
+      localBuffer.writeln(
+          '${_formatter.config.indent * _indent}..${entry.key}: ${entry.value.accept(this)}');
     }
 
-    // Process positional arguments at same level
-    for (final arg in spec.positionalArgs) {
-      _writeLine('(${arg.accept(this)})');
+    // Handle positional arguments
+    if (spec.positionalArgs.isNotEmpty) {
+      final args = spec.positionalArgs.map((a) => a.accept(this)).join(', ');
+      localBuffer.write('(${args})');
+      localBuffer.writeln();
     }
 
-    // Process children
-    for (final child in spec.children) {
-      child.accept(this);
+    // Handle automatic child/children syntax sugar
+    if (spec.children.isNotEmpty &&
+        !spec.properties.containsKey('child') &&
+        !spec.properties.containsKey('children')) {
+      for (final child in spec.children) {
+        final childCode = child.accept(this);
+        localBuffer.write(childCode);
+      }
     }
 
     _indent--;
-    return _buffer.toString();
+    return localBuffer.toString();
   }
 
   @override
@@ -154,5 +183,16 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
     } else {
       _buffer.writeln();
     }
+  }
+
+  String visitMultipleClasses(List<DpugClassSpec> specs) {
+    final classes = specs.map((spec) => spec.accept(this)).toList();
+    return _formatter.format(classes.join('\n\n'));
+  }
+
+  String _formatInitializer(DpugStateFieldSpec field) {
+    return field.initializer != null
+        ? ' = ${field.initializer!.accept(this)}'
+        : '';
   }
 }

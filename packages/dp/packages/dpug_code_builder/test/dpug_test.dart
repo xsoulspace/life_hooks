@@ -640,9 +640,9 @@ class _DisplayState extends State<Display> {
   }
 }''';
 
-        final generatedDpugCode = [counterWidget, displayWidget]
-            .map((w) => w.accept(DpugGeneratingVisitor()))
-            .join('\n\n');
+        final visitor = DpugGeneratingVisitor();
+        final generatedDpugCode =
+            visitor.visitMultipleClasses([counterWidget, displayWidget]);
         final generatedDartCode = [counterWidget, displayWidget]
             .map((w) => w.accept(DartGeneratingVisitor()))
             .join('\n\n');
