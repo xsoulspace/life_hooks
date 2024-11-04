@@ -175,7 +175,8 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
           ...spec.stateFields.map((f) => cb.Parameter((b) => b
             ..name = f.name
             ..named = true
-            ..required = true))
+            ..required = true
+            ..toThis = true))
         ])))
       ..fields.addAll(spec.stateFields.map((f) => cb.Field((b) => b
         ..name = f.name
