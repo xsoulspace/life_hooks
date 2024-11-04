@@ -46,26 +46,29 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
       b
         ..name = spec.name
         ..returns = cb.refer(spec.returnType)
-        ..type = spec.isGetter ? cb.MethodType.getter : null
-        ..requiredParameters
-            .addAll(spec.parameters.map((p) => p.accept(this) as cb.Parameter));
+        ..type = spec.isGetter ? cb.MethodType.getter : null;
 
-      // Handle the body based on its type
+      // Handle parameters by creating them directly here
+      if (!spec.isGetter) {
+        b.requiredParameters.addAll(
+          spec.parameters.map((p) => cb.Parameter((pb) => pb
+            ..name = p.name
+            ..type = cb.refer(p.type)
+            ..named = p.isNamed
+            ..required = p.isRequired
+            ..toThis = p.isNamed)),
+        );
+      }
+
+      // Handle body
       final bodySpec = spec.body.accept(this);
       if (spec.isGetter) {
         b
           ..lambda = true
-          ..body = bodySpec is cb.Code
-              ? bodySpec
-              : cb.Code(bodySpec.accept(_emitter).toString());
+          ..body =
+              bodySpec is cb.Expression ? bodySpec.code : bodySpec as cb.Code;
       } else {
-        // For regular methods (like build)
-        final bodyCode = bodySpec is cb.Code
-            ? bodySpec.toString()
-            : bodySpec.accept(_emitter).toString();
-        b..body = cb.Code('''
-          return ${bodyCode};
-        ''');
+        b..body = cb.Code('return ${bodySpec.accept(_emitter)};');
       }
     });
   }
@@ -75,7 +78,7 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
     final properties = <String, cb.Expression>{};
     final positionalArgs = <cb.Expression>[];
 
-    // Convert all positional arguments (both regular and cascade)
+    // Convert all positional arguments
     for (final arg in [...spec.positionalArgs, ...spec.positionalCascadeArgs]) {
       final value = arg.accept(this);
       if (value is cb.Expression) {
@@ -85,7 +88,7 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
       }
     }
 
-    // Convert properties to expressions
+    // Convert properties
     for (final entry in spec.properties.entries) {
       final value = entry.value.accept(this);
       if (value is cb.Expression) {
@@ -95,8 +98,8 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
       }
     }
 
-    // Build the widget expression
-    final expression = cb.refer(spec.name).call(
+    // Build widget expression
+    final expression = cb.refer(spec.name).newInstance(
       positionalArgs,
       {
         ...properties,
@@ -104,57 +107,37 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
           'children': cb.literalList(
             spec.children.map((c) {
               final childSpec = c.accept(this);
-              if (childSpec is cb.Expression) {
-                return childSpec;
-              } else if (childSpec is cb.Code) {
-                return cb.CodeExpression(childSpec);
-              }
-              throw StateError(
-                  'Unexpected spec type: ${childSpec.runtimeType}');
+              return childSpec is cb.Expression
+                  ? childSpec
+                  : cb.CodeExpression(childSpec as cb.Code);
             }).toList(),
           ),
       },
     );
 
-    // Convert to properly formatted code without additional formatting
-    return cb.Code(expression.accept(_emitter).toString());
+    return expression;
   }
 
   @override
   cb.Spec visitLambda(DpugLambdaSpec spec) {
     final params = spec.parameters.map((p) => cb.Parameter((b) => b..name = p));
-    final body = spec.body.accept(this);
+    final bodySpec = spec.body.accept(this);
+    final bodyCode = bodySpec is cb.Expression
+        ? bodySpec.accept(_emitter).toString()
+        : (bodySpec as cb.Code).toString();
 
     return cb.Method((b) => b
       ..lambda = true
       ..requiredParameters.addAll(params)
-      ..body = body is cb.Code
-          ? body
-          : cb.Code(body.accept(_emitter).toString())).closure;
+      ..body = cb.Code(bodyCode)).closure;
   }
 
   @override
   cb.Spec visitAssignment(DpugAssignmentSpec spec) {
     final value = spec.value.accept(this);
-    final valueCode = value is cb.Expression
-        ? value.accept(_emitter).toString()
-        : value.toString();
-    return cb.Code('${spec.target} = $valueCode');
-  }
-
-  @override
-  cb.Spec visitParameter(DpugParameterSpec spec) {
-    final param = cb.Parameter((b) => b
-      ..name = spec.name
-      ..type = cb.refer(spec.type)
-      ..named = spec.isNamed
-      ..required = spec.isRequired
-      ..defaultTo = spec.defaultValue?.accept(this) as cb.Code?);
-    final result = ds.DartFormatter(
-            languageVersion: ds.DartFormatter.latestLanguageVersion)
-        .format(
-            '${cb.CodeExpression(cb.Code(param.toString())).accept(cb.DartEmitter())}');
-    return cb.CodeExpression(cb.Code(result));
+    return cb.CodeExpression(cb.Code(
+      '${spec.target} = ${value.accept(_emitter)}',
+    ));
   }
 
   @override
@@ -242,5 +225,17 @@ class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
           ..type = cb.refer(field.type)))
         ..body = cb.Code('setState(() => _${field.name} = value)')),
     ];
+  }
+
+  @override
+  cb.Spec visitParameter(DpugParameterSpec spec) {
+    // Instead of returning Parameter directly, return a Method that would use this parameter
+    return cb.Method((b) => b
+      ..requiredParameters.add(cb.Parameter((pb) => pb
+        ..name = spec.name
+        ..type = cb.refer(spec.type)
+        ..named = spec.isNamed
+        ..required = spec.isRequired
+        ..toThis = spec.isNamed)));
   }
 }
