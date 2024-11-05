@@ -1,6 +1,6 @@
 import 'package:built_collection/built_collection.dart';
 
-import '../visitors/visitors.dart';
+import '../visitors/visitor.dart';
 import 'specs.dart';
 
 class DpugWidgetSpec extends DpugSpec {
@@ -16,30 +16,17 @@ class DpugWidgetSpec extends DpugSpec {
       children.isNotEmpty && !hasExplicitChild && !hasExplicitChildren;
   bool get isSingleChild => children.length == 1;
 
-  factory DpugWidgetSpec({
-    required String name,
+  DpugWidgetSpec({
+    required this.name,
     Iterable<DpugWidgetSpec> children = const [],
     Map<String, DpugExpressionSpec> properties = const {},
     Iterable<DpugExpressionSpec> positionalArgs = const [],
     Iterable<DpugExpressionSpec> positionalCascadeArgs = const [],
-  }) {
-    return DpugWidgetSpec.build(
-      name: name,
-      children: BuiltList<DpugWidgetSpec>.of(children),
-      properties: BuiltMap<String, DpugExpressionSpec>.of(properties),
-      positionalArgs: BuiltList<DpugExpressionSpec>.of(positionalArgs),
-      positionalCascadeArgs:
-          BuiltList<DpugExpressionSpec>.of(positionalCascadeArgs),
-    );
-  }
-
-  const DpugWidgetSpec.build({
-    required this.name,
-    required this.children,
-    required this.properties,
-    required this.positionalArgs,
-    required this.positionalCascadeArgs,
-  });
+  })  : children = BuiltList<DpugWidgetSpec>.of(children),
+        properties = BuiltMap<String, DpugExpressionSpec>.of(properties),
+        positionalArgs = BuiltList<DpugExpressionSpec>.of(positionalArgs),
+        positionalCascadeArgs =
+            BuiltList<DpugExpressionSpec>.of(positionalCascadeArgs);
 
   @override
   T accept<T>(DpugSpecVisitor<T> visitor) => visitor.visitWidget(this);

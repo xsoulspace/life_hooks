@@ -1,6 +1,6 @@
-# DPUG - Dart Pug-like Widget Builder
+# DPug - Dart Pug-like Widget Builder
 
-Inspired by [code_builder](https://github.com/dart-lang/tools/tree/main/pkgs/code_builder/lib), DPUG provides a clean, indentation-based syntax for Flutter widgets.
+Inspired by [code_builder](https://github.com/dart-lang/tools/tree/main/pkgs/code_builder/lib), DPug provides a clean, indentation-based syntax for Flutter widgets.
 
 ## Key Features
 
@@ -299,7 +299,7 @@ final formatter = DpugFormatter(
 
 3. **Visitors**:
    - `DartGeneratingVisitor`: Generates Dart code
-   - `DpugGeneratingVisitor`: Generates DPUG code
+   - `DpugGeneratingVisitor`: Generates DPug code
    - `DpugFormatter`: Handles indentation and formatting
 
 ### Key Design Decisions
@@ -308,7 +308,7 @@ final formatter = DpugFormatter(
 2. Separates building, specification, and generation concerns
 3. Provides both high-level builders and low-level specs
 4. Uses visitor pattern for code generation
-5. Supports multiple output formats (Dart/DPUG)
+5. Supports multiple output formats (Dart/DPug)
 
 ## Usage Examples
 
@@ -355,7 +355,7 @@ WidgetHelpers.column(
 2. Code Generation:
 
    - Uses code_builder for Dart output
-   - Custom formatter for DPUG output
+   - Custom formatter for DPug output
    - Maintains proper indentation and formatting
 
 3. Widget Building:
@@ -365,17 +365,17 @@ WidgetHelpers.column(
    - Property and positional argument support
 
 4. Testing:
-   - Tests both Dart and DPUG output
+   - Tests both Dart and DPug output
    - Verifies formatting and indentation
    - Checks state management generation
 
 ## Writing Tests
 
 This test suite is designed to verify and maintain the core functionality
-of the DPUG (Dart Pug-like) syntax generator. Here's how to work with these tests:
+of the DPug (Dart Pug-like) syntax generator. Here's how to work with these tests:
 
 1.  Test Structure
-    Each test group focuses on a specific aspect of DPUG:
+    Each test group focuses on a specific aspect of DPug:
 
 - Basic widget functionality
 - Critical edge cases
@@ -385,8 +385,8 @@ of the DPUG (Dart Pug-like) syntax generator. Here's how to work with these test
 
 2.  Test Pattern
     Each test follows this pattern:
-    a) Build a widget/class using DPUG builders
-    b) Generate both Dart and DPUG code
+    a) Build a widget/class using DPug builders
+    b) Generate both Dart and DPug code
     c) Compare with expected output
     d) Verify formatting rules
 
@@ -402,7 +402,7 @@ of the DPUG (Dart Pug-like) syntax generator. Here's how to work with these test
 4.  Modifying Tests
     When modifying existing tests:
 
-- Maintain both Dart and DPUG expected outputs
+- Maintain both Dart and DPug expected outputs
 - Follow formatting rules from README.md
 - Consider impact on existing test cases
 - Verify against Flutter widget patterns
@@ -425,7 +425,7 @@ d) Multiple Class Tests: - Class separation - State isolation - Widget interacti
 - Use `Dpug.classBuilder()` for widget classes
 - Use `WidgetHelpers` for common widgets
 - Use `DpugExpressionSpec` for values
-- Compare both Dart and DPUG output
+- Compare both Dart and DPug output
 
 7.  Debugging Tests
     When tests fail, check:
@@ -481,4 +481,4 @@ test('descriptive name', () {
 - Performance scenarios
 
 Remember: These tests serve as both verification and documentation
-of the DPUG syntax and behavior.
+of the DPug syntax and behavior.

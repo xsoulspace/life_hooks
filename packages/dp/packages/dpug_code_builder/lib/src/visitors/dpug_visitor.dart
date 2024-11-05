@@ -3,6 +3,7 @@ import '../formatters/dpug_formatter.dart';
 import '../specs/specs.dart';
 import 'visitor.dart';
 
+/// converts Dpug to Strings
 class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
   final DpugFormatter _formatter;
   int _indent = 0;
@@ -79,9 +80,15 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
     final localBuffer = StringBuffer();
     final currentIndent = _indent;
 
-    // Write widget name
+    // Write widget name with optional positional arguments
     localBuffer
-        .writeln('${_formatter.config.indent * currentIndent}${spec.name}');
+        .write('${_formatter.config.indent * currentIndent}${spec.name}');
+    if (spec.positionalArgs.isNotEmpty) {
+      final args = spec.positionalArgs.map((a) => a.accept(this)).join(', ');
+      localBuffer.write('($args)');
+    }
+    localBuffer.writeln();
+
     _indent = currentIndent + 1;
 
     // Handle properties
@@ -114,13 +121,6 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
         localBuffer.writeln(
             '${_formatter.config.indent * _indent}..${arg.accept(this)}');
       }
-    }
-
-    // Handle positional arguments
-    if (spec.positionalArgs.isNotEmpty) {
-      final args = spec.positionalArgs.map((a) => a.accept(this)).join(', ');
-      localBuffer.write('(${args})');
-      localBuffer.writeln();
     }
 
     // Handle automatic child/children syntax sugar
@@ -175,7 +175,8 @@ class DpugGeneratingVisitor implements DpugSpecVisitor<String> {
 
   @override
   String visitStringLiteral(DpugStringLiteralSpec spec) {
-    return spec.value;
+    // Wrap string literals in single quotes
+    return "'${spec.value}'";
   }
 
   @override

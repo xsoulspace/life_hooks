@@ -4,6 +4,7 @@ import 'package:dart_style/dart_style.dart' as ds;
 import '../specs/specs.dart';
 import 'visitor.dart';
 
+/// converts Dpug to Dart
 class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
   final _emitter = cb.DartEmitter();
   final _formatter = ds.DartFormatter(

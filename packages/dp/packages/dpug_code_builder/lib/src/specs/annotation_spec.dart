@@ -1,5 +1,6 @@
-import '../visitors/visitors.dart';
-import 'specs.dart';
+import '../visitors/visitor.dart';
+import 'expression_spec.dart';
+import 'spec.dart';
 
 class DpugAnnotationSpec extends DpugSpec {
   final String name;
@@ -10,11 +11,10 @@ class DpugAnnotationSpec extends DpugSpec {
     this.arguments = const [],
   });
 
-  factory DpugAnnotationSpec.stateful() => DpugAnnotationSpec(name: 'stateful');
+  factory DpugAnnotationSpec.stateful() =>
+      const DpugAnnotationSpec(name: 'stateful');
 
-  factory DpugAnnotationSpec.listen() => DpugAnnotationSpec(name: 'listen');
-
-  factory DpugAnnotationSpec.state() => DpugAnnotationSpec(name: 'state');
+  factory DpugAnnotationSpec.state() => const DpugAnnotationSpec(name: 'state');
 
   @override
   T accept<T>(DpugSpecVisitor<T> visitor) => visitor.visitAnnotation(this);
