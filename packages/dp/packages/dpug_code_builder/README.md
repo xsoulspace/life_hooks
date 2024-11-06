@@ -10,6 +10,13 @@ Inspired by [code_builder](https://github.com/dart-lang/tools/tree/main/pkgs/cod
 - State management helpers
 - Built using immutable collections
 
+The goal is to provide chains:
+
+- Dart String -> Dart Specs -> Dpug Specs -> DPug String
+- Dpug String -> Dpug Specs -> Dart Specs -> Dart String
+
+And in future the goods idea is to replace annotations with dart annotations, so the generation will be used only for Flutter widget tree, and other dart code will looks almost idential to the original one, since it's not dart replacement tool, but rather widget tree editor.
+
 ## Basic Example
 
 ```dartpug
