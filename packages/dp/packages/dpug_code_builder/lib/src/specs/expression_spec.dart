@@ -1,7 +1,7 @@
 import 'assignment_spec.dart';
 import 'binary_spec.dart';
-import 'dpug_lambda_spec.dart';
 import 'invoke_spec.dart';
+import 'lambda_spec.dart';
 import 'list_literal_spec.dart';
 import 'reference_expression_spec.dart';
 import 'spec.dart';
