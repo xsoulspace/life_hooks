@@ -28,6 +28,22 @@ class DpugWidgetSpec extends DpugSpec {
         positionalCascadeArgs =
             BuiltList<DpugExpressionSpec>.of(positionalCascadeArgs);
 
+  factory DpugWidgetSpec.build({
+    required String name,
+    required BuiltList<DpugWidgetSpec> children,
+    required BuiltMap<String, DpugExpressionSpec> properties,
+    Iterable<DpugExpressionSpec> positionalArgs = const [],
+    Iterable<DpugExpressionSpec> positionalCascadeArgs = const [],
+  }) =>
+      DpugWidgetSpec(
+        name: name,
+        children: children,
+        properties: properties.toMap(),
+        positionalArgs: BuiltList<DpugExpressionSpec>.of(positionalArgs),
+        positionalCascadeArgs:
+            BuiltList<DpugExpressionSpec>.of(positionalCascadeArgs),
+      );
+
   @override
   T accept<T>(DpugSpecVisitor<T> visitor) => visitor.visitWidget(this);
 }

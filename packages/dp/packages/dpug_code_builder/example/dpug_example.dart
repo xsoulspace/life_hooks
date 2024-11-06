@@ -74,7 +74,7 @@ void main() {
   ).$1.build();
 
   print('// Dart output:');
-  print(todoList.accept(DartGeneratingVisitor()));
+  print(todoList.accept(DpugToDartVisitor()));
   print('\n// Dpug output:');
   print(todoList.accept(DpugGeneratingVisitor()));
 }

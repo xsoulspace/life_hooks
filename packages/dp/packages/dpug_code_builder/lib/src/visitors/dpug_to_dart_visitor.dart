@@ -5,7 +5,7 @@ import '../specs/specs.dart';
 import 'visitor.dart';
 
 /// converts Dpug to Dart
-class DartGeneratingVisitor implements DpugSpecVisitor<cb.Spec> {
+class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   final _emitter = cb.DartEmitter();
   final _formatter = ds.DartFormatter(
     languageVersion: ds.DartFormatter.latestLanguageVersion,

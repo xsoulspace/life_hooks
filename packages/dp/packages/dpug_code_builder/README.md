@@ -267,18 +267,6 @@ Column(
     Text('Content')
   ```
 
-### 7. Configuration
-
-Indentation is configurable through `DpugConfig`:
-
-```dart
-final formatter = DpugFormatter(
-  DpugConfig(indent: '  '), // Two spaces
-  // or
-  DpugConfig(indent: '\t'), // Tab
-);
-```
-
 ## Architecture
 
 ### Core Components
@@ -298,9 +286,10 @@ final formatter = DpugFormatter(
    - `DpugExpressionSpec`: Expression specifications
 
 3. **Visitors**:
-   - `DartGeneratingVisitor`: Generates Dart code
-   - `DpugGeneratingVisitor`: Generates DPug code
-   - `DpugFormatter`: Handles indentation and formatting
+   - `DpugVisitor`: Generates DPug specs
+   - `DartVisitor`: Generates Dart specs
+   - `DpugEmitter`: Emits DPug code from specs to String
+   - `DartToDpugVisitor`: Converts Dart specs to DPug specs
 
 ### Key Design Decisions
 

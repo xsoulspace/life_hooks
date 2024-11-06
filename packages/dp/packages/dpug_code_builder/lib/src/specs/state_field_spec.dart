@@ -1,5 +1,7 @@
 import '../visitors/visitors.dart';
-import 'specs.dart';
+import 'annotation_spec.dart';
+import 'expression_spec.dart';
+import 'spec.dart';
 
 class DpugStateFieldSpec extends DpugSpec {
   final String name;

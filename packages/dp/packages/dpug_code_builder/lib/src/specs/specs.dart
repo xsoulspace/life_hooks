@@ -7,6 +7,7 @@ export 'expression_spec.dart';
 export 'invoke_spec.dart';
 export 'lambda_spec.dart';
 export 'list_literal_spec.dart';
+export 'literal_spec.dart';
 export 'method_spec.dart';
 export 'parameter_spec.dart';
 export 'reference_expression_spec.dart';

@@ -96,7 +96,7 @@ void main() {
             ))
           .build();
 
-      final dartCode = todoList.accept(DartGeneratingVisitor()).toString();
+      final dartCode = todoList.accept(DpugToDartVisitor()).toString();
       final dpugCode = todoList.accept(DpugGeneratingVisitor());
 
       expect(dartCode, equals(_dartCode));
@@ -272,7 +272,7 @@ Padding
               ))
             .build();
 
-        final dartCode = widget.accept(DartGeneratingVisitor()).toString();
+        final dartCode = widget.accept(DpugToDartVisitor()).toString();
         expect(dartCode, contains('late List<CustomItem> _items'));
         expect(dartCode, contains('List<CustomItem> get items => _items'));
         expect(
@@ -302,7 +302,7 @@ Padding
               ))
             .build();
 
-        final dartCode = widget.accept(DartGeneratingVisitor()).toString();
+        final dartCode = widget.accept(DpugToDartVisitor()).toString();
         expect(dartCode, contains('late bool _isLoading = false'));
         expect(dartCode, contains('late String? _error = null'));
         expect(dartCode, contains('late List<dynamic> _data = []'));
@@ -645,7 +645,7 @@ class _DisplayState extends State<Display> {
         final generatedDpugCode =
             visitor.visitMultipleClasses([counterWidget, displayWidget]);
         final generatedDartCode = [counterWidget, displayWidget]
-            .map((w) => w.accept(DartGeneratingVisitor()))
+            .map((w) => w.accept(DpugToDartVisitor()))
             .join('\n\n');
 
         expect(generatedDpugCode, equals(dpugCode));

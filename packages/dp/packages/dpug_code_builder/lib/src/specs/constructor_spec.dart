@@ -1,5 +1,9 @@
 import 'package:built_collection/built_collection.dart';
-import 'package:dpug/dpug.dart';
+
+import 'parameter_spec.dart';
+import 'reference_spec.dart';
+import 'spec.dart';
+import '../visitors/visitors.dart';
 
 class DpugConstructorSpec extends DpugSpec {
   final String? name;

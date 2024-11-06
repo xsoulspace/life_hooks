@@ -37,13 +37,12 @@ class DartToDpugSpecVisitor
   @override
   DpugSpec? visitField(Field spec, [DpugSpec? context]) {
     if (spec.type != null) {
+      final initializer = spec.assignment?.accept(this);
       return DpugStateFieldSpec(
         name: spec.name,
         type: spec.type.toString(),
         annotation: DpugAnnotationSpec.state(),
-        initializer: spec.assignment != null
-            ? DpugReferenceSpec(spec.assignment.toString())
-            : null,
+        initializer: initializer is DpugExpressionSpec ? initializer : null,
       );
     }
     return null;
@@ -52,7 +51,7 @@ class DartToDpugSpecVisitor
   @override
   DpugSpec? visitMethod(Method spec, [DpugSpec? context]) {
     return DpugMethodSpec(
-      name: spec.name,
+      name: spec.name ?? '',
       returnType: spec.returns?.toString() ?? 'dynamic',
       parameters: spec.requiredParameters
           .map((p) => DpugParameterSpec(
@@ -61,7 +60,8 @@ class DartToDpugSpecVisitor
                 isRequired: true,
               ))
           .toList(),
-      body: DpugReferenceSpec(spec.body?.toString() ?? ''),
+      body: spec.body?.accept(this) as DpugExpressionSpec? ??
+          DpugReferenceSpec(''),
       isGetter: spec.type == MethodType.getter,
     );
   }
@@ -116,4 +116,153 @@ class DartToDpugSpecVisitor
 
   @override
   DpugSpec? visitTypeDef(TypeDef spec, [DpugSpec? context]) => null;
+
+  // CodeVisitor methods
+  @override
+  DpugSpec? visitBlock(Block code, [DpugSpec? context]) {
+    return DpugReferenceSpec(code.toString());
+  }
+
+  @override
+  DpugSpec? visitScopedCode(ScopedCode code, [DpugSpec? context]) {
+    return DpugReferenceSpec(code.toString());
+  }
+
+  @override
+  DpugSpec? visitStaticCode(StaticCode code, [DpugSpec? context]) {
+    return DpugReferenceSpec(code.toString());
+  }
+
+  // ExpressionVisitor methods
+  @override
+  DpugSpec? visitBinaryExpression(BinaryExpression expression,
+      [DpugSpec? context]) {
+    final left = expression.left.accept(this);
+    final right = expression.right.accept(this);
+
+    if (left is! DpugExpressionSpec || right is! DpugExpressionSpec) {
+      return DpugReferenceSpec(expression.toString());
+    }
+
+    return DpugBinarySpec(
+      expression.operator,
+      left,
+      right,
+    );
+  }
+
+  @override
+  DpugSpec? visitInvokeExpression(InvokeExpression expression,
+      [DpugSpec? context]) {
+    final args = <DpugExpressionSpec>[];
+    final namedArgs = <String, DpugExpressionSpec>{};
+
+    // Handle positional arguments
+    for (final arg in expression.positionalArguments) {
+      final converted = arg.accept(this);
+      if (converted is DpugExpressionSpec) {
+        args.add(converted);
+      } else {
+        args.add(DpugReferenceSpec(arg.toString()));
+      }
+    }
+
+    // Handle named arguments
+    for (final entry in expression.namedArguments.entries) {
+      final converted = entry.value.accept(this);
+      if (converted is DpugExpressionSpec) {
+        namedArgs[entry.key] = converted;
+      } else {
+        namedArgs[entry.key] = DpugReferenceSpec(entry.value.toString());
+      }
+    }
+
+    return DpugInvokeSpec(
+      expression.target.accept(this)?.toString() ?? '',
+      args,
+      namedArgs,
+    );
+  }
+
+  @override
+  DpugSpec? visitLiteralExpression(LiteralExpression expression,
+      [DpugSpec? context]) {
+    return DpugStringLiteralSpec(expression.literal);
+  }
+
+  @override
+  DpugSpec? visitLiteralListExpression(LiteralListExpression expression,
+      [DpugSpec? context]) {
+    final values = <DpugExpressionSpec>[];
+
+    for (final value in expression.values) {
+      if (value != null) {
+        final converted = value.accept(this);
+        if (converted is DpugExpressionSpec) {
+          values.add(converted);
+        } else {
+          values.add(DpugReferenceSpec(value.toString()));
+        }
+      }
+    }
+
+    return DpugListLiteralSpec(values);
+  }
+
+  @override
+  DpugSpec? visitClosureExpression(ClosureExpression expression,
+      [DpugSpec? context]) {
+    final params = expression.parameters.map((p) => p.name).toList();
+    final bodySpec = expression.code.accept(this);
+
+    if (bodySpec is! DpugExpressionSpec) {
+      return DpugReferenceSpec(expression.toString());
+    }
+
+    return DpugLambdaSpec(params, bodySpec);
+  }
+
+  @override
+  DpugSpec? visitCodeExpression(CodeExpression expression,
+      [DpugSpec? context]) {
+    return DpugReferenceSpec(expression.code.toString());
+  }
+
+  @override
+  DpugSpec? visitLiteralMapExpression(LiteralMapExpression expression,
+      [DpugSpec? context]) {
+    return DpugReferenceSpec(expression.toString());
+  }
+
+  @override
+  DpugSpec? visitLiteralRecordExpression(LiteralRecordExpression expression,
+      [DpugSpec? context]) {
+    return DpugReferenceSpec(expression.toString());
+  }
+
+  @override
+  DpugSpec? visitParenthesizedExpression(ParenthesizedExpression expression,
+      [DpugSpec? context]) {
+    return expression.expression.accept(this);
+  }
+
+  @override
+  DpugSpec? visitToCodeExpression(ToCodeExpression expression,
+      [DpugSpec? context]) {
+    return DpugReferenceSpec(expression.toString());
+  }
+
+  @override
+  DpugSpec? visitLiteralSetExpression(LiteralSetExpression expression,
+      [DpugSpec? context]) {
+    return DpugReferenceSpec(expression.toString());
+  }
+
+  @override
+  DpugSpec? visitAnnotation(Expression spec, [DpugSpec? context]) {
+    if (spec is CodeExpression) {
+      return DpugAnnotationSpec(name: spec.code.toString());
+    }
+    return DpugAnnotationSpec(name: spec.toString());
+  }
 }

@@ -14,12 +14,12 @@ class Dpug {
   }
 
   static DpugSpec? fromDart(cb.Spec dartSpec) {
-    final visitor = const DartToDpugVisitor();
+    final visitor = const DartToDpugSpecVisitor();
     return dartSpec.accept(visitor);
   }
 
   static cb.Spec toDart(DpugSpec dpugSpec) {
-    final visitor = DpugToDartVisitor();
+    final visitor = DpugToDartSpecVisitor();
     return dpugSpec.accept(visitor);
   }
 

@@ -1,5 +1,6 @@
 import '../visitors/visitor.dart';
-import 'specs.dart';
+import 'expression_spec.dart';
+import 'spec.dart';
 
 class DpugParameterSpec extends DpugSpec {
   final String name;

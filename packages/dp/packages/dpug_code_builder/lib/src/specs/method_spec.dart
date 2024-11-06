@@ -1,4 +1,6 @@
-import 'package:dpug/dpug.dart';
+import '../visitors/visitors.dart';
+import 'parameter_spec.dart';
+import 'spec.dart';
 
 class DpugMethodSpec extends DpugSpec {
   final String name;
@@ -14,6 +16,14 @@ class DpugMethodSpec extends DpugSpec {
     required this.body,
     this.isGetter = false,
   });
+
+  factory DpugMethodSpec.getter({
+    required String name,
+    required String returnType,
+    required DpugSpec body,
+  }) =>
+      DpugMethodSpec(
+          name: name, returnType: returnType, body: body, isGetter: true);
 
   @override
   T accept<T>(DpugSpecVisitor<T> visitor) => visitor.visitMethod(this);

@@ -11,6 +11,9 @@ class DpugAnnotationSpec extends DpugSpec {
     this.arguments = const [],
   });
 
+  factory DpugAnnotationSpec.listen() =>
+      const DpugAnnotationSpec(name: 'listen');
+
   factory DpugAnnotationSpec.stateful() =>
       const DpugAnnotationSpec(name: 'stateful');
 
