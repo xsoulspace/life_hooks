@@ -2,7 +2,7 @@ import '../visitors/visitors.dart';
 import 'expression_spec.dart';
 import 'spec.dart';
 
-class DpugAnnotationSpec implements DpugSpec {
+class DpugAnnotationSpec extends DpugExpressionSpec implements DpugSpec {
   final String name;
   final List<DpugExpressionSpec> arguments;
 

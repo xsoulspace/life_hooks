@@ -1,5 +1,6 @@
 import 'package:code_builder/code_builder.dart' as cb;
 import 'package:dart_style/dart_style.dart' as ds;
+import 'package:dpug/src/dart_imports.dart';
 
 import '../specs/specs.dart';
 import 'visitor.dart';
@@ -153,16 +154,7 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   @override
   cb.Spec visitClosureExpression(DpugClosureExpressionSpec spec,
       [cb.Spec? context]) {
-    final params = spec.parameters.map((p) => cb.Parameter((b) => b..name = p));
-    final bodySpec = spec.body.accept(this);
-    final bodyCode = bodySpec is cb.Expression
-        ? bodySpec.accept(_emitter).toString()
-        : (bodySpec as cb.Code).toString();
-
-    return cb.Method((b) => b
-      ..lambda = true
-      ..requiredParameters.addAll(params)
-      ..body = cb.Code(bodyCode)).closure;
+    return toClosure(spec.method.accept(this) as cb.Method);
   }
 
   @override
@@ -174,7 +166,7 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   }
 
   @override
-  cb.Spec visitAnnotation(DpugAnnotationSpec spec) {
+  cb.Spec visitAnnotation(DpugAnnotationSpec spec, [cb.Spec? context]) {
     return cb.refer('@${spec.name}').call(
         spec.arguments.map((a) => a.accept(this) as cb.Expression).toList());
   }
@@ -265,7 +257,7 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
 
   @override
   cb.Spec visitBinary(DpugBinarySpec spec, [cb.Spec? context]) {
-    return cb.Expression.binary(
+    return cb.Expression(
       spec.operator,
       spec.left.accept(this),
       spec.right.accept(this),
@@ -278,7 +270,14 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
       ..name = spec.name
       ..body = spec.body?.accept(this) as cb.Code?
       ..constant = spec.isConst
-      ..docs = spec.docs
+      ..docs.addAll(spec.docs)
+      ..external = spec.external
+      ..factory = spec.factory
+      ..lambda = spec.lambda
+      ..redirect = spec.redirect?.accept(this) as cb.Reference?
+      ..initializers.addAll(
+        spec.initializers.map((i) => i.accept(this) as cb.Code),
+      )
       ..annotations.addAll(
         spec.annotations.map((a) => a.accept(this) as cb.Expression),
       )

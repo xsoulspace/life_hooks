@@ -232,6 +232,14 @@ Column(
     ..child: Text('Increment')
   ```
 
+  or
+
+  ```dartpug
+  ElevatedButton
+    ..onPressed: () => setState(() => count++)
+    Text('Increment')
+  ```
+
 - **Multi-line Callbacks**: Indent body one level
   ```dartpug
   ElevatedButton

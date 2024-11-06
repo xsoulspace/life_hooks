@@ -2,7 +2,7 @@ import '../visitors/visitor.dart';
 import 'spec.dart';
 
 /// For type references (extends, implements, etc.)
-class DpugReferenceSpec extends DpugSpec {
+class DpugReferenceSpec implements DpugSpec {
   final String symbol;
   final String? url;
 

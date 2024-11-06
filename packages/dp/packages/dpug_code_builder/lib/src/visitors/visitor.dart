@@ -8,13 +8,15 @@ abstract class DpugSpecVisitor<R> {
   R visitReference(DpugReferenceSpec spec, [R? context]);
   R visitReferenceExpression(DpugReferenceExpressionSpec spec, [R? context]);
   R visitWidget(DpugWidgetSpec spec, [R? context]);
-  R visitAnnotation(DpugAnnotationSpec spec);
+  R visitAnnotation(DpugAnnotationSpec spec, [R? context]);
+  R visitCode(DpugCodeSpec spec, [R? context]);
   R visitLiteral(DpugLiteralSpec spec, [R? context]);
   R visitBinary(DpugBinarySpec spec, [R? context]);
   R visitInvoke(DpugInvokeSpec spec, [R? context]);
   R visitListLiteral(DpugListLiteralSpec spec, [R? context]);
   R visitStringLiteral(DpugStringLiteralSpec spec, [R? context]);
   R visitClosureExpression(DpugClosureExpressionSpec spec, [R? context]);
+  R visitExpression(DpugExpressionSpec spec, [R? context]);
   R visitAssignment(DpugAssignmentSpec spec, [R? context]);
   R visitStateField(DpugStateFieldSpec spec, [R? context]);
 }

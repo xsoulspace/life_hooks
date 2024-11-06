@@ -3,6 +3,7 @@ export 'assignment_spec.dart';
 export 'binary_spec.dart';
 export 'class_spec.dart';
 export 'closure_spec.dart';
+export 'code_spec.dart';
 export 'constructor_spec.dart';
 export 'expression_spec.dart';
 export 'invoke_spec.dart';

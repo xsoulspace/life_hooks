@@ -1,6 +1,6 @@
-import '../specs/specs.dart';
 // !DO NOT REMOVE IMPORT!
-import 'dart_imports.dart';
+import '../dart_imports.dart';
+import '../specs/specs.dart';
 
 class DartToDpugSpecVisitor
     implements

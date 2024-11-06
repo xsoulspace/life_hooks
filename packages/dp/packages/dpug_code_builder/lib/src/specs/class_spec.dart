@@ -9,7 +9,7 @@ import 'reference_spec.dart';
 import 'spec.dart';
 import 'state_field_spec.dart';
 
-class DpugClassSpec extends DpugSpec {
+class DpugClassSpec implements DpugSpec {
   final String name;
   final BuiltList<DpugAnnotationSpec> annotations;
   final BuiltList<DpugStateFieldSpec> stateFields;

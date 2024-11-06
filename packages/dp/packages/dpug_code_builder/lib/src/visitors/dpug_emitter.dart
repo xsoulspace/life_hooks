@@ -142,8 +142,9 @@ class DpugEmitter extends BaseVisitor<String> {
           // Children handling
           if (s.children.isNotEmpty) {
             if (s.isSingleChild) {
-              buffer.writeln(
-                  '$_indentation..child: ${s.children.first.accept(this)}');
+              // buffer.writeln(
+              //     '$_indentation..child: ${s.children.first.accept(this)}');
+              buffer.writeln('$_indentation${s.children.first.accept(this)}');
             } else {
               for (final child in s.children) {
                 buffer.write(child.accept(this));
@@ -159,24 +160,6 @@ class DpugEmitter extends BaseVisitor<String> {
     });
   }
 
-  // void _writeProperty(StringBuffer buffer, String key, DpugSpec value) {
-  //   if (value is DpugWidgetSpec) {
-  //     buffer.writeln('$_indentation..${key}:');
-  //     buffer.write(_withIndent(1, () => value.accept(this)));
-  //   } else if (value is DpugLambdaSpec) {
-  //     buffer.writeln('$_indentation..${key}: ${value.accept(this)}');
-  //   } else if (value is DpugReferenceSpec && _isComplexExpression(value.name)) {
-  //     buffer.write('$_indentation..${key}: ');
-  //     buffer.writeln(value.name);
-  //   } else {
-  //     buffer.writeln('$_indentation..${key}: ${value.accept(this)}');
-  //   }
-  // }
-
-  // bool _isComplexExpression(String code) {
-  //   return code.contains('{') || code.contains('=>') || code.contains('\n');
-  // }
-
   @override
   String visitBinary(DpugBinarySpec spec, [String? context]) {
     return '${spec.left.accept(this)} ${spec.operator} ${spec.right.accept(this)}';
@@ -185,10 +168,11 @@ class DpugEmitter extends BaseVisitor<String> {
   @override
   String visitInvoke(DpugInvokeSpec spec, [String? context]) {
     final args = spec.positionedArguments.map((a) => a.accept(this));
-    final namedArgs = spec.positionedArguments.entries
+    final namedArgs = spec.namedArguments.entries
         .map((e) => '${e.key}: ${e.value.accept(this)}');
-
-    final allArgs = [...args, ...namedArgs].join(', ');
+    final positionedArgs =
+        spec.positionedArguments.map((a) => ':${a.accept(this)}');
+    final allArgs = [...args, ...namedArgs, ...positionedArgs].join(', ');
     return '${spec.target}($allArgs)';
   }
 
@@ -259,7 +243,8 @@ class DpugEmitter extends BaseVisitor<String> {
 
   @override
   String visitConstructor(DpugConstructorSpec spec, [String? context]) {
-    final params = spec.parameters.map((p) => p.accept(this)).join(', ');
+    final params =
+        spec.optionalParameters.map((p) => p.accept(this)).join(', ');
     return '$_indentation${spec.name}($params)';
   }
 

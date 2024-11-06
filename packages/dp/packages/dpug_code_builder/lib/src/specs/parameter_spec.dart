@@ -1,10 +1,11 @@
 import '../visitors/visitor.dart';
 import 'expression_spec.dart';
+import 'reference_spec.dart';
 import 'spec.dart';
 
 class DpugParameterSpec extends DpugSpec {
   final String name;
-  final String type;
+  final DpugReferenceSpec? type;
   final bool isNamed;
   final bool isRequired;
   final DpugExpressionSpec? defaultValue;

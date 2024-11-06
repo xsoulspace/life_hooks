@@ -1,5 +1,3 @@
-import 'package:code_builder/code_builder.dart';
-
 import '../builders/builders.dart';
 import '../visitors/visitors.dart';
 import 'assignment_spec.dart';
@@ -14,7 +12,7 @@ import 'spec.dart';
 import 'string_literal_spec.dart';
 import 'widget_expression_spec.dart';
 
-abstract class DpugExpressionSpec extends Expression implements DpugSpec {
+class DpugExpressionSpec implements DpugSpec {
   const DpugExpressionSpec();
 
   factory DpugExpressionSpec.reference(String name) =

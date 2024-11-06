@@ -36,7 +36,7 @@ class DpugClassBuilder implements DpugSpec {
   DpugClassBuilder buildGetter({
     required String name,
     required String returnType,
-    required DpugSpec body,
+    required DpugCodeSpec body,
   }) {
     method(DpugMethodSpec.getter(
       name: name,
@@ -61,7 +61,7 @@ class DpugClassBuilder implements DpugSpec {
   }
 
   DpugClassBuilder buildMethod({
-    required DpugSpec body,
+    required DpugCodeSpec body,
   }) {
     method(DpugMethodSpec.getter(
       name: 'build',
