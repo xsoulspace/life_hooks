@@ -1,10 +1,8 @@
 import 'package:built_collection/built_collection.dart';
+import 'package:dpug/dpug.dart';
 
-import '../specs/specs.dart';
-import '../visitors/visitors.dart';
-
-class DpugWidgetBuilder implements DpugSpec {
-  String? _name;
+class DpugWidgetBuilder extends DpugClassBuilder implements DpugSpec {
+  String _name = '';
   final ListBuilder<DpugWidgetSpec> _children = ListBuilder<DpugWidgetSpec>();
   final MapBuilder<String, DpugExpressionSpec> _properties =
       MapBuilder<String, DpugExpressionSpec>();
@@ -13,13 +11,8 @@ class DpugWidgetBuilder implements DpugSpec {
   final ListBuilder<DpugExpressionSpec> _positionalCascadeArgs =
       ListBuilder<DpugExpressionSpec>();
 
-  DpugWidgetBuilder name(String name) {
-    _name = name;
-    return this;
-  }
-
   DpugWidgetBuilder child(DpugWidgetBuilder child) {
-    _children.add(child.build());
+    _children.add(child.build() as DpugWidgetSpec);
     return this;
   }
 
@@ -38,20 +31,22 @@ class DpugWidgetBuilder implements DpugSpec {
     return this;
   }
 
-  DpugWidgetSpec build() {
-    if (_name == null) {
+  @override
+  DpugClassSpec build() {
+    if (_name.isEmpty) {
       throw StateError('Widget name must be set');
     }
 
     return DpugWidgetSpec.build(
-      name: _name!,
+      name: _name,
       children: _children.build(),
       properties: _properties.build(),
       positionalArgs: _positionalArgs.build(),
       positionalCascadeArgs: _positionalCascadeArgs.build(),
-    );
+    ) as DpugClassSpec;
   }
 
   @override
-  T accept<T>(DpugSpecVisitor<T> visitor) => build().accept(visitor);
+  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+      build().accept(visitor, context);
 }

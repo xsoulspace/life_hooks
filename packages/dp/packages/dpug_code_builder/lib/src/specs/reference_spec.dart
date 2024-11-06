@@ -9,5 +9,6 @@ class DpugReferenceSpec extends DpugSpec {
   const DpugReferenceSpec(this.symbol, [this.url]);
 
   @override
-  T accept<T>(DpugSpecVisitor<T> visitor) => visitor.visitReference(this);
+  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+      visitor.visitReference(this, context);
 }

@@ -1,133 +1,191 @@
+import '../formatters/dpug_config.dart';
 import '../specs/specs.dart';
-import 'visitor.dart';
+import 'base_visitor.dart';
 
-class DpugEmitter implements DpugSpecVisitor<String> {
+class DpugEmitter extends BaseVisitor<String> {
   final DpugConfig config;
-  final StringBuffer _buffer = StringBuffer();
   int _indent = 0;
 
   DpugEmitter([this.config = const DpugConfig()]);
 
   String get _indentation => config.indent * _indent;
 
+  String _withIndent(int amount, String Function() block) {
+    final previous = _indent;
+    try {
+      _indent += amount;
+      return block();
+    } finally {
+      _indent = previous;
+    }
+  }
+
   @override
-  String visitClass(DpugClassSpec spec) {
-    _indent = 0;
-    _buffer.clear();
+  String visitClass(DpugClassSpec spec, [String? context]) {
+    return visitSafely(spec, (s) {
+      final buffer = StringBuffer();
 
-    // Write class declaration and annotations
-    for (final annotation in spec.annotations) {
-      _buffer.writeln(annotation.accept(this));
-    }
-    _buffer.writeln('class ${spec.name}');
-    _indent++;
-
-    // Write state fields with inline annotations
-    for (final field in spec.stateFields) {
-      final annotation = field.annotation.accept(this);
-      final initializer = _formatInitializer(field);
-      _buffer.writeln(
-          '$_indentation$annotation ${field.type} ${field.name}$initializer');
-    }
-
-    // Write methods
-    if (spec.methods.isNotEmpty) {
-      _buffer.writeln(''); // Single newline before methods
-      for (final method in spec.methods) {
-        _buffer.write(method.accept(this));
+      // Write annotations
+      for (final annotation in s.annotations) {
+        buffer.writeln(annotation.accept(this));
+        if (config.spaceAfterAnnotations) buffer.writeln();
       }
-    }
 
-    _indent--;
-    return _buffer.toString();
+      // Write class declaration
+      buffer.writeln('class ${s.name}');
+
+      // Write class body
+      buffer.write(_withIndent(1, () {
+        final bodyBuffer = StringBuffer();
+
+        // Write fields
+        var first = true;
+        for (final field in s.stateFields) {
+          if (!first && config.spaceBetweenMembers) bodyBuffer.writeln();
+          first = false;
+
+          final fieldStr = field.accept(this);
+          bodyBuffer.writeln('$_indentation$fieldStr');
+        }
+
+        // Write methods
+        if (s.methods.isNotEmpty) {
+          if (s.stateFields.isNotEmpty && config.spaceBetweenMembers) {
+            bodyBuffer.writeln();
+          }
+
+          first = true;
+          for (final method in s.methods) {
+            if (!first && config.spaceBetweenMembers) bodyBuffer.writeln();
+            first = false;
+
+            bodyBuffer.write(method.accept(this));
+            bodyBuffer.writeln();
+          }
+        }
+
+        return bodyBuffer.toString();
+      }));
+
+      return buffer.toString();
+    });
   }
 
   @override
-  String visitMethod(DpugMethodSpec spec) {
-    _buffer.clear();
+  String visitMethod(DpugMethodSpec spec, [String? context]) {
+    return visitSafely(spec, (s) {
+      final buffer = StringBuffer();
 
-    if (spec.name == 'build') {
-      _buffer.writeln('${_indentation}Widget get build =>');
-      _indent++;
-      _buffer.write(spec.body.accept(this));
-      _indent--;
-    } else if (spec.isGetter) {
-      _buffer.writeln('$_indentation${spec.returnType} get ${spec.name} =>');
-      _indent++;
-      _buffer.write(spec.body.accept(this));
-      _indent--;
-    } else {
-      final params = spec.parameters.map((p) => p.accept(this)).join(', ');
-      _buffer
-          .writeln('$_indentation${spec.returnType} ${spec.name}($params) =>');
-      _indent++;
-      _buffer.write(spec.body.accept(this));
-      _indent--;
-    }
+      // Handle build method specially
+      if (s.name == 'build') {
+        buffer.write('$_indentation${s.returnType} get build =>');
+        buffer.writeln();
+        return _withIndent(1, () {
+          buffer.write(s.body.accept(this));
+          return buffer.toString();
+        });
+      }
 
-    return _buffer.toString();
-  }
-
-  @override
-  String visitWidget(DpugWidgetSpec spec) {
-    _buffer.clear();
-    final currentIndent = _indent;
-
-    // Write widget name with optional positional arguments
-    _buffer.write('$_indentation${spec.name}');
-    if (spec.positionalArgs.isNotEmpty) {
-      final args = spec.positionalArgs.map((a) => a.accept(this)).join(', ');
-      _buffer.write('($args)');
-    }
-    _buffer.writeln();
-
-    _indent = currentIndent + 1;
-
-    // Handle properties
-    for (final entry in spec.properties.entries) {
-      final value = entry.value;
-      if (value is DpugWidgetExpressionSpec) {
-        _buffer.write('$_indentation..${entry.key}: ');
-        final widgetCode = value.builder.build().accept(this);
-        _buffer.write(widgetCode.trimLeft());
-      } else if (value is DpugReferenceSpec && value.name.contains('{')) {
-        _buffer.write('$_indentation..${entry.key}: ');
-        final methodBody = _formatMethodBody(value.name, _indent - 1);
-        _buffer.writeln(methodBody);
+      // Handle other methods
+      if (s.isGetter) {
+        buffer.write('$_indentation${s.returnType} get ${s.name} =>');
       } else {
-        _buffer.writeln('$_indentation..${entry.key}: ${value.accept(this)}');
+        final params = s.parameters.map((p) => p.accept(this)).join(', ');
+        buffer.write('$_indentation${s.returnType} ${s.name}($params) =>');
       }
-    }
+      buffer.writeln();
 
-    // Handle positional cascade arguments
-    for (final arg in spec.positionalCascadeArgs) {
-      if (arg is DpugStringLiteralSpec) {
-        _buffer.writeln('$_indentation..\'${arg.value}\'');
-      } else {
-        _buffer.writeln('$_indentation..${arg.accept(this)}');
-      }
-    }
-
-    // Handle automatic child/children syntax sugar
-    if (spec.shouldUseChildSugar) {
-      for (final child in spec.children) {
-        _buffer.write(child.accept(this));
-      }
-    }
-
-    _indent = currentIndent;
-    return _buffer.toString();
+      return _withIndent(1, () {
+        buffer.write(s.body.accept(this));
+        return buffer.toString();
+      });
+    });
   }
 
+  String visitClasses(Iterable<DpugClassSpec> specs) =>
+      specs.map((s) => s.accept(this)).join('\n\n');
+
   @override
-  String visitBinary(DpugBinarySpec spec) {
+  String visitWidget(DpugWidgetSpec spec, [String? context]) {
+    return visitSafely(spec, (s) {
+      final buffer = StringBuffer();
+
+      // Write widget name
+      buffer.write('$_indentation${s.name}');
+
+      // Handle constructor call style (e.g., GridView.builder)
+      if (s.name.contains('.')) {
+        if (s.positionalArgs.isNotEmpty) {
+          final args = s.positionalArgs.map((a) => a.accept(this)).join(', ');
+          buffer.write('($args)');
+        }
+      }
+      buffer.writeln();
+
+      // Handle properties and children
+      if (s.properties.isNotEmpty ||
+          s.children.isNotEmpty ||
+          s.positionalCascadeArgs.isNotEmpty) {
+        return _withIndent(1, () {
+          // Properties with cascade notation
+          for (final entry in s.properties.entries) {
+            buffer.writeln(
+                '$_indentation..${entry.key}: ${entry.value.accept(this)}');
+            if (config.spaceBetweenProperties) buffer.writeln();
+          }
+
+          // Cascade arguments (like in Text('value'))
+          for (final arg in s.positionalCascadeArgs) {
+            buffer.writeln('$_indentation..${arg.accept(this)}');
+          }
+
+          // Children handling
+          if (s.children.isNotEmpty) {
+            if (s.isSingleChild) {
+              buffer.writeln(
+                  '$_indentation..child: ${s.children.first.accept(this)}');
+            } else {
+              for (final child in s.children) {
+                buffer.write(child.accept(this));
+              }
+            }
+          }
+
+          return buffer.toString().trimRight();
+        });
+      }
+
+      return buffer.toString();
+    });
+  }
+
+  // void _writeProperty(StringBuffer buffer, String key, DpugSpec value) {
+  //   if (value is DpugWidgetSpec) {
+  //     buffer.writeln('$_indentation..${key}:');
+  //     buffer.write(_withIndent(1, () => value.accept(this)));
+  //   } else if (value is DpugLambdaSpec) {
+  //     buffer.writeln('$_indentation..${key}: ${value.accept(this)}');
+  //   } else if (value is DpugReferenceSpec && _isComplexExpression(value.name)) {
+  //     buffer.write('$_indentation..${key}: ');
+  //     buffer.writeln(value.name);
+  //   } else {
+  //     buffer.writeln('$_indentation..${key}: ${value.accept(this)}');
+  //   }
+  // }
+
+  // bool _isComplexExpression(String code) {
+  //   return code.contains('{') || code.contains('=>') || code.contains('\n');
+  // }
+
+  @override
+  String visitBinary(DpugBinarySpec spec, [String? context]) {
     return '${spec.left.accept(this)} ${spec.operator} ${spec.right.accept(this)}';
   }
 
   @override
-  String visitInvoke(DpugInvokeSpec spec) {
-    final args = spec.arguments.map((a) => a.accept(this));
-    final namedArgs = spec.namedArguments.entries
+  String visitInvoke(DpugInvokeSpec spec, [String? context]) {
+    final args = spec.positionedArguments.map((a) => a.accept(this));
+    final namedArgs = spec.positionedArguments.entries
         .map((e) => '${e.key}: ${e.value.accept(this)}');
 
     final allArgs = [...args, ...namedArgs].join(', ');
@@ -135,34 +193,40 @@ class DpugEmitter implements DpugSpecVisitor<String> {
   }
 
   @override
-  String visitLiteral(DpugLiteralSpec spec) {
+  String visitLiteral(DpugLiteralSpec spec, [String? context]) {
     return spec.value.toString();
   }
 
   @override
-  String visitListLiteral(DpugListLiteralSpec spec) {
+  String visitListLiteral(DpugListLiteralSpec spec, [String? context]) {
     final values = spec.values.map((v) => v.accept(this)).join(', ');
     return '[$values]';
   }
 
   @override
-  String visitStringLiteral(DpugStringLiteralSpec spec) {
-    return "'${spec.value}'";
+  String visitStringLiteral(DpugStringLiteralSpec spec, [String? context]) {
+    final escaped = spec.value
+        .replaceAll('\\', '\\\\')
+        .replaceAll("'", "\\'")
+        .replaceAll('\n', '\\n');
+    return "'$escaped'";
   }
 
   @override
-  String visitLambda(DpugLambdaSpec spec) {
+  String visitClosureExpression(DpugClosureExpressionSpec spec,
+      [String? context]) {
     final params = spec.parameters.join(', ');
-    return '($params) => ${spec.body.accept(this)}';
+    final body = spec.body.accept(this);
+    return '($params) => $body';
   }
 
   @override
-  String visitReference(DpugReferenceSpec spec) {
-    return spec.name;
+  String visitReference(DpugReferenceSpec spec, [String? context]) {
+    return spec.url ?? spec.symbol;
   }
 
   @override
-  String visitParameter(DpugParameterSpec spec) {
+  String visitParameter(DpugParameterSpec spec, [String? context]) {
     final required = spec.isRequired ? 'required ' : '';
     final named = spec.isNamed ? '${spec.name}: ' : '';
     final defaultValue = spec.defaultValue != null
@@ -172,59 +236,36 @@ class DpugEmitter implements DpugSpecVisitor<String> {
   }
 
   @override
-  String visitStateField(DpugStateFieldSpec spec) {
+  String visitStateField(DpugStateFieldSpec spec, [String? context]) {
     final annotation = spec.annotation.accept(this);
-    final initializer = _formatInitializer(spec);
-    return '$_indentation$annotation ${spec.type} ${spec.name}$initializer';
+    final initializer =
+        spec.initializer != null ? ' = ${spec.initializer!.accept(this)}' : '';
+    return '$annotation ${spec.type} ${spec.name}$initializer';
   }
 
   @override
   String visitAnnotation(DpugAnnotationSpec spec) {
+    if (spec.name == 'state') {
+      return '@listen'; // Convert @state to @listen per README syntax
+    }
     final args = spec.arguments.map((a) => a.accept(this)).join(', ');
     return '@${spec.name}${args.isEmpty ? '' : '($args)'}';
   }
 
   @override
-  String visitAssignment(DpugAssignmentSpec spec) {
+  String visitAssignment(DpugAssignmentSpec spec, [String? context]) {
     return '${spec.target} = ${spec.value.accept(this)}';
   }
 
-  String _formatInitializer(DpugStateFieldSpec field) {
-    return field.initializer != null
-        ? ' = ${field.initializer!.accept(this)}'
-        : '';
+  @override
+  String visitConstructor(DpugConstructorSpec spec, [String? context]) {
+    final params = spec.parameters.map((p) => p.accept(this)).join(', ');
+    return '$_indentation${spec.name}($params)';
   }
 
-  String _formatMethodBody(String code, int baseIndent) {
-    final lines = code.split('\n');
-    final formattedLines = <String>[];
-    var currentIndent = baseIndent;
-    var bracketCount = 0;
-
-    for (var i = 0; i < lines.length; i++) {
-      final line = lines[i].trim();
-      if (line.isEmpty) continue;
-
-      if (i == 0) {
-        formattedLines.add(line);
-        if (line.endsWith('{')) bracketCount++;
-        continue;
-      }
-
-      bracketCount += '{'.allMatches(line).length;
-      bracketCount -= '}'.allMatches(line).length;
-
-      if (line.startsWith('}')) {
-        currentIndent = baseIndent + bracketCount;
-        formattedLines.add('${config.indent * currentIndent}$line');
-      } else {
-        currentIndent = baseIndent + bracketCount;
-        formattedLines.add('${config.indent * currentIndent}$line');
-      }
-
-      if (line.endsWith('{')) bracketCount++;
-    }
-
-    return formattedLines.join('\n');
+  @override
+  String visitReferenceExpression(DpugReferenceExpressionSpec spec,
+      [String? context]) {
+    return spec.accept(this);
   }
 }

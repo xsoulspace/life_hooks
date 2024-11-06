@@ -39,22 +39,21 @@ class Counter
         ..count.toString()''';
 
         // Test DPUG -> Dart conversion
-        final dartSpec = Dpug.dpugToDart(dpugSpec);
-        final dartString = Dpug.generateDartStringFromDpug(dpugSpec);
+        final dartSpec = Dpug.toDart(dpugSpec);
 
         // Test Dart -> DPUG conversion
-        final convertedDpugSpec = Dpug.dartToDpug(dartSpec);
+        final convertedDpugSpec = Dpug.fromDart(dartSpec);
         expect(convertedDpugSpec, isNotNull);
 
         // Verify string representations
-        final originalDpugString = Dpug.generateDpugString(dpugSpec);
-        final convertedDpugString = Dpug.generateDpugString(convertedDpugSpec!);
+        final originalDpugString = Dpug.emitDpug(dpugSpec);
+        final convertedDpugString = Dpug.emitDpug(convertedDpugSpec!);
 
         expect(originalDpugString, equals(expectedDpugCode));
         expect(convertedDpugString, equals(expectedDpugCode));
 
         // Verify round-trip conversion
-        final roundTripDartSpec = Dpug.dpugToDart(convertedDpugSpec);
+        final roundTripDartSpec = Dpug.toDart(convertedDpugSpec);
         expect(roundTripDartSpec.toString(), equals(dartSpec.toString()));
       });
 
@@ -68,7 +67,7 @@ class Counter
               ..child(DpugWidgetBuilder()
                 ..name('Text')
                 ..positionalCascadeArgument(
-                  DpugExpressionSpec.stringLiteral('Increment'),
+                  DpugExpressionSpec.string('Increment'),
                 )))
             .build();
 
@@ -79,12 +78,12 @@ ElevatedButton
     ..'Increment\'''';
 
         // Test full conversion chain
-        final dartSpec = Dpug.dpugToDart(dpugSpec);
-        final convertedDpugSpec = Dpug.dartToDpug(dartSpec);
+        final dartSpec = Dpug.toDart(dpugSpec);
+        final convertedDpugSpec = Dpug.fromDart(dartSpec);
         expect(convertedDpugSpec, isNotNull);
 
-        final originalDpugString = Dpug.generateDpugString(dpugSpec);
-        final convertedDpugString = Dpug.generateDpugString(convertedDpugSpec!);
+        final originalDpugString = Dpug.emitDpug(dpugSpec);
+        final convertedDpugString = Dpug.emitDpug(convertedDpugSpec!);
 
         expect(originalDpugString, equals(expectedDpugCode));
         expect(convertedDpugString, equals(expectedDpugCode));
@@ -124,15 +123,15 @@ class MyWidget
           ..'Click me\'''';
 
         // Test Dart -> DPUG conversion
-        final dpugSpec = Dpug.dartToDpug(dartClass);
+        final dpugSpec = Dpug.fromDart(dartClass);
         expect(dpugSpec, isNotNull);
 
         // Verify string representation
-        final dpugString = Dpug.generateDpugString(dpugSpec!);
+        final dpugString = Dpug.emitDpug(dpugSpec!);
         expect(dpugString, equals(expectedDpugCode));
 
         // Verify round-trip conversion
-        final roundTripDartSpec = Dpug.dpugToDart(dpugSpec);
+        final roundTripDartSpec = Dpug.toDart(dpugSpec);
         expect(roundTripDartSpec.toString(), equals(dartClass.toString()));
       });
 
@@ -155,14 +154,14 @@ Widget get build =>
       ..'Hello\'''';
 
         // Test conversion chain
-        final dpugSpec = Dpug.dartToDpug(dartMethod);
+        final dpugSpec = Dpug.fromDart(dartMethod);
         expect(dpugSpec, isNotNull);
 
-        final dpugString = Dpug.generateDpugString(dpugSpec!);
+        final dpugString = Dpug.emitDpug(dpugSpec!);
         expect(dpugString, equals(expectedDpugCode));
 
         // Verify round-trip
-        final roundTripDartSpec = Dpug.dpugToDart(dpugSpec);
+        final roundTripDartSpec = Dpug.toDart(dpugSpec);
         expect(roundTripDartSpec.toString(), equals(dartMethod.toString()));
       });
     });

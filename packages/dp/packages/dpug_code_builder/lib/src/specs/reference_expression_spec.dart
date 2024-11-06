@@ -8,6 +8,6 @@ class DpugReferenceExpressionSpec extends DpugExpressionSpec {
   const DpugReferenceExpressionSpec(this.name);
 
   @override
-  T accept<T>(DpugSpecVisitor<T> visitor) =>
-      visitor.visitReferenceExpression(this);
+  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+      visitor.visitReferenceExpression(this, context);
 }

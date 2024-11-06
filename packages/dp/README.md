@@ -128,3 +128,10 @@ Uses Dart's build system with custom builder for .dpug files
 3. Enhance IDE support
 4. Add testing infrastructure
 5. Create documentation
+
+  <!-- // Handle automatic child/children syntax sugar
+        if (spec.shouldUseChildSugar) {
+          for (final child in spec.children) {
+            buffer.write(child.accept(this));
+          }
+        } -->

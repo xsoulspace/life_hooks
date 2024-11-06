@@ -107,12 +107,13 @@ class DartToDpugSpecVisitor
   }
 
   @override
-  DpugSpec? visitType(TypeReference spec, [DpugSpec? context]) => null;
+  DpugSpec? visitType(TypeReference spec, [DpugSpec? context]) =>
+      DpugReferenceSpec(spec.toString());
 
   @override
   DpugSpec? visitTypeParameters(Iterable<Reference> specs,
           [DpugSpec? context]) =>
-      null;
+      DpugReferenceSpec(specs.map((s) => s.toString()).join(', '));
 
   @override
   DpugSpec? visitTypeDef(TypeDef spec, [DpugSpec? context]) => null;
@@ -178,9 +179,14 @@ class DartToDpugSpecVisitor
     }
 
     return DpugInvokeSpec(
-      expression.target.accept(this)?.toString() ?? '',
-      args,
-      namedArgs,
+      target: expression.target.accept(this) as DpugExpressionSpec,
+      positionedArguments: args,
+      isConst: expression.isConst,
+      name: expression.name,
+      typeArguments: expression.typeArguments
+          .map((t) => t.accept(this) as DpugReferenceSpec)
+          .toList(),
+      namedArguments: namedArgs,
     );
   }
 
@@ -196,13 +202,28 @@ class DartToDpugSpecVisitor
     final values = <DpugExpressionSpec>[];
 
     for (final value in expression.values) {
-      if (value != null) {
+      if (value == null) {
+        values.add(DpugLiteralSpec(null));
+        continue;
+      }
+
+      // Handle different literal types
+      if (value is bool) {
+        values.add(DpugLiteralSpec(value));
+      } else if (value is num) {
+        values.add(DpugLiteralSpec(value));
+      } else if (value is String) {
+        values.add(DpugStringLiteralSpec(value));
+      } else if (value is Expression) {
         final converted = value.accept(this);
         if (converted is DpugExpressionSpec) {
           values.add(converted);
         } else {
-          values.add(DpugReferenceSpec(value.toString()));
+          values.add(value.accept(this) as DpugExpressionSpec);
         }
+      } else {
+        // For unsupported types, convert to string reference
+        values.add(DpugStringLiteralSpec(value.toString()));
       }
     }
 
@@ -212,14 +233,9 @@ class DartToDpugSpecVisitor
   @override
   DpugSpec? visitClosureExpression(ClosureExpression expression,
       [DpugSpec? context]) {
-    final params = expression.parameters.map((p) => p.name).toList();
-    final bodySpec = expression.code.accept(this);
-
-    if (bodySpec is! DpugExpressionSpec) {
-      return DpugReferenceSpec(expression.toString());
-    }
-
-    return DpugLambdaSpec(params, bodySpec);
+    return DpugClosureExpressionSpec(
+      expression.method.accept(this) as DpugMethodSpec,
+    );
   }
 
   @override

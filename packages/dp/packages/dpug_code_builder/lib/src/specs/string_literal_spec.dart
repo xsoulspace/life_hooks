@@ -3,8 +3,10 @@ import 'expression_spec.dart';
 
 class DpugStringLiteralSpec extends DpugExpressionSpec {
   final String value;
-  const DpugStringLiteralSpec(this.value);
+  final bool raw;
+  const DpugStringLiteralSpec(this.value, {this.raw = false});
 
   @override
-  T accept<T>(DpugSpecVisitor<T> visitor) => visitor.visitStringLiteral(this);
+  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+      visitor.visitStringLiteral(this, context);
 }

@@ -1,9 +1,10 @@
 import 'package:built_collection/built_collection.dart';
+import 'package:dpug/src/visitors/visitor.dart';
 import 'package:source_span/source_span.dart';
 
 import '../specs/specs.dart';
 
-class DpugClassBuilder {
+class DpugClassBuilder implements DpugSpec {
   String? _name;
   final ListBuilder<DpugAnnotationSpec> _annotations =
       ListBuilder<DpugAnnotationSpec>();
@@ -83,4 +84,8 @@ class DpugClassBuilder {
       span: span ?? SourceFile.fromString('').span(0),
     );
   }
+
+  @override
+  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+      visitor.visitClass(build());
 }

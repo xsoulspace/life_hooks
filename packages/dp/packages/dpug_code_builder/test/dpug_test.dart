@@ -63,12 +63,12 @@ void main() {
             ..listenField(
               name: 'todos',
               type: 'List<Todo>',
-              initializer: DpugExpressionSpec.listLiteral([]),
+              initializer: DpugExpressionSpec.list([]),
             )
             ..listenField(
               name: 'newTodo',
               type: 'String',
-              initializer: DpugExpressionSpec.stringLiteral(''),
+              initializer: DpugExpressionSpec.string(''),
             )
             ..buildMethod(
               body: WidgetHelpers.column(
@@ -83,7 +83,7 @@ void main() {
                         'initialValue', DpugExpressionSpec.reference('newTodo'))
                     ..property(
                       'onChanged',
-                      DpugExpressionSpec.lambda(
+                      DpugExpressionSpec.closure(
                         ['value'],
                         DpugExpressionSpec.assignment(
                           'newTodo',
@@ -96,8 +96,8 @@ void main() {
             ))
           .build();
 
-      final dartCode = todoList.accept(DpugToDartVisitor()).toString();
-      final dpugCode = todoList.accept(DpugGeneratingVisitor());
+      final dartCode = todoList.accept(DpugToDartSpecVisitor()).toString();
+      final dpugCode = todoList.accept(DpugEmitter());
 
       expect(dartCode, equals(_dartCode));
       expect(dpugCode, equals(_dpugCode));
@@ -117,7 +117,7 @@ void main() {
                       DpugWidgetBuilder()
                         ..name('Text')
                         ..positionalCascadeArgument(
-                          DpugExpressionSpec.stringLiteral('Title'),
+                          DpugExpressionSpec.string('Title'),
                         ),
                     ),
                   ),
@@ -136,12 +136,12 @@ void main() {
                       DpugWidgetBuilder()
                         ..name('Text')
                         ..positionalArgument(
-                          DpugExpressionSpec.stringLiteral('First'),
+                          DpugExpressionSpec.string('First'),
                         ),
                       DpugWidgetBuilder()
                         ..name('Text')
                         ..positionalCascadeArgument(
-                          DpugExpressionSpec.stringLiteral('Second'),
+                          DpugExpressionSpec.string('Second'),
                         ),
                     ],
                   ),
@@ -150,7 +150,7 @@ void main() {
             ))
           .build();
 
-      final dpugCode = widget.accept(DpugGeneratingVisitor());
+      final dpugCode = widget.accept(DpugEmitter());
 
       final expectedDpugCode = '''
 Scaffold
@@ -176,10 +176,10 @@ Scaffold
               ..child(DpugWidgetBuilder()
                 ..name('Text')
                 ..positionalCascadeArgument(
-                    DpugExpressionSpec.stringLiteral('Child'))))
+                    DpugExpressionSpec.string('Child'))))
             .build();
 
-        final dpugCode = widget.accept(DpugGeneratingVisitor());
+        final dpugCode = widget.accept(DpugEmitter());
         expect(dpugCode, equals('''
 Container
   ..color: Colors.red
@@ -203,7 +203,7 @@ Container
               ))
             .build();
 
-        final dpugCode = widget.accept(DpugGeneratingVisitor());
+        final dpugCode = widget.accept(DpugEmitter());
         expect(dpugCode, equals('''
 Container
   ..decoration: BoxDecoration
@@ -216,7 +216,7 @@ Container
               ..name('ElevatedButton')
               ..property(
                 'onPressed',
-                DpugExpressionSpec.lambda(
+                DpugExpressionSpec.closure(
                   [],
                   DpugExpressionSpec.reference(
                     'setState(() { count++; update(); })',
@@ -226,10 +226,10 @@ Container
               ..child(DpugWidgetBuilder()
                 ..name('Text')
                 ..positionalCascadeArgument(
-                    DpugExpressionSpec.stringLiteral('Increment'))))
+                    DpugExpressionSpec.string('Increment'))))
             .build();
 
-        final dpugCode = widget.accept(DpugGeneratingVisitor());
+        final dpugCode = widget.accept(DpugEmitter());
         expect(dpugCode, equals('''
 ElevatedButton
   ..onPressed: () => setState(() { count++; update(); })
@@ -246,11 +246,11 @@ ElevatedButton
               )
               ..child(DpugWidgetBuilder()
                 ..name('Text')
-                ..positionalArgument(DpugExpressionSpec.stringLiteral('Hello'))
+                ..positionalArgument(DpugExpressionSpec.string('Hello'))
                 ..property('style', DpugExpressionSpec.reference('boldStyle'))))
             .build();
 
-        final dpugCode = widget.accept(DpugGeneratingVisitor());
+        final dpugCode = widget.accept(DpugEmitter());
         expect(dpugCode, equals('''
 Padding
   ..padding: EdgeInsets.all(16)
@@ -272,7 +272,7 @@ Padding
               ))
             .build();
 
-        final dartCode = widget.accept(DpugToDartVisitor()).toString();
+        final dartCode = widget.accept(DpugToDartSpecVisitor()).toString();
         expect(dartCode, contains('late List<CustomItem> _items'));
         expect(dartCode, contains('List<CustomItem> get items => _items'));
         expect(
@@ -298,11 +298,11 @@ Padding
               ..listenField(
                 name: 'data',
                 type: 'List<dynamic>',
-                initializer: DpugExpressionSpec.listLiteral([]),
+                initializer: DpugExpressionSpec.list([]),
               ))
             .build();
 
-        final dartCode = widget.accept(DpugToDartVisitor()).toString();
+        final dartCode = widget.accept(DpugToDartSpecVisitor()).toString();
         expect(dartCode, contains('late bool _isLoading = false'));
         expect(dartCode, contains('late String? _error = null'));
         expect(dartCode, contains('late List<dynamic> _data = []'));
@@ -341,10 +341,10 @@ Padding
               ..child(DpugWidgetBuilder()
                 ..name('Text')
                 ..positionalCascadeArgument(
-                    DpugExpressionSpec.stringLiteral('Click me'))))
+                    DpugExpressionSpec.string('Click me'))))
             .build();
 
-        final dpugCode = widget.accept(DpugGeneratingVisitor());
+        final dpugCode = widget.accept(DpugEmitter());
         expect(dpugCode, equals('''
 ElevatedButton
   ..onPressed: () {
@@ -399,10 +399,10 @@ ElevatedButton
                 ..child(DpugWidgetBuilder()
                   ..name('Text')
                   ..positionalCascadeArgument(
-                      DpugExpressionSpec.stringLiteral('Tap or Long Press')))))
+                      DpugExpressionSpec.string('Tap or Long Press')))))
             .build();
 
-        final dpugCode = widget.accept(DpugGeneratingVisitor());
+        final dpugCode = widget.accept(DpugEmitter());
         expect(dpugCode, equals('''
 GestureDetector
   ..onTap: () {
@@ -468,7 +468,7 @@ GestureDetector
                     DpugExpressionSpec.reference('Icons.refresh'))))
             .build();
 
-        final dpugCode = widget.accept(DpugGeneratingVisitor());
+        final dpugCode = widget.accept(DpugEmitter());
         expect(dpugCode, equals('''
 FloatingActionButton
   ..onPressed: () async {
@@ -495,7 +495,7 @@ FloatingActionButton
 
     group('Multiple Classes', () {
       test('Two stateful widgets in one file', () {
-        final counterWidget = (Dpug.classBuilder()
+        final counterWidget = (Dpug.widgetBuilder()
               ..name('Counter')
               ..annotation(DpugAnnotationSpec.stateful())
               ..listenField(
@@ -516,7 +516,7 @@ FloatingActionButton
                       ..name('ElevatedButton')
                       ..property(
                         'onPressed',
-                        DpugExpressionSpec.lambda(
+                        DpugExpressionSpec.closure(
                           [],
                           DpugExpressionSpec.assignment(
                             'count',
@@ -527,20 +527,20 @@ FloatingActionButton
                       ..child(DpugWidgetBuilder()
                         ..name('Text')
                         ..positionalCascadeArgument(
-                          DpugExpressionSpec.stringLiteral('Increment'),
+                          DpugExpressionSpec.string('Increment'),
                         )),
                   ],
                 ),
               ))
             .build();
 
-        final displayWidget = (Dpug.classBuilder()
+        final displayWidget = (Dpug.widgetBuilder()
               ..name('Display')
               ..annotation(DpugAnnotationSpec.stateful())
               ..listenField(
                 name: 'text',
                 type: 'String',
-                initializer: DpugExpressionSpec.stringLiteral(''),
+                initializer: DpugExpressionSpec.string(''),
               )
               ..buildMethod(
                 body: WidgetHelpers.container(
@@ -640,16 +640,14 @@ class _DisplayState extends State<Display> {
     );
   }
 }''';
+        final emitter = DpugEmitter();
+        final resultDpugCode =
+            emitter.visitClasses([counterWidget, displayWidget]);
+        final resultDartCode =
+            Dpug.toDartString(([counterWidget, displayWidget]));
 
-        final visitor = DpugGeneratingVisitor();
-        final generatedDpugCode =
-            visitor.visitMultipleClasses([counterWidget, displayWidget]);
-        final generatedDartCode = [counterWidget, displayWidget]
-            .map((w) => w.accept(DpugToDartVisitor()))
-            .join('\n\n');
-
-        expect(generatedDpugCode, equals(dpugCode));
-        expect(generatedDartCode, equals(dartCode));
+        expect(resultDpugCode, equals(dpugCode));
+        expect(resultDartCode, equals(dartCode));
       });
     });
   });

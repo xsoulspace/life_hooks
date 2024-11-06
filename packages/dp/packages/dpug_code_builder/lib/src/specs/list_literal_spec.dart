@@ -6,5 +6,6 @@ class DpugListLiteralSpec extends DpugExpressionSpec {
   const DpugListLiteralSpec(this.values);
 
   @override
-  T accept<T>(DpugSpecVisitor<T> visitor) => visitor.visitListLiteral(this);
+  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+      visitor.visitListLiteral(this, context);
 }

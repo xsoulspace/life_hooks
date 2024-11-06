@@ -12,7 +12,7 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   );
 
   @override
-  cb.Spec visitClass(DpugClassSpec spec) {
+  cb.Spec visitClass(DpugClassSpec spec, [cb.Spec? context]) {
     if (spec.annotations.any((a) => a.name == 'stateful')) {
       final library = cb.Library((b) => b
         ..body.addAll([
@@ -34,7 +34,7 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   }
 
   @override
-  cb.Spec visitStateField(DpugStateFieldSpec spec) {
+  cb.Spec visitStateField(DpugStateFieldSpec spec, [cb.Spec? context]) {
     return cb.Field((b) => b
       ..name = spec.name
       ..type = cb.refer(spec.type)
@@ -44,7 +44,7 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   }
 
   @override
-  cb.Spec visitMethod(DpugMethodSpec spec) {
+  cb.Spec visitMethod(DpugMethodSpec spec, [cb.Spec? context]) {
     return cb.Method((b) {
       b..name = spec.name;
 
@@ -88,7 +88,7 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   }
 
   @override
-  cb.Spec visitWidget(DpugWidgetSpec spec) {
+  cb.Spec visitWidget(DpugWidgetSpec spec, [cb.Spec? context]) {
     final properties = <String, cb.Expression>{};
     final positionalArgs = <cb.Expression>[];
 
@@ -131,13 +131,13 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   }
 
   @override
-  cb.Spec visitStringLiteral(DpugStringLiteralSpec spec) {
-    return cb.literalString(spec.value);
+  cb.Spec visitStringLiteral(DpugStringLiteralSpec spec, [cb.Spec? context]) {
+    return cb.literalString(spec.value, raw: spec.raw);
   }
 
   @override
-  cb.Spec visitReference(DpugReferenceSpec spec) {
-    return cb.refer(spec.name);
+  cb.Spec visitReference(DpugReferenceSpec spec, [cb.Spec? context]) {
+    return cb.refer(spec.symbol, spec.url);
   }
 
   cb.Expression _processChild(DpugWidgetSpec child) {
@@ -151,7 +151,8 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   }
 
   @override
-  cb.Spec visitLambda(DpugLambdaSpec spec) {
+  cb.Spec visitClosureExpression(DpugClosureExpressionSpec spec,
+      [cb.Spec? context]) {
     final params = spec.parameters.map((p) => cb.Parameter((b) => b..name = p));
     final bodySpec = spec.body.accept(this);
     final bodyCode = bodySpec is cb.Expression
@@ -165,7 +166,7 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   }
 
   @override
-  cb.Spec visitAssignment(DpugAssignmentSpec spec) {
+  cb.Spec visitAssignment(DpugAssignmentSpec spec, [cb.Spec? context]) {
     final value = spec.value.accept(this);
     return cb.CodeExpression(cb.Code(
       '${spec.target} = ${value.accept(_emitter)}',
@@ -179,7 +180,7 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   }
 
   @override
-  cb.Spec visitListLiteral(DpugListLiteralSpec spec) {
+  cb.Spec visitListLiteral(DpugListLiteralSpec spec, [cb.Spec? context]) {
     return cb
         .literalList(spec.values.map((v) => v.accept(this) as cb.Expression));
   }
@@ -251,7 +252,7 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   }
 
   @override
-  cb.Spec visitParameter(DpugParameterSpec spec) {
+  cb.Spec visitParameter(DpugParameterSpec spec, [cb.Spec? context]) {
     // Instead of returning Parameter directly, return a Method that would use this parameter
     return cb.Method((b) => b
       ..requiredParameters.add(cb.Parameter((pb) => pb
@@ -260,5 +261,51 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
         ..named = spec.isNamed
         ..required = spec.isRequired
         ..toThis = spec.isNamed)));
+  }
+
+  @override
+  cb.Spec visitBinary(DpugBinarySpec spec, [cb.Spec? context]) {
+    return cb.Expression.binary(
+      spec.operator,
+      spec.left.accept(this),
+      spec.right.accept(this),
+    );
+  }
+
+  @override
+  cb.Spec visitConstructor(DpugConstructorSpec spec, [cb.Spec? context]) {
+    return cb.Constructor((b) => b
+      ..name = spec.name
+      ..body = spec.body?.accept(this) as cb.Code?
+      ..constant = spec.isConst
+      ..docs = spec.docs
+      ..annotations.addAll(
+        spec.annotations.map((a) => a.accept(this) as cb.Expression),
+      )
+      ..optionalParameters.addAll(
+        spec.optionalParameters.map((p) => p.accept(this) as cb.Parameter),
+      )
+      ..requiredParameters.addAll(
+        spec.requiredParameters.map((p) => p.accept(this) as cb.Parameter),
+      )) as cb.Spec;
+  }
+
+  @override
+  cb.Spec visitInvoke(DpugInvokeSpec spec, [cb.Spec? context]) {
+    // TODO: implement visitInvoke
+    throw UnimplementedError();
+  }
+
+  @override
+  cb.Spec visitLiteral(DpugLiteralSpec spec, [cb.Spec? context]) {
+    // TODO: implement visitLiteral
+    throw UnimplementedError();
+  }
+
+  @override
+  cb.Spec visitReferenceExpression(DpugReferenceExpressionSpec spec,
+      [cb.Spec? context]) {
+    // TODO: implement visitReferenceExpression
+    throw UnimplementedError();
   }
 }

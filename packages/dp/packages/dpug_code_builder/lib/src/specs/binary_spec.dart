@@ -9,5 +9,6 @@ class DpugBinarySpec extends DpugExpressionSpec {
   const DpugBinarySpec(this.operator, this.left, this.right);
 
   @override
-  T accept<T>(DpugSpecVisitor<T> visitor) => visitor.visitBinary(this);
+  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+      visitor.visitBinary(this, context);
 }

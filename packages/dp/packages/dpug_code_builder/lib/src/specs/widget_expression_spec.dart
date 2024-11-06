@@ -8,5 +8,6 @@ class DpugWidgetExpressionSpec extends DpugExpressionSpec {
   const DpugWidgetExpressionSpec(this.builder);
 
   @override
-  T accept<T>(DpugSpecVisitor<T> visitor) => builder.accept(visitor);
+  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+      builder.accept(visitor, context);
 }

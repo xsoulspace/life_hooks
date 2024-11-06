@@ -1,20 +1,20 @@
 import '../specs/specs.dart';
 
-abstract class DpugSpecVisitor<T> {
-  T visitClass(DpugClassSpec spec);
-  T visitConstructor(DpugConstructorSpec spec);
-  T visitMethod(DpugMethodSpec spec);
-  T visitParameter(DpugParameterSpec spec);
-  T visitReference(DpugReferenceSpec spec);
-  T visitReferenceExpression(DpugReferenceExpressionSpec spec);
-  T visitWidget(DpugWidgetSpec spec);
-  T visitAnnotation(DpugAnnotationSpec spec);
-  T visitLiteral(DpugLiteralSpec spec);
-  T visitBinary(DpugBinarySpec spec);
-  T visitInvoke(DpugInvokeSpec spec);
-  T visitListLiteral(DpugListLiteralSpec spec);
-  T visitStringLiteral(DpugStringLiteralSpec spec);
-  T visitLambda(DpugLambdaSpec spec);
-  T visitAssignment(DpugAssignmentSpec spec);
-  T visitStateField(DpugStateFieldSpec spec);
+abstract class DpugSpecVisitor<R> {
+  R visitClass(DpugClassSpec spec, [R? context]);
+  R visitConstructor(DpugConstructorSpec spec, [R? context]);
+  R visitMethod(DpugMethodSpec spec, [R? context]);
+  R visitParameter(DpugParameterSpec spec, [R? context]);
+  R visitReference(DpugReferenceSpec spec, [R? context]);
+  R visitReferenceExpression(DpugReferenceExpressionSpec spec, [R? context]);
+  R visitWidget(DpugWidgetSpec spec, [R? context]);
+  R visitAnnotation(DpugAnnotationSpec spec);
+  R visitLiteral(DpugLiteralSpec spec, [R? context]);
+  R visitBinary(DpugBinarySpec spec, [R? context]);
+  R visitInvoke(DpugInvokeSpec spec, [R? context]);
+  R visitListLiteral(DpugListLiteralSpec spec, [R? context]);
+  R visitStringLiteral(DpugStringLiteralSpec spec, [R? context]);
+  R visitClosureExpression(DpugClosureExpressionSpec spec, [R? context]);
+  R visitAssignment(DpugAssignmentSpec spec, [R? context]);
+  R visitStateField(DpugStateFieldSpec spec, [R? context]);
 }

@@ -26,5 +26,6 @@ class DpugMethodSpec extends DpugSpec {
           name: name, returnType: returnType, body: body, isGetter: true);
 
   @override
-  T accept<T>(DpugSpecVisitor<T> visitor) => visitor.visitMethod(this);
+  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+      visitor.visitMethod(this, context);
 }

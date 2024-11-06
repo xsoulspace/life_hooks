@@ -5,5 +5,5 @@ import '../visitors/visitor.dart';
 @immutable
 abstract class DpugSpec {
   const DpugSpec();
-  T accept<T>(DpugSpecVisitor<T> visitor);
+  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]);
 }

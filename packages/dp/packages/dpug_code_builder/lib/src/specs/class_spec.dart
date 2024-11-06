@@ -38,5 +38,6 @@ class DpugClassSpec extends DpugSpec {
         mixins = BuiltList<DpugReferenceSpec>.of(mixins);
 
   @override
-  T accept<T>(DpugSpecVisitor<T> visitor) => visitor.visitClass(this);
+  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+      visitor.visitClass(this, context);
 }

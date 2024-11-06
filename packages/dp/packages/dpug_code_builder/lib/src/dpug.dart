@@ -28,7 +28,11 @@ class Dpug {
     return dpugSpec != null ? emitDpug(dpugSpec) : '';
   }
 
-  static String dpugToDartString(DpugSpec dpugSpec) {
+  static String toIterableDartString(Iterable<DpugSpec> dpugSpecs) {
+    return dpugSpecs.map((s) => toDartString(s)).join('\n\n');
+  }
+
+  static String toDartString(DpugSpec dpugSpec) {
     final dartSpec = toDart(dpugSpec);
     final emitter = cb.DartEmitter();
     return dartSpec.accept(emitter).toString();

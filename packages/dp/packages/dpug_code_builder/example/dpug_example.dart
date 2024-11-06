@@ -29,7 +29,7 @@ void main() {
                     DpugWidgetBuilder()
                       ..name('Text')
                       ..positionalCascadeArgument(
-                        DpugExpressionSpec.stringLiteral('Todo List'),
+                        DpugExpressionSpec.string('Todo List'),
                       ),
                   ),
                 ),
@@ -57,7 +57,7 @@ void main() {
                       )
                       ..property(
                         'onChanged',
-                        DpugExpressionSpec.lambda(
+                        DpugExpressionSpec.closure(
                           ['value'],
                           DpugExpressionSpec.assignment(
                             'newTodo',
@@ -74,7 +74,7 @@ void main() {
   ).$1.build();
 
   print('// Dart output:');
-  print(todoList.accept(DpugToDartVisitor()));
+  print(Dpug.toDartString(todoList));
   print('\n// Dpug output:');
-  print(todoList.accept(DpugGeneratingVisitor()));
+  print(Dpug.emitDpug(todoList));
 }

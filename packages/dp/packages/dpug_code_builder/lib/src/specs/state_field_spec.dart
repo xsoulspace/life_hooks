@@ -17,5 +17,6 @@ class DpugStateFieldSpec extends DpugSpec {
   });
 
   @override
-  T accept<T>(DpugSpecVisitor<T> visitor) => visitor.visitStateField(this);
+  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+      visitor.visitStateField(this, context);
 }

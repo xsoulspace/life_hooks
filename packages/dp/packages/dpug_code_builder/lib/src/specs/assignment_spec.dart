@@ -8,5 +8,6 @@ class DpugAssignmentSpec extends DpugExpressionSpec {
   const DpugAssignmentSpec(this.target, this.value);
 
   @override
-  T accept<T>(DpugSpecVisitor<T> visitor) => visitor.visitAssignment(this);
+  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+      visitor.visitAssignment(this, context);
 }

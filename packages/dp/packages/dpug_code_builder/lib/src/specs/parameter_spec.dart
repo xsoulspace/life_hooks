@@ -18,5 +18,6 @@ class DpugParameterSpec extends DpugSpec {
   });
 
   @override
-  T accept<T>(DpugSpecVisitor<T> visitor) => visitor.visitParameter(this);
+  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+      visitor.visitParameter(this, context);
 }
