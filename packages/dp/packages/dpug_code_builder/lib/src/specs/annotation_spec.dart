@@ -17,6 +17,9 @@ class DpugAnnotationSpec extends DpugExpressionSpec implements DpugSpec {
   factory DpugAnnotationSpec.stateful() =>
       const DpugAnnotationSpec(name: 'stateful');
 
+  factory DpugAnnotationSpec.stateless() =>
+      const DpugAnnotationSpec(name: 'stateless');
+
   factory DpugAnnotationSpec.state() => const DpugAnnotationSpec(name: 'state');
 
   @override

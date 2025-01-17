@@ -251,6 +251,19 @@ class DpugEmitter extends BaseVisitor<String> {
   @override
   String visitReferenceExpression(DpugReferenceExpressionSpec spec,
       [String? context]) {
-    return spec.accept(this);
+    // TODO: implement visitExpression
+    throw UnimplementedError();
+  }
+
+  @override
+  String visitCode(DpugCodeSpec spec, [String? context]) {
+    // TODO: implement visitExpression
+    throw UnimplementedError();
+  }
+
+  @override
+  String visitExpression(DpugExpressionSpec spec, [String? context]) {
+    // TODO: implement visitExpression
+    throw UnimplementedError();
   }
 }
