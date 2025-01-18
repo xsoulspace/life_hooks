@@ -1,3 +1,7 @@
+## 0.0.13
+
+- fix: removed flutter_lints from app.yaml
+
 ## 0.0.12
 
 - Removed flutter_lints dependency and added lints dependency

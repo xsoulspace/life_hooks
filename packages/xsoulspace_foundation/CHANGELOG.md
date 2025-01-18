@@ -1,3 +1,10 @@
+## 0.0.5
+
+- Added:
+  - `whenZeroUse` extension for `int` and `double`
+- Chore:
+  - updated `xsoulspace_lints` to 0.0.12
+
 ## 0.0.4
 
 - Changed:
