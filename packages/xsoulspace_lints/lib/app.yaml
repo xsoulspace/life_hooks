@@ -39,6 +39,19 @@ linter:
   rules:
     # Errors
     use_build_context_synchronously: true
+    avoid_print: true
+    prefer_inlined_adds: true
+    null_closures: true
+    avoid_unnecessary_containers: true
+    avoid_web_libraries_in_flutter: true
+    no_logic_in_create_state: true
+    prefer_const_constructors_in_immutables: true
+    sized_box_for_whitespace: true
+    use_key_in_widget_constructors: true
+    non_nullable_equals_parameter: true
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
     unnecessary_statements: true
     type_literal_in_constant_pattern: true
     throw_in_finally: true
@@ -161,9 +174,6 @@ linter:
     use_string_buffers: true
     use_test_throws_matchers: true
     depend_on_referenced_packages: true
-    # avoid_classes_with_only_static_members: false
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
 

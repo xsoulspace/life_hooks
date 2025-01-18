@@ -1,3 +1,21 @@
+## 0.0.12
+
+- Removed flutter_lints dependency and added lints dependency
+- Added lints (mostly from old flutter_lints but with const lints):
+  avoid_print: true
+  prefer_inlined_adds: true
+  null_closures: true
+  avoid_unnecessary_containers: true
+  avoid_web_libraries_in_flutter: true
+  no_logic_in_create_state: true
+  prefer_const_constructors_in_immutables: true
+  sized_box_for_whitespace: true
+  use_key_in_widget_constructors: true
+  non_nullable_equals_parameter: true
+  prefer_const_constructors: true
+  prefer_const_declarations: true
+  prefer_const_literals_to_create_immutables: true
+
 ## 0.0.11
 
 BREAKING:
