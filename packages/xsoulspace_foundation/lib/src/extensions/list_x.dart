@@ -4,7 +4,7 @@
 /// capabilities for various use cases.
 ///
 /// @ai Use this extension to simplify operations on lists in your code.
-extension XSListExtension<E> on List<E> {
+extension XSListX<E> on List<E> {
   /// Reorders the list by moving an item from one index to another.
   ///
   /// [oldIndex] The current index of the item to move.
@@ -21,4 +21,17 @@ extension XSListExtension<E> on List<E> {
     final element = removeAt(oldIndex);
     insert(newIndex, element);
   }
+
+  /// Returns the list if it is not empty, otherwise returns the provided list.
+  ///
+  /// [values] The list to return if the current list is empty.
+  ///
+  /// @ai Use this method to provide a fallback list when the current list is
+  /// empty.
+  List<E> whenEmptyUse(final List<E> values) => isNotEmpty ? this : values;
+
+  /// Returns an unmodifiable view of the list.
+  ///
+  /// @ai Use this method to create a list that cannot be modified.
+  List<E> get unmodifiable => List.unmodifiable(this);
 }

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 
+/// A function that converts an old item to a new item.
 typedef IterableConverter<TOld, TNew> = Future<TNew> Function(TOld item);
 
 /// Extension methods for [Iterable] to provide additional functionality.

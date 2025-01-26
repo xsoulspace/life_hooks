@@ -1,4 +1,4 @@
-extension XSInt on int {
+extension XSIntX on int {
   /// Returns a default value if the number is zero.
   ///
   /// [value] The default value to return if the number is zero.
@@ -8,7 +8,7 @@ extension XSInt on int {
   int whenZeroUse(final int value) => this == 0 ? value : this;
 }
 
-extension XSDouble on double {
+extension XSDoubleX on double {
   /// Returns a default value if the number is zero.
   ///
   /// [value] The default value to return if the number is zero.

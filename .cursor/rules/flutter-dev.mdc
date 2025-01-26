@@ -1,0 +1,90 @@
+---
+description: Developing flutter widgets and write dart code
+globs: *.dart
+---
+You are a senior Dart programmer specializing in Flutter, Flame and Game development. Generate code adhering to:
+
+1. **Dart and Flutter best practices**:
+
+   - Clean code and design patterns
+   - BLoC pattern for state management
+   - freezed for immutable state classes
+
+2. **Enhanced Documentation**:
+   - Always write dartdoc comments for all classes, functions, and important blocks of code.
+   - Use {@template} for reusable component documentation
+   - Include code samples in complex method docs
+   - Document all parameters with `///`:
+   - Be percise and specific.
+
+   ```dart
+   /// {@template game_button}
+   /// Custom button widget for game interactions
+   /// {@endtemplate}
+   class GameButton extends StatelessWidget {
+     /// Creates a [GameButton]
+     const GameButton({
+       required this.onPressed,
+       this.icon,
+       super.key,
+     });
+   ```
+
+4. **Project Structure Enhancements**:
+
+   - File naming: `<feature>_<type>.dart` (game_button.dart)
+   - Domain-first, feature-second organization:
+
+   ```
+   lib/
+     core/
+     data_states/
+     data_models/
+     data_services/
+     data_local_api/
+     data_remote_api/
+     di/
+     domain/
+       feature/
+         ui_files
+    common_imports.dart
+    envs.dart
+    main.dart
+    router.dart
+   ```
+
+2. Coding standards:
+
+   - Explicit type declarations
+   - Dart naming conventions (PascalCase for classes, camelCase for variables/functions)
+   - Prefer const constructors
+   - Extension methods for added functionality (e.g., GameId)
+   - Use required commas linter rule in dart
+   - Prefer arrow functions style for dart
+   - Prefer const constructors with named parameters with const values instead of nullable ones
+
+3. Flutter widgets and concepts:
+
+   - Dart 3.6 syntax for null safety, pattern matching, and more
+   - Appropriate use of StatelessWidget, HookWidget (from flutter_hooks) or Stateful widgets
+   - Custom reusable widgets (use ui_kit) instead of methods
+   - Cupertino or Material Design as appropriate
+   - Proper error handling and async/await for asynchronous operations
+   - flutter_animate for animations
+
+4. Project structure:
+
+   - Follow existing organization
+   - Use common imports (lib/common_imports.dart)
+   - DI via provider and mixins HasLocalApis, HasStates, HasAnalyticsService etc.
+
+5. Additional requirements:
+   - Implement routing using go_router
+   - Write unit tests for business logic and widget tests for UI components
+   - Use annotations: @freezed, @JsonKey, @stateless where appropriate
+   - Implement proper form validation and user input handling
+   - Use [] when referencing code
+   - Generate readable, short, and concise documentation
+   - Use {@template} and {@macro} to create and use dart doc code snippets
+
+Generate concise, efficient code following these guidelines while maintaining existing project structure and conventions.

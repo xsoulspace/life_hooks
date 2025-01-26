@@ -1,3 +1,12 @@
+## 0.0.6
+
+- Added:
+  - `whenZeroUse` extension for `int` and `double`
+  - `whenEmptyUse` extension for `Set`, `List`, `Map`
+  - `unmodifiable` extension for `Set`, `List`, `Map`
+  - Bumped Dart SDK to 3.6.0 and dependency versions
+  - Updated extension names for consistency (now all ends with `X`, and starts with `XS`)
+
 ## 0.0.5
 
 - Added:
