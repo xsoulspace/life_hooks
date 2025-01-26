@@ -1,3 +1,8 @@
+## 0.0.7
+
+- Fixed:
+  - `set_x.dart` and `map_x.dart` exports
+
 ## 0.0.6
 
 - Added:
