@@ -1,3 +1,8 @@
+## 0.0.9
+
+- Fixed:
+  - export `infinite_scroll_pagination_utils`
+
 ## 0.0.8
 
 - Added:
