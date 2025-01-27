@@ -1,3 +1,10 @@
+## 0.0.8
+
+- Added:
+  - `infinite_scroll_pagination_utils` module with Readme documentation.
+- Changed:
+  - Improved some of Readme documentation.
+
 ## 0.0.7
 
 - Fixed:
