@@ -14,9 +14,9 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: ^0.19.0
-  xsoulspace_foundation: ^0.0.9
+  xsoulspace_foundation: ^0.0.10
 
 dev_dependencies:
-  build_runner: ^2.4.13
+  build_runner: ^2.4.15
   lints: ^5.1.1
   xsoulspace_lints: ^0.0.14

@@ -1,3 +1,10 @@
+## 0.0.11
+
+- Updated:
+  - freezed_annotation: ^3.0.0
+  - freezed: ^3.0.3
+  - json_serializable: ^6.9.4
+
 ## 0.0.10
 
 - Updated:
