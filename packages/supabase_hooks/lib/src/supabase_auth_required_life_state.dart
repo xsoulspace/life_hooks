@@ -11,13 +11,12 @@ abstract class SupabaseAuthRequiredLifeState extends SupabaseLifeState
         // ignore: prefer_mixin
         WidgetsBindingObserver {
   late final StreamSubscription<AuthChangeEvent> _authStateListener;
-
+  final _log = Supabase.instance.client.realtime.log;
   @override
   void initState() {
     super.initState();
 
-    _authStateListener =
-        SupabaseAuth.instance.onAuthChange.listen((final event) {
+    _authStateListener = Supabase.instance.client.auth.listen((final event) {
       if (event == AuthChangeEvent.signedOut) {
         onUnauthenticated();
       }
@@ -32,19 +31,19 @@ abstract class SupabaseAuthRequiredLifeState extends SupabaseLifeState
 
   @override
   void dispose() {
-    _authStateListener.cancel();
+    unawaited(_authStateListener.cancel());
     super.dispose();
   }
 
   @override
   void startAuthObserver() {
-    Supabase.instance.log('***** SupabaseAuthRequiredState startAuthObserver');
+    _log('***** SupabaseAuthRequiredState startAuthObserver');
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void stopAuthObserver() {
-    Supabase.instance.log('***** SupabaseAuthRequiredState stopAuthObserver');
+    _log('***** SupabaseAuthRequiredState stopAuthObserver');
     WidgetsBinding.instance.removeObserver(this);
   }
 
@@ -53,7 +52,6 @@ abstract class SupabaseAuthRequiredLifeState extends SupabaseLifeState
     switch (state) {
       case AppLifecycleState.resumed:
         onResumed();
-        break;
       case AppLifecycleState.inactive:
         break;
       case AppLifecycleState.paused:
@@ -65,14 +63,14 @@ abstract class SupabaseAuthRequiredLifeState extends SupabaseLifeState
     }
   }
 
-  Future<bool> onResumed() async {
-    Supabase.instance.log('***** SupabaseAuthRequiredState onResumed');
+  Future<bool> onResumed() {
+    _log('***** SupabaseAuthRequiredState onResumed');
     return _recoverSupabaseSession();
   }
 
   Future<bool> _recoverSupabaseSession() async {
     final bool exist =
-        await SupabaseAuth.instance.localStorage.hasAccessToken();
+        await Supabase.instance.client.auth.localStorage.hasAccessToken();
     if (!exist) {
       onUnauthenticated();
       return false;
@@ -85,8 +83,9 @@ abstract class SupabaseAuthRequiredLifeState extends SupabaseLifeState
       return false;
     }
 
-    final response =
-        await Supabase.instance.client.auth.recoverSession(jsonStr);
+    final response = await Supabase.instance.client.auth.recoverSession(
+      jsonStr,
+    );
     if (response.error != null) {
       await SupabaseAuth.instance.localStorage.removePersistedSession();
       onUnauthenticated();
