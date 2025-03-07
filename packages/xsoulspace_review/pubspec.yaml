@@ -2,7 +2,7 @@ name: xsoulspace_review
 repository: https://github.com/xsoulspace/life_hooks/tree/main/packages/xsoulspace_review
 description: Useful tools for review for stores and user feedback
 
-version: 0.1.0
+version: 0.1.1
 
 environment:
   sdk: ">=3.7.0 <4.0.0"

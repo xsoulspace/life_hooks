@@ -1,6 +1,6 @@
 # xsoulspace_review Package
 
-The main purpose is to unite and simplify the process of requesting reviews from various stores.
+The main purpose of this package is to unite and simplify the process of requesting reviews from various stores.
 
 Currently, the package supports the following stores:
 

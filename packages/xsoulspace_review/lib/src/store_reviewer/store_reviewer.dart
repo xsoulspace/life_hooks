@@ -17,10 +17,8 @@ export 'store_review_requester.dart';
 ///
 /// @ai Use this type when implementing custom consent screens for store
 /// reviews.
-typedef ReviewerFallbackConsentBuilder = Future<bool> Function(
-  BuildContext context,
-  Locale locale,
-);
+typedef ReviewerFallbackConsentBuilder =
+    Future<bool> Function(BuildContext context, Locale locale);
 
 /// Base class for implementing store review functionality.
 ///
@@ -105,25 +103,23 @@ class StoreReviewerFactory {
     final ReviewerFallbackConsentBuilder fallbackConsentBuilder =
         defaultFallbackConsentBuilder,
   }) async {
-    final appStoreUtils = AppStoreUtils();
+    const appStoreUtils = AppStoreUtils();
     final installSource = await appStoreUtils.getInstallationSource();
     return switch (installSource) {
       InstallSource.androidRustore => RuStoreReviewer(
-          consentBuilder: fallbackConsentBuilder,
-          packageName: androidPackageName,
-        ),
+        consentBuilder: fallbackConsentBuilder,
+        packageName: androidPackageName,
+      ),
       InstallSource.androidHuawaiAppGallery => HuaweiStoreReviewer(),
       InstallSource.androidApk ||
       InstallSource.androidGooglePlay ||
       InstallSource.androidGooglePlayInstaller ||
-      _ when installSource.isApple =>
-        GoogleAppleStoreReviewer(),
+      _ when installSource.isApple => GoogleAppleStoreReviewer(),
       InstallSource.linuxSnap ||
-      _ when installSource.isLinux =>
-        SnapStoreReviewer(
-          packageName: snapPackageName,
-          consentBuilder: fallbackConsentBuilder,
-        ),
+      _ when installSource.isLinux => SnapStoreReviewer(
+        packageName: snapPackageName,
+        consentBuilder: fallbackConsentBuilder,
+      ),
       _ when installSource.isWeb => WebStoreReviewer(),
       // TODO(arenukvern): add other platforms
       _ => WebStoreReviewer(),
