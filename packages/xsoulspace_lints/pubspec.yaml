@@ -1,17 +1,13 @@
 name: xsoulspace_lints
 description: Strict lint rules for Flutter and Dart.
-version: 0.0.13
+version: 0.0.14
 homepage: https://github.com/xsoulspace/life_hooks/tree/main/packages/xsoulspace_lints
 
 environment:
-  sdk: ">=3.5.3 <4.0.0"
-
-dependencies:
-  flutter:
-    sdk: flutter
+  sdk: ">=3.7.0 <4.0.0"
 
 dev_dependencies:
-  lints: ^5.0.0
+  lints: ^5.1.1
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

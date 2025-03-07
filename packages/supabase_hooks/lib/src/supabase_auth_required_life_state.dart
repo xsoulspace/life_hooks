@@ -60,6 +60,8 @@ abstract class SupabaseAuthRequiredLifeState extends SupabaseLifeState
         break;
       case AppLifecycleState.detached:
         break;
+      case AppLifecycleState.hidden:
+        break;
     }
   }
 

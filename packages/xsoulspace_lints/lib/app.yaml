@@ -40,9 +40,14 @@ linter:
     # Errors
     use_build_context_synchronously: true
     avoid_print: true
+    unnecessary_async: true
+    strict_top_level_inference: true
+    unsafe_variance: true
     prefer_inlined_adds: true
+    omit_obvious_property_types: true
     null_closures: true
     avoid_unnecessary_containers: true
+    unnecessary_underscores: true
     avoid_web_libraries_in_flutter: true
     no_logic_in_create_state: true
     prefer_const_constructors_in_immutables: true
@@ -119,6 +124,7 @@ linter:
     no_default_cases: true
     implicit_call_tearoffs: true
     join_return_with_assignment: true
+    annotate_redeclares: true
     leading_newlines_in_multiline_strings: true
     library_private_types_in_public_api: false
     lines_longer_than_80_chars: true
@@ -127,7 +133,6 @@ linter:
     noop_primitive_operations: true
     null_check_on_nullable_type_parameter: true
     one_member_abstracts: true
-    package_api_docs: false
     only_throw_errors: true
     prefer_initializing_formals: true
     parameter_assignments: true

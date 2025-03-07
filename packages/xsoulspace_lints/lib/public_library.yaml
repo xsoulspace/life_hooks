@@ -24,4 +24,3 @@ linter:
   # producing the lint.
   rules:
     public_member_api_docs: true
-    package_api_docs: true

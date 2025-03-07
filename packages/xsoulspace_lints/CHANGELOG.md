@@ -1,3 +1,21 @@
+## 0.0.14
+
+- Added lints:
+  strict_top_level_inference
+  unnecessary_underscores
+  omit_obvious_property_types
+  unnecessary_async
+  unsafe_variance
+  annotate_redeclares
+- Removed lints:
+  package_api_docs
+
+- Updated README
+- Chore: dart sdk: ">=3.7.0 <4.0.0"
+- Chore: lints: ^5.1.1
+
+- Removed flutter dependency
+
 ## 0.0.13
 
 - fix: removed flutter_lints from app.yaml
