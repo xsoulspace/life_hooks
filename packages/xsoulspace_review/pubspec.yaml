@@ -10,13 +10,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_rustore_review: ^6.1.0
+  flutter_rustore_review: ^8.0.0
   in_app_review: ^2.0.10
-  meta: ^1.15.0
+  meta: ^1.16.0
   universal_io: ^2.2.2
   url_launcher: ^6.3.1
   wiredash: ^2.4.0
-  xsoulspace_foundation: ^0.0.10
+  xsoulspace_foundation: ^0.0.11
   xsoulspace_locale: ^0.0.2
 
 dev_dependencies:
