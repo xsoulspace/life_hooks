@@ -1,3 +1,33 @@
+## 0.0.11
+
+- Updated:
+  - freezed_annotation: ^3.0.0
+  - freezed: ^3.0.3
+  - json_serializable: ^6.9.4
+
+## 0.0.10
+
+- Updated:
+  - dart sdk 3.7.0
+  - collection 1.19.0
+  - collection: ^1.19.0
+  - shared_preferences: ^2.5.2
+  - store_checker: ^1.8.0
+  - lints: ^5.1.1
+  - xsoulspace_lints: ^0.0.14
+
+## 0.0.9
+
+- Fixed:
+  - export `infinite_scroll_pagination_utils`
+
+## 0.0.8
+
+- Added:
+  - `infinite_scroll_pagination_utils` module with Readme documentation.
+- Changed:
+  - Improved some of Readme documentation.
+
 ## 0.0.7
 
 - Fixed:

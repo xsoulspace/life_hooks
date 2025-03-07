@@ -1,3 +1,12 @@
+## 0.0.21
+
+- Updated Dependecies:
+  - sdk: ">=3.7.0 <4.0.0"
+  - replaced flutter_lints with lints: ^5.1.1
+  - xsoulspace_lints: ^0.0.14
+  - xsoulspace_foundation: ^0.0.10
+  - flutter_hooks: ^0.21.2
+
 ## 0.0.20
 
 BREAKING CHANGE:

@@ -20,7 +20,8 @@ class UserFeedbackWiredashDto {
   final String secret;
   final FutureOr<CustomizableWiredashMetaData> Function(
     CustomizableWiredashMetaData metaData,
-  )? collectMetaData;
+  )?
+  collectMetaData;
   final WiredashFeedbackOptions? feedbackOptions;
   final PsOptions? psOptions;
   final WiredashThemeData? theme;
@@ -36,18 +37,19 @@ class UserFeedback extends StatelessWidget {
   }) : wiredashDto = dto;
   final Widget child;
   final UserFeedbackWiredashDto wiredashDto;
-  static void show(final BuildContext context) => Wiredash.of(context).show();
+  static Future<void> show(final BuildContext context) =>
+      Wiredash.of(context).show();
 
   @override
   Widget build(final BuildContext context) => Wiredash(
-        projectId: wiredashDto.projectId,
-        secret: wiredashDto.secret,
-        collectMetaData: wiredashDto.collectMetaData,
-        feedbackOptions: wiredashDto.feedbackOptions,
-        psOptions: wiredashDto.psOptions,
-        theme: wiredashDto.theme,
-        options: wiredashDto.options,
-        padding: wiredashDto.padding,
-        child: child,
-      );
+    projectId: wiredashDto.projectId,
+    secret: wiredashDto.secret,
+    collectMetaData: wiredashDto.collectMetaData,
+    feedbackOptions: wiredashDto.feedbackOptions,
+    psOptions: wiredashDto.psOptions,
+    theme: wiredashDto.theme,
+    options: wiredashDto.options,
+    padding: wiredashDto.padding,
+    child: child,
+  );
 }

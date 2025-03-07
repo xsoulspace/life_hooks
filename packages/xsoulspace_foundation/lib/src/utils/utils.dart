@@ -3,6 +3,7 @@ export 'close_keyboard.dart';
 export 'date_time_utils.dart';
 export 'device_runtime_type.dart';
 export 'id_creator.dart';
+export 'infinite_scroll_pagination_utils/infinite_scroll_pagination_utils.dart';
 export 'json_coders.dart';
 export 'local_db/local_db.dart';
 export 'num_utils.dart';
