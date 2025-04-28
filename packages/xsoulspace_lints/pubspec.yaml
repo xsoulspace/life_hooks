@@ -1,6 +1,6 @@
 name: xsoulspace_lints
 description: Strict lint rules for Flutter and Dart.
-version: 0.0.14
+version: 0.0.15
 homepage: https://github.com/xsoulspace/life_hooks/tree/main/packages/xsoulspace_lints
 
 environment:

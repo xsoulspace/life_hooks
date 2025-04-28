@@ -1,11 +1,3 @@
-## 0.1.0
-
-BREAKING CHANGES:
-
-- isEmpty, onEmpty methods migrated to new library [is_dart_empty_or_not](https://pub.dev/packages/is_dart_empty_or_not)
-
-- ui and flutter related utilities migrated to new library [xsoulspace_ui_foundation]()
-
 ## 0.0.11
 
 - Updated:

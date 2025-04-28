@@ -22,14 +22,6 @@ extension XSListX<E> on List<E> {
     insert(newIndex, element);
   }
 
-  /// Returns the list if it is not empty, otherwise returns the provided list.
-  ///
-  /// [values] The list to return if the current list is empty.
-  ///
-  /// @ai Use this method to provide a fallback list when the current list is
-  /// empty.
-  List<E> whenEmptyUse(final List<E> values) => isNotEmpty ? this : values;
-
   /// Returns an unmodifiable view of the list.
   ///
   /// @ai Use this method to create a list that cannot be modified.

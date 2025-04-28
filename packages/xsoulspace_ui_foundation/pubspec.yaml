@@ -1,0 +1,20 @@
+name: xsoulspace_ui_foundation
+description: Shared UI utils, extensions, and helpers.
+version: 0.0.1
+homepage: https://github.com/xsoulspace/life_hooks/tree/main/packages/xsoulspace_ui_foundation
+environment:
+  sdk: ">=3.7.0 <4.0.0"
+
+dependencies:
+  collection: ^1.19.0
+  flutter:
+    sdk: flutter
+  infinite_scroll_pagination: ^4.1.0
+  store_checker: ^1.8.0
+  xsoulspace_foundation: ^0.0.11
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  lints: ^5.1.1
+  xsoulspace_lints: ^0.0.14

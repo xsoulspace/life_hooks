@@ -1,13 +1,12 @@
 import 'package:flutter/foundation.dart';
 
 import '../../interfaces.dart';
-import '../id_creator.dart';
 import 'infinite_scroll_pagination_utils.dart';
 
 extension type UnifiedPagingControllerId(String value) {}
 
-typedef PagingControllerLoadFunction<TModel>
-    = Future<PagingControllerPageModel<TModel>> Function(int page);
+typedef PagingControllerLoadFunction<TModel> =
+    Future<PagingControllerPageModel<TModel>> Function(int page);
 
 abstract class PagingControllerRequestsBuilder<TModel> {
   PagingControllerRequestsBuilder({required this.onLoadData});
@@ -24,12 +23,12 @@ abstract base class BasePagingController<TItem> implements Disposable {
     this.addEmptyFirstItem = false,
     this.emptyItemBuilder,
     final int firstPageKey = 1,
-  })  : _firstPageKey = firstPageKey,
-        assert(
-          // ignore: avoid_bool_literals_in_conditional_expressions
-          addEmptyFirstItem ? emptyItemBuilder != null : true,
-          'emptyItemBuilder must not be null',
-        ) {
+  }) : _firstPageKey = firstPageKey,
+       assert(
+         // ignore: avoid_bool_literals_in_conditional_expressions
+         addEmptyFirstItem ? emptyItemBuilder != null : true,
+         'emptyItemBuilder must not be null',
+       ) {
     pager.addListener(_onPagerChanged);
   }
   late final int _firstPageKey;
@@ -38,11 +37,10 @@ abstract base class BasePagingController<TItem> implements Disposable {
   late final pager = HashPagingController<int, TItem>(
     firstPageKey: _firstPageKey,
   );
-  final UnifiedPagingControllerId id =
-      UnifiedPagingControllerId(IdCreator.create());
+  final id = UnifiedPagingControllerId(IdCreator.create());
   List<TItem> get items => pager.itemList ?? [];
   final _itemsCountListeners = <ValueChanged<int>>{};
-  int _lastItemsCount = 0;
+  var _lastItemsCount = 0;
 
   PagingControllerRequestsBuilder<TItem> get requestBuilder;
 
@@ -105,10 +103,7 @@ abstract base class BasePagingController<TItem> implements Disposable {
 
   void insertItem(final TItem item, {final int at = 0}) =>
       pager.insertElements([item], at: at);
-  void insertItems(
-    final List<TItem> items, {
-    final int at = 0,
-  }) =>
+  void insertItems(final List<TItem> items, {final int at = 0}) =>
       pager.insertElements(items, at: at);
   void moveElementFirst({
     required final TItem element,
@@ -116,10 +111,7 @@ abstract base class BasePagingController<TItem> implements Disposable {
   }) {
     final index = items.indexWhere((final e) => e == element);
     if (index >= 0) {
-      moveElementByIndex(
-        element: element,
-        index: index,
-      );
+      moveElementByIndex(element: element, index: index);
     } else if (shouldAddOnNotFound) {
       insertItem(element);
     }
@@ -133,24 +125,22 @@ abstract base class BasePagingController<TItem> implements Disposable {
 
     /// target index after element removal
     final int moveToIndex = 0,
-  }) =>
-      pager.moveElementByIndex(
-        element: element,
-        newIndex: moveToIndex,
-        oldIndex: index,
-      );
+  }) => pager.moveElementByIndex(
+    element: element,
+    newIndex: moveToIndex,
+    oldIndex: index,
+  );
   void replaceItem(
     final TItem item, {
     final bool shouldAddOnNotFound = false,
     final bool Function(TItem a, TItem b)? equals,
     final int? index,
-  }) =>
-      pager.replaceElement(
-        element: item,
-        shouldAddOnNotFound: shouldAddOnNotFound,
-        equals: equals,
-        index: index,
-      );
+  }) => pager.replaceElement(
+    element: item,
+    shouldAddOnNotFound: shouldAddOnNotFound,
+    equals: equals,
+    index: index,
+  );
 
   void deleteItem(final TItem item) => pager.removeElement(element: item);
   TItem? deleteItemWhere(final bool Function(TItem element) test) =>

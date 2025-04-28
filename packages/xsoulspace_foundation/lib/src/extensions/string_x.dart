@@ -22,23 +22,6 @@ extension XSStringX on String {
     return Color(int.parse(buffer.toString(), radix: 16));
   }
 
-  /// Invokes a callback when the string is non-empty.
-  ///
-  /// [callback] The function to invoke with the string value.
-  ///
-  /// @ai Use this method to perform actions conditionally based on string
-  /// content.
-  void onNotEmpty(final void Function(String value) callback) =>
-      isEmpty ? null : callback(this);
-
-  /// Returns a default value if the string is empty.
-  ///
-  /// [value] The default value to return if the string is empty.
-  /// @returns The original string or the default value if empty.
-  ///
-  /// @ai Use this method to provide fallback values for empty strings.
-  String whenEmptyUse(final String value) => isEmpty ? value : this;
-
   /// Whether the string is a valid URL.
   ///
   /// @returns True if the string is a valid URL, false otherwise.
