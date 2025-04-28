@@ -21,4 +21,4 @@ dependencies:
 
 dev_dependencies:
   lints: ^5.1.1
-  xsoulspace_lints: ^0.0.14
+  xsoulspace_lints: ^0.0.15

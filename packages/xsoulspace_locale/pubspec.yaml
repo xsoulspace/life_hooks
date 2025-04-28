@@ -19,4 +19,4 @@ dependencies:
 dev_dependencies:
   build_runner: ^2.4.15
   lints: ^5.1.1
-  xsoulspace_lints: ^0.0.14
+  xsoulspace_lints: ^0.0.15
