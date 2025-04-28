@@ -3,6 +3,7 @@
 BREAKING CHANGES:
 
 - isEmpty, onEmpty methods migrated to new library [is_dart_empty_or_not](https://pub.dev/packages/is_dart_empty_or_not)
+- json encoding and decoding functions moved into [from_json_to_json](https://pub.dev/packages/from_json_to_json)
 
 - ui and flutter related utilities migrated to new library [xsoulspace_ui_foundation]()
 
