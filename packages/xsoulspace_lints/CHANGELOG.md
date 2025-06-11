@@ -1,3 +1,7 @@
+## 0.1.0
+
+- chore: dart sdk: ">=3.8.1 <4.0.0"
+
 ## 0.0.15
 
 - fix: non_nullable_equals_parameter not found

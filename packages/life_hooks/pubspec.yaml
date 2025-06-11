@@ -1,20 +1,20 @@
 name: life_hooks
 description: A small classes to use flutter_hooks easier
-version: 0.0.21
+version: 0.1.0
 homepage: https://github.com/xsoulspace/life_hooks/tree/main/packages/life_hooks
 
 environment:
-  sdk: ">=3.7.0 <4.0.0"
+  sdk: ">=3.8.1 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   flutter_hooks: ^0.21.2
   flutter_keyboard_visibility: ^6.0.0
-  xsoulspace_foundation: ^0.0.10
+  xsoulspace_foundation: ^0.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  lints: ^5.1.1
-  xsoulspace_lints: ^0.0.15
+  lints: ^6.0.0
+  xsoulspace_lints: ^0.1.0

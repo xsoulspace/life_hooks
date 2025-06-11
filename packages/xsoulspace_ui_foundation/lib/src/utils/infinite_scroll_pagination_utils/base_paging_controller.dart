@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:xsoulspace_foundation/xsoulspace_foundation.dart';
 
 import '../../interfaces.dart';
 import 'infinite_scroll_pagination_utils.dart';
