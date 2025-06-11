@@ -1,28 +1,33 @@
 ---
-description: Developing flutter widgets and write dart code
+description: 
 globs: *.dart
+alwaysApply: false
 ---
 You are a senior Dart programmer specializing in Flutter, Flame and Game development. Generate code adhering to:
 
 1. **Dart and Flutter best practices**:
 
    - Clean code and design patterns
-   - BLoC pattern for state management
-   - freezed for immutable state classes
+   - Use Dart 3.8, Flutter 3.32
+   - Use async / await instead of then
 
 2. **Enhanced Documentation**:
-   - Always write dartdoc comments for all classes, functions, and important blocks of code.
+   - Write precise, future-proof dartdoc comments that focus on the specific purpose
+   - Include cross-references to related classes and real usage examples
+   - Document relationships between related components
+   - Avoid scope limitations unless absolutely necessary
    - Use {@template} for reusable component documentation
-   - Include code samples in complex method docs
-   - Document all parameters with `///`:
-   - Be percise and specific.
+   - Include practical code samples showing real usage patterns
+   - Document all parameters with `///`
+   - Add warning comments for important usage notes
+   - Reference concrete implementations in the codebase
 
    ```dart
    /// {@template game_button}
    /// Custom button widget for game interactions
    /// {@endtemplate}
    class GameButton extends StatelessWidget {
-     /// Creates a [GameButton]
+     /// {@macro game_button}
      const GameButton({
        required this.onPressed,
        this.icon,
@@ -30,28 +35,6 @@ You are a senior Dart programmer specializing in Flutter, Flame and Game develop
      });
    ```
 
-4. **Project Structure Enhancements**:
-
-   - File naming: `<feature>_<type>.dart` (game_button.dart)
-   - Domain-first, feature-second organization:
-
-   ```
-   lib/
-     core/
-     data_states/
-     data_models/
-     data_services/
-     data_local_api/
-     data_remote_api/
-     di/
-     domain/
-       feature/
-         ui_files
-    common_imports.dart
-    envs.dart
-    main.dart
-    router.dart
-   ```
 
 2. Coding standards:
 
@@ -65,8 +48,8 @@ You are a senior Dart programmer specializing in Flutter, Flame and Game develop
 
 3. Flutter widgets and concepts:
 
-   - Dart 3.6 syntax for null safety, pattern matching, and more
-   - Appropriate use of StatelessWidget, HookWidget (from flutter_hooks) or Stateful widgets
+   - Dart 3.8 syntax for null safety, pattern matching, and more
+   - Appropriate use of StatelessWidget or Stateful widgets
    - Custom reusable widgets (use ui_kit) instead of methods
    - Cupertino or Material Design as appropriate
    - Proper error handling and async/await for asynchronous operations
@@ -76,12 +59,10 @@ You are a senior Dart programmer specializing in Flutter, Flame and Game develop
 
    - Follow existing organization
    - Use common imports (lib/common_imports.dart)
-   - DI via provider and mixins HasLocalApis, HasStates, HasAnalyticsService etc.
 
 5. Additional requirements:
    - Implement routing using go_router
    - Write unit tests for business logic and widget tests for UI components
-   - Use annotations: @freezed, @JsonKey, @stateless where appropriate
    - Implement proper form validation and user input handling
    - Use [] when referencing code
    - Generate readable, short, and concise documentation
