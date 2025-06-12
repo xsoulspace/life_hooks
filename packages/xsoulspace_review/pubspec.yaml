@@ -1,7 +1,7 @@
 name: xsoulspace_review
 repository: https://github.com/xsoulspace/life_hooks/tree/main/packages/xsoulspace_review
 description: Useful tools for review for stores and user feedback
-version: 0.2.0
+version: 0.2.1
 
 environment:
   sdk: ">=3.8.1 <4.0.0"
@@ -9,16 +9,16 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_rustore_review: ^8.0.0
+  flutter_rustore_review: ^9.0.2
   in_app_review: ^2.0.10
   meta: ^1.16.0
   universal_io: ^2.2.2
   url_launcher: ^6.3.1
-  wiredash: ^2.4.0
+  wiredash: ^2.5.0
   xsoulspace_foundation: ^0.2.0
   xsoulspace_locale: ^0.2.0
   xsoulspace_ui_foundation: ^0.1.0
 
 dev_dependencies:
-  lints: ^5.1.1
+  lints: ^6.0.0
   xsoulspace_lints: ^0.1.0
