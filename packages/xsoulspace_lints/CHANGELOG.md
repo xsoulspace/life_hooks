@@ -1,3 +1,11 @@
+## 0.1.0
+
+- chore: dart sdk: ">=3.8.1 <4.0.0"
+
+## 0.0.15
+
+- fix: non_nullable_equals_parameter not found
+
 ## 0.0.14
 
 - Added lints:
@@ -33,7 +41,6 @@
   prefer_const_constructors_in_immutables: true
   sized_box_for_whitespace: true
   use_key_in_widget_constructors: true
-  non_nullable_equals_parameter: true
   prefer_const_constructors: true
   prefer_const_declarations: true
   prefer_const_literals_to_create_immutables: true

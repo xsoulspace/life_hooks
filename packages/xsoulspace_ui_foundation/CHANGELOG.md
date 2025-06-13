@@ -1,15 +1,6 @@
-## 0.2.0
-
-- chore: sdk: ">=3.8.1 <4.0.0"
-
 ## 0.1.0
 
-BREAKING CHANGES:
-
-- isEmpty, onEmpty methods migrated to new library [is_dart_empty_or_not](https://pub.dev/packages/is_dart_empty_or_not)
-- json encoding and decoding functions moved into [from_json_to_json](https://pub.dev/packages/from_json_to_json)
-
-- ui and flutter related utilities migrated to new library [xsoulspace_ui_foundation]()
+- chore: sdk: ">=3.8.1 <4.0.0"
 
 ## 0.0.11
 

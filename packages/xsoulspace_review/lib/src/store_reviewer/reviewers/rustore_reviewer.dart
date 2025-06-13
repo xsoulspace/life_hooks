@@ -28,9 +28,11 @@ final class RuStoreReviewer extends StoreReviewer {
     } on PlatformException catch (e) {
       switch (e.message) {
         case 'RuStoreRequestLimitReached':
-          if (force) {
-            final isConsent =
-                await consentBuilder(context, locale ?? defaultLocale);
+          if (force && context.mounted) {
+            final isConsent = await consentBuilder(
+              context,
+              locale ?? defaultLocale,
+            );
             if (!isConsent) return;
             await launchScheme(
               'https://www.rustore.ru/catalog/app/$packageName',

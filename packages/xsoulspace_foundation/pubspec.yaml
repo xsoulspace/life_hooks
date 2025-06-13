@@ -1,26 +1,19 @@
 name: xsoulspace_foundation
 description: Shared utils, extensions, and helpers.
-version: 0.0.11
+version: 0.2.0
 homepage: https://github.com/xsoulspace/life_hooks/tree/main/packages/xsoulspace_foundation
 environment:
-  sdk: ">=3.7.0 <4.0.0"
+  sdk: ">=3.8.1 <4.0.0"
 
 dependencies:
-  collection: ^1.19.0
-  flutter:
-    sdk: flutter
+  collection: ^1.19.1
   freezed_annotation: ^3.0.0
-  infinite_scroll_pagination: ^4.1.0
-  shared_preferences: ^2.5.2
-  store_checker: ^1.8.0
+  shared_preferences: ^2.5.3
   uuid: ^4.5.1
-  web: ^1.1.1
 
 dev_dependencies:
   build_runner: ^2.4.15
-  flutter_test:
-    sdk: flutter
-  freezed: ^3.0.3
-  json_serializable: ^6.9.4
-  lints: ^5.1.1
-  xsoulspace_lints: ^0.0.14
+  freezed: ^3.0.6
+  json_serializable: ^6.9.5
+  lints: ^6.0.0
+  xsoulspace_lints: ^0.1.0

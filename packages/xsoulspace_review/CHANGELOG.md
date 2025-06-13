@@ -1,3 +1,14 @@
+## 0.2.1
+
+- Updated:
+  - flutter_rustore_review: ^9.0.2
+  - wiredash: ^2.5.0
+  - lints: ^6.0.0
+
+## 0.2.0
+
+- chore: sdk: ">=3.8.1 <4.0.0"
+
 ## 0.1.1
 
 - Updated:
