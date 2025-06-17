@@ -1,3 +1,7 @@
+## 0.1.1
+
+- chore: added xsoulspace_ui_foundation for DeviceRuntimeType
+
 ## 0.1.0
 
 - chore: sdk: ">=3.8.1 <4.0.0"

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-import 'package:xsoulspace_foundation/xsoulspace_foundation.dart';
+import 'package:xsoulspace_ui_foundation/xsoulspace_ui_foundation.dart';
 
 /// A hook that provides a [ValueNotifier] for keyboard visibility.
 ///
@@ -46,8 +46,9 @@ class _KeyboardVisiblityHookState
     if (DeviceRuntimeType.isNativeDesktop) return;
 
     final keyboardVisibilityController = KeyboardVisibilityController();
-    keyboardSubscription =
-        keyboardVisibilityController.onChange.listen(onKeyboardVisibiltyChange);
+    keyboardSubscription = keyboardVisibilityController.onChange.listen(
+      onKeyboardVisibiltyChange,
+    );
 
     super.initHook();
   }
