@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:from_json_to_json/from_json_to_json.dart';
 import 'package:intl/intl.dart';
 
 import 'localization_config.dart';

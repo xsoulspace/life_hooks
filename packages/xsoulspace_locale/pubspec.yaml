@@ -13,6 +13,7 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  from_json_to_json: ^0.2.1
   intl: ^0.20.2
   xsoulspace_foundation: ^0.2.0
 
