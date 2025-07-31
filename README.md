@@ -6,11 +6,8 @@ This repository contains some packages that I use for my personal, commercial pr
 
 ## Production and maintable:
 
-This repository contains several packages that serve different purposes:
+All libraries except hooks (xsoulspace_lints, xsoulspace_foundation, xsoulspace_lints) now migrated to [https://github.com/xsoulspace/dart_flutter_packages](dart_flutter_packages)
 
-- **[xsoulspace_lints](https://pub.dev/packages/xsoulspace_lints)**: A set of linting rules and code formatting guidelines to ensure code quality and consistency across projects.
-- **[xsoulspace_foundation](https://pub.dev/packages/xsoulspace_foundation)**: A shared library of utilities, extensions, and helpers that can be used across multiple projects.
-- **[xsoulspace_locale](https://pub.dev/packages/xsoulspace_locale)**: Boilerplate for localization, keyboard languages, locale changes.
 - **[life_hooks](https://pub.dev/packages/life_hooks)**: Useful hooks for managing state and lifecycle in Flutter applications.
 
 ## Outdated and maybe will be deprecated:
