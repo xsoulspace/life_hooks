@@ -22,7 +22,14 @@ class DpugExpressionSpec implements DpugSpec {
   factory DpugExpressionSpec.string(String value) = DpugStringLiteralSpec;
   factory DpugExpressionSpec.list(List<DpugExpressionSpec> values) =
       DpugListLiteralSpec;
-  factory DpugExpressionSpec.closure(DpugMethodSpec method) =
+  // Primary convenience factory used across tests: closure(params, body)
+  factory DpugExpressionSpec.closure(
+    List<String> params,
+    DpugExpressionSpec body,
+  ) = DpugClosureExpressionSpec.fromParams;
+
+  // Secondary factory if a prebuilt method is available
+  factory DpugExpressionSpec.closureFromMethod(DpugMethodSpec method) =
       DpugClosureExpressionSpec;
   factory DpugExpressionSpec.assignment(
       String target, DpugExpressionSpec value) = DpugAssignmentSpec;

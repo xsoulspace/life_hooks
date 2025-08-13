@@ -11,6 +11,13 @@ class DpugWidgetBuilder extends DpugClassBuilder implements DpugSpec {
   final ListBuilder<DpugExpressionSpec> _positionalCascadeArgs =
       ListBuilder<DpugExpressionSpec>();
 
+  /// Sets the widget name (e.g. `Text`, `Column`, `GridView.builder`).
+  /// Returns this builder for chaining.
+  DpugWidgetBuilder name(String name) {
+    _name = name;
+    return this;
+  }
+
   DpugWidgetBuilder child(DpugWidgetBuilder child) {
     _children.add(child.build() as DpugWidgetSpec);
     return this;

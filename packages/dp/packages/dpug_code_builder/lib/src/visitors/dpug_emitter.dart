@@ -8,7 +8,7 @@ class DpugEmitter extends BaseVisitor<String> {
 
   DpugEmitter([this.config = const DpugConfig()]);
 
-  String get _indentation => config.indent * _indent;
+  String get _indentation => List.filled(_indent, config.indent).join();
 
   String _withIndent(int amount, String Function() block) {
     final previous = _indent;
@@ -113,12 +113,10 @@ class DpugEmitter extends BaseVisitor<String> {
       // Write widget name
       buffer.write('$_indentation${s.name}');
 
-      // Handle constructor call style (e.g., GridView.builder)
-      if (s.name.contains('.')) {
-        if (s.positionalArgs.isNotEmpty) {
-          final args = s.positionalArgs.map((a) => a.accept(this)).join(', ');
-          buffer.write('($args)');
-        }
+      // Handle positional arguments for constructor calls
+      if (s.positionalArgs.isNotEmpty) {
+        final args = s.positionalArgs.map((a) => a.accept(this)).join(', ');
+        buffer.write('($args)');
       }
       buffer.writeln();
 
@@ -167,13 +165,13 @@ class DpugEmitter extends BaseVisitor<String> {
 
   @override
   String visitInvoke(DpugInvokeSpec spec, [String? context]) {
-    final args = spec.positionedArguments.map((a) => a.accept(this));
+    final args = spec.positionedArguments.map((a) => a.accept(this)).toList();
     final namedArgs = spec.namedArguments.entries
-        .map((e) => '${e.key}: ${e.value.accept(this)}');
-    final positionedArgs =
-        spec.positionedArguments.map((a) => ':${a.accept(this)}');
-    final allArgs = [...args, ...namedArgs, ...positionedArgs].join(', ');
-    return '${spec.target}($allArgs)';
+        .map((e) => '${e.key}: ${e.value.accept(this)}')
+        .toList();
+    final allArgs = [...args, ...namedArgs].join(', ');
+    final target = spec.target.accept(this);
+    return '$target($allArgs)';
   }
 
   @override
@@ -199,8 +197,8 @@ class DpugEmitter extends BaseVisitor<String> {
   @override
   String visitClosureExpression(DpugClosureExpressionSpec spec,
       [String? context]) {
-    final params = spec.parameters.join(', ');
-    final body = spec.body.accept(this);
+    final params = spec.method.parameters.map((p) => p.name).join(', ');
+    final body = spec.method.body.accept(this);
     return '($params) => $body';
   }
 
@@ -216,7 +214,9 @@ class DpugEmitter extends BaseVisitor<String> {
     final defaultValue = spec.defaultValue != null
         ? ' = ${spec.defaultValue!.accept(this)}'
         : '';
-    return '$required$named${spec.type} ${spec.name}$defaultValue';
+    final type = spec.type != null ? spec.type!.accept(this) : '';
+    final spacedType = type.isNotEmpty ? '$type ' : '';
+    return '$required$named$spacedType${spec.name}$defaultValue';
   }
 
   @override
@@ -228,7 +228,7 @@ class DpugEmitter extends BaseVisitor<String> {
   }
 
   @override
-  String visitAnnotation(DpugAnnotationSpec spec) {
+  String visitAnnotation(DpugAnnotationSpec spec, [String? context]) {
     if (spec.name == 'state') {
       return '@listen'; // Convert @state to @listen per README syntax
     }
@@ -251,19 +251,35 @@ class DpugEmitter extends BaseVisitor<String> {
   @override
   String visitReferenceExpression(DpugReferenceExpressionSpec spec,
       [String? context]) {
-    // TODO: implement visitExpression
-    throw UnimplementedError();
+    return spec.name;
   }
 
   @override
   String visitCode(DpugCodeSpec spec, [String? context]) {
-    // TODO: implement visitExpression
-    throw UnimplementedError();
+    return spec.value;
   }
 
   @override
   String visitExpression(DpugExpressionSpec spec, [String? context]) {
-    // TODO: implement visitExpression
-    throw UnimplementedError();
+    if (spec is DpugReferenceExpressionSpec) {
+      return visitReferenceExpression(spec);
+    } else if (spec is DpugStringLiteralSpec) {
+      return visitStringLiteral(spec);
+    } else if (spec is DpugWidgetExpressionSpec) {
+      return spec.builder.accept(this);
+    } else if (spec is DpugInvokeSpec) {
+      return visitInvoke(spec);
+    } else if (spec is DpugAssignmentSpec) {
+      return visitAssignment(spec);
+    } else if (spec is DpugBinarySpec) {
+      return visitBinary(spec);
+    } else if (spec is DpugClosureExpressionSpec) {
+      return visitClosureExpression(spec);
+    } else if (spec is DpugLiteralSpec) {
+      return visitLiteral(spec);
+    } else if (spec is DpugListLiteralSpec) {
+      return visitListLiteral(spec);
+    }
+    return spec.toString();
   }
 }

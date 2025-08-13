@@ -13,6 +13,27 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   );
 
   @override
+  cb.Spec visitCode(DpugCodeSpec spec, [cb.Spec? context]) {
+    return cb.Code(spec.value);
+  }
+
+  @override
+  cb.Spec visitExpression(DpugExpressionSpec spec, [cb.Spec? context]) {
+    // Fallback: try specialized handlers via pattern checks
+    if (spec is DpugReferenceExpressionSpec)
+      return visitReferenceExpression(spec);
+    if (spec is DpugStringLiteralSpec) return visitStringLiteral(spec);
+    if (spec is DpugWidgetExpressionSpec) return spec.builder.accept(this);
+    if (spec is DpugInvokeSpec) return visitInvoke(spec);
+    if (spec is DpugAssignmentSpec) return visitAssignment(spec);
+    if (spec is DpugBinarySpec) return visitBinary(spec);
+    if (spec is DpugClosureExpressionSpec) return visitClosureExpression(spec);
+    if (spec is DpugLiteralSpec) return visitLiteral(spec);
+    if (spec is DpugListLiteralSpec) return visitListLiteral(spec);
+    return cb.Code('');
+  }
+
+  @override
   cb.Spec visitClass(DpugClassSpec spec, [cb.Spec? context]) {
     if (spec.annotations.any((a) => a.name == 'stateful')) {
       final library = cb.Library((b) => b
@@ -65,7 +86,8 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
           b.requiredParameters.addAll(
             spec.parameters.map((p) => cb.Parameter((pb) => pb
               ..name = p.name
-              ..type = cb.refer(p.type)
+              ..type =
+                  p.type != null ? cb.refer(p.type!.symbol, p.type!.url) : null
               ..named = p.isNamed
               ..required = p.isRequired
               ..toThis = p.isNamed)),
@@ -249,7 +271,9 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
     return cb.Method((b) => b
       ..requiredParameters.add(cb.Parameter((pb) => pb
         ..name = spec.name
-        ..type = cb.refer(spec.type)
+        ..type = spec.type != null
+            ? cb.refer(spec.type!.symbol, spec.type!.url)
+            : null
         ..named = spec.isNamed
         ..required = spec.isRequired
         ..toThis = spec.isNamed)));
@@ -257,11 +281,11 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
 
   @override
   cb.Spec visitBinary(DpugBinarySpec spec, [cb.Spec? context]) {
-    return cb.Expression(
-      spec.operator,
-      spec.left.accept(this),
-      spec.right.accept(this),
-    );
+    final left = spec.left.accept(this);
+    final right = spec.right.accept(this);
+    final leftStr = left.accept(_emitter).toString();
+    final rightStr = right.accept(_emitter).toString();
+    return cb.CodeExpression(cb.Code('$leftStr ${spec.operator} $rightStr'));
   }
 
   @override
@@ -291,20 +315,44 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
 
   @override
   cb.Spec visitInvoke(DpugInvokeSpec spec, [cb.Spec? context]) {
-    // TODO: implement visitInvoke
-    throw UnimplementedError();
+    final targetSpec = spec.target.accept(this);
+    final targetExpr = targetSpec is cb.Expression
+        ? targetSpec
+        : cb.CodeExpression(targetSpec as cb.Code);
+    final positional = <cb.Expression>[];
+    for (final a in spec.positionedArguments) {
+      final s = a.accept(this);
+      if (s is cb.Expression) {
+        positional.add(s);
+      } else if (s is cb.Code) {
+        positional.add(cb.CodeExpression(s));
+      }
+    }
+    final named = <String, cb.Expression>{};
+    spec.namedArguments.forEach((k, v) {
+      final s = v.accept(this);
+      if (s is cb.Expression) {
+        named[k] = s;
+      } else if (s is cb.Code) {
+        named[k] = cb.CodeExpression(s);
+      }
+    });
+    final invoke = targetExpr.call(positional, named);
+    return cb.Code(invoke.accept(_emitter).toString());
   }
 
   @override
   cb.Spec visitLiteral(DpugLiteralSpec spec, [cb.Spec? context]) {
-    // TODO: implement visitLiteral
-    throw UnimplementedError();
+    final value = spec.value;
+    if (value is String) return cb.literalString(value);
+    if (value is num) return cb.literalNum(value);
+    if (value is bool) return cb.literalBool(value);
+    return cb.Code("'${value.toString()}'");
   }
 
   @override
   cb.Spec visitReferenceExpression(DpugReferenceExpressionSpec spec,
       [cb.Spec? context]) {
-    // TODO: implement visitReferenceExpression
-    throw UnimplementedError();
+    return cb.CodeExpression(cb.Code(spec.name));
   }
 }

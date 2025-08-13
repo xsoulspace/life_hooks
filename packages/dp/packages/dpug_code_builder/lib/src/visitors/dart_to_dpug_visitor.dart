@@ -56,12 +56,13 @@ class DartToDpugSpecVisitor
       parameters: spec.requiredParameters
           .map((p) => DpugParameterSpec(
                 name: p.name,
-                type: p.type?.toString() ?? 'dynamic',
+                type: p.type != null
+                    ? DpugReferenceSpec(p.type!.toString())
+                    : null,
                 isRequired: true,
               ))
           .toList(),
-      body: spec.body?.accept(this) as DpugExpressionSpec? ??
-          DpugReferenceSpec(''),
+      body: spec.body?.accept(this) ?? DpugCodeSpec(''),
       isGetter: spec.type == MethodType.getter,
     );
   }
@@ -164,7 +165,7 @@ class DartToDpugSpecVisitor
       if (converted is DpugExpressionSpec) {
         args.add(converted);
       } else {
-        args.add(DpugReferenceSpec(arg.toString()));
+        args.add(DpugReferenceExpressionSpec(arg.toString()));
       }
     }
 
@@ -174,12 +175,13 @@ class DartToDpugSpecVisitor
       if (converted is DpugExpressionSpec) {
         namedArgs[entry.key] = converted;
       } else {
-        namedArgs[entry.key] = DpugReferenceSpec(entry.value.toString());
+        namedArgs[entry.key] =
+            DpugReferenceExpressionSpec(entry.value.toString());
       }
     }
 
     return DpugInvokeSpec(
-      target: expression.target.accept(this) as DpugExpressionSpec,
+      target: (expression.target.accept(this) as DpugExpressionSpec),
       positionedArguments: args,
       isConst: expression.isConst,
       name: expression.name,
@@ -203,7 +205,7 @@ class DartToDpugSpecVisitor
 
     for (final value in expression.values) {
       if (value == null) {
-        values.add(DpugLiteralSpec(null));
+        values.add(DpugStringLiteralSpec('null'));
         continue;
       }
 

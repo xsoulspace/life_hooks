@@ -8,12 +8,12 @@ void main() {
       ..listenField(
         name: 'todos',
         type: 'List<Todo>',
-        initializer: DpugExpressionSpec.listLiteral([]),
+        initializer: DpugExpressionSpec.list([]),
       )
       ..listenField(
         name: 'newTodo',
         type: 'String',
-        initializer: DpugExpressionSpec.stringLiteral(''),
+        initializer: DpugExpressionSpec.string(''),
       )
       ..buildMethod(
         body: Dpug.widgetBuilder()
