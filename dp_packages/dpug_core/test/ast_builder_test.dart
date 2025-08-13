@@ -25,9 +25,8 @@ Column
     test('handles state declarations', () {
       final input = '''
 @stateful
-class TodoList {
-  @listen List<Todo> todos = [];
-}''';
+class TodoList
+  @listen List<Todo> todos = []''';
       final lexer = Lexer(input);
       final tokens = lexer.tokenize();
       final astBuilder = ASTBuilder(tokens);

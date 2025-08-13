@@ -12,7 +12,7 @@ enum TokenType {
   string,
   number,
   symbol,
-  eof
+  eof,
 }
 
 /// Represents a lexical token with source span.
@@ -177,8 +177,12 @@ class Lexer {
     }
     final String text = source.substring(start, _index);
     final bool isKeyword = text == 'class' || text == 'get' || text == 'Widget';
-    return _makeToken(isKeyword ? TokenType.keyword : TokenType.identifier,
-        text, start, _index);
+    return _makeToken(
+      isKeyword ? TokenType.keyword : TokenType.identifier,
+      text,
+      start,
+      _index,
+    );
   }
 
   Token _scanNumber() {
@@ -293,10 +297,16 @@ class Lexer {
   bool _isDigit(String ch) => RegExp(r'[0-9]').hasMatch(ch);
 
   Token _makeToken(TokenType type, String value, int start, int end) {
-    final SourceLocation startLoc =
-        SourceLocation(start, line: _line, column: _column - (end - start));
-    final SourceLocation endLoc =
-        SourceLocation(end, line: _line, column: _column);
+    final SourceLocation startLoc = SourceLocation(
+      start,
+      line: _line,
+      column: _column - (end - start),
+    );
+    final SourceLocation endLoc = SourceLocation(
+      end,
+      line: _line,
+      column: _column,
+    );
     return Token(type, value, _file.span(startLoc.offset, endLoc.offset));
   }
 }

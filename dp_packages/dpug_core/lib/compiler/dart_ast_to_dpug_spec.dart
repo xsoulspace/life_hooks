@@ -40,7 +40,13 @@ class DartAstToDpugSpec {
         for (final ast.VariableDeclaration v in m.fields.variables) {
           final String fieldName = v.name.lexeme;
           final String typeStr = m.fields.type?.toSource() ?? 'dynamic';
-          builder.listenField(name: fieldName, type: typeStr);
+          final dp.DpugExpressionSpec? initializer =
+              v.initializer != null ? _anyExprToDpug(v.initializer!) : null;
+          builder.listenField(
+            name: fieldName,
+            type: typeStr,
+            initializer: initializer,
+          );
         }
       }
     }

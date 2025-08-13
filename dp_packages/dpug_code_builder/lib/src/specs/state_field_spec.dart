@@ -9,7 +9,7 @@ class DpugStateFieldSpec extends DpugSpec {
   final DpugAnnotationSpec annotation;
   final DpugExpressionSpec? initializer;
 
-  const DpugStateFieldSpec({
+  DpugStateFieldSpec({
     required this.name,
     required this.type,
     required this.annotation,

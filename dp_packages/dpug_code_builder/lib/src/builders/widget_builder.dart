@@ -2,7 +2,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:dpug_code_builder/dpug_code_builder.dart';
 
 // ignore: must_be_immutable
-class DpugWidgetBuilder extends DpugClassBuilder implements DpugSpec {
+class DpugWidgetBuilder implements DpugSpec {
   String _name = '';
   final ListBuilder<DpugWidgetSpec> _children = ListBuilder<DpugWidgetSpec>();
   final MapBuilder<String, DpugExpressionSpec> _properties =
@@ -20,7 +20,7 @@ class DpugWidgetBuilder extends DpugClassBuilder implements DpugSpec {
   }
 
   DpugWidgetBuilder child(DpugWidgetBuilder child) {
-    _children.add(child.build() as DpugWidgetSpec);
+    _children.add(child.build());
     return this;
   }
 
@@ -39,20 +39,18 @@ class DpugWidgetBuilder extends DpugClassBuilder implements DpugSpec {
     return this;
   }
 
-  @override
-  DpugClassSpec build() {
+  DpugWidgetSpec build() {
     if (_name.isEmpty) {
       throw StateError('Widget name must be set');
     }
 
     return DpugWidgetSpec.build(
-          name: _name,
-          children: _children.build(),
-          properties: _properties.build(),
-          positionalArgs: _positionalArgs.build(),
-          positionalCascadeArgs: _positionalCascadeArgs.build(),
-        )
-        as DpugClassSpec;
+      name: _name,
+      children: _children.build(),
+      properties: _properties.build(),
+      positionalArgs: _positionalArgs.build(),
+      positionalCascadeArgs: _positionalCascadeArgs.build(),
+    );
   }
 
   @override

@@ -4,7 +4,6 @@ import 'package:source_span/source_span.dart';
 
 import '../specs/specs.dart';
 
-// ignore: must_be_immutable
 class DpugClassBuilder implements DpugSpec {
   String? _name;
   final ListBuilder<DpugAnnotationSpec> _annotations =
@@ -39,11 +38,9 @@ class DpugClassBuilder implements DpugSpec {
     required String returnType,
     required DpugSpec body,
   }) {
-    method(DpugMethodSpec.getter(
-      name: name,
-      returnType: returnType,
-      body: body,
-    ));
+    method(
+      DpugMethodSpec.getter(name: name, returnType: returnType, body: body),
+    );
     return this;
   }
 
@@ -52,23 +49,21 @@ class DpugClassBuilder implements DpugSpec {
     required String type,
     DpugExpressionSpec? initializer,
   }) {
-    stateField(DpugStateFieldSpec(
-      name: name,
-      type: type,
-      annotation: DpugAnnotationSpec.listen(),
-      initializer: initializer,
-    ));
+    stateField(
+      DpugStateFieldSpec(
+        name: name,
+        type: type,
+        annotation: DpugAnnotationSpec.listen(),
+        initializer: initializer,
+      ),
+    );
     return this;
   }
 
-  DpugClassBuilder buildMethod({
-    required DpugSpec body,
-  }) {
-    method(DpugMethodSpec.getter(
-      name: 'build',
-      returnType: 'Widget',
-      body: body,
-    ));
+  DpugClassBuilder buildMethod({required DpugSpec body}) {
+    method(
+      DpugMethodSpec.getter(name: 'build', returnType: 'Widget', body: body),
+    );
     return this;
   }
 

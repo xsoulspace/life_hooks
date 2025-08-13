@@ -10,7 +10,7 @@ class DpugParameterSpec extends DpugSpec {
   final bool isRequired;
   final DpugExpressionSpec? defaultValue;
 
-  const DpugParameterSpec({
+  DpugParameterSpec({
     required this.name,
     required this.type,
     this.isNamed = false,

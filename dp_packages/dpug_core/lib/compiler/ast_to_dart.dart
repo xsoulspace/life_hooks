@@ -1,4 +1,3 @@
-import 'package:code_builder/code_builder.dart' as cb;
 import 'package:dpug_code_builder/src/builders/dart_widget_code_generator.dart';
 import 'package:dpug_code_builder/src/specs/annotation_spec.dart';
 import 'package:dpug_code_builder/src/specs/class_spec.dart';
@@ -53,7 +52,6 @@ class AstToDart {
     }
 
     final String widgetExpr = _widgetToDartExpr(buildRoot);
-    
 
     final DpugClassSpec classSpec = DpugClassSpec(
       name: node.name,
