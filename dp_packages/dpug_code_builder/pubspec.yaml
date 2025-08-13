@@ -1,7 +1,7 @@
 name: dpug_code_builder
 
 environment:
-  sdk: ^3.8.3
+  sdk: ^3.8.1
 
 dependencies:
   built_collection: ^5.0.0

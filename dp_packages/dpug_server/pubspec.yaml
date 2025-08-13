@@ -1,7 +1,7 @@
 name: dpug_server
 
 environment:
-  sdk: ^3.8.3
+  sdk: ^3.8.1
 
 dependencies:
   shelf: ^1.4.1
