@@ -44,17 +44,58 @@ Once the manual changes to `dpug_code_builder/lib/src/builders/dart_widget_code_
 
 ## Current Issues and Actions
 
-1. `AstToDart` uses a non-existent factory for the build method body.
+### Critical Errors (Must Fix)
 
-- Current: `DpugExpressionSpec.code('return ...')`.
-- Action: replace with `DpugCodeSpec('return ...')`.
+1. **`dpug_core` Package Issues:**
 
-2. `build.yaml` builder import path mismatch.
+   - `lib/compiler/ast_to_dart.dart:34`: Type mismatch - `CodeExpression?` can't be assigned to `DpugExpressionSpec?`
+   - `lib/compiler/ast_to_dart.dart:62`: `DpugExpressionSpec.code()` method doesn't exist
+   - `lib/compiler/ast_to_dpug_spec.dart:1`: Missing import - `package:dpug_code_builder/dpug.dart` doesn't exist
+   - `lib/compiler/dart_ast_to_dpug_spec.dart:3`: Missing import - `package:dpug_code_builder/dpug.dart` doesn't exist
+   - `lib/compiler/dart_ast_to_dpug_spec.dart:13`: Undefined class `ParseStringResult`
+   - `lib/compiler/dart_ast_to_dpug_spec.dart:28,91`: `NamedType.name` getter doesn't exist
+   - `lib/compiler/dart_ast_to_dpug_spec.dart:53`: Invalid return type `Null` from closure
+   - `lib/compiler/dart_ast_to_dpug_spec.dart:130`: Undefined type `LambdaExpression`
 
-- Current: `package:dpug/compiler/builder.dart`.
-- Action: change to `package:dpug_core/compiler/builder.dart`.
+2. **`dpug_code_builder` Package Issues:**
+   - `test/dpug_test.dart:720`: Type mismatch - `List<DpugClassSpec>` can't be assigned to `DpugSpec`
 
-3. Server error content type and docs alignment.
+### Warnings and Info Issues
 
-- Current: YAML-shaped text is returned with `text/plain`.
-- Action: either change server to `application/yaml` or keep as-is and document (GEMINI.md updated).
+1. **`dpug_core` Package:**
+
+   - Unused imports in test files
+   - Unused local variables in `ast_to_dart.dart` and `dart_ast_to_dpug_spec.dart`
+
+2. **`dpug_code_builder` Package:**
+   - `class_builder.dart` and `widget_builder.dart`: Classes marked `@immutable` but have non-final fields
+   - `dart_widget_code_generator.dart`: Unused import
+   - `dart_to_dpug_visitor.dart`: Invalid use of `visible_for_overriding` member
+
+### Actions Required
+
+1. **Fix Import Issues:**
+
+   - Create missing `package:dpug_code_builder/dpug.dart` file or fix import paths
+   - Resolve `ParseStringResult` and `LambdaExpression` type definitions
+
+2. **Fix Type Mismatches:**
+
+   - Update `AstToDart` to use correct types for build method body
+   - Fix `DpugExpressionSpec.code()` method or replace with `DpugCodeSpec`
+   - Resolve `List<DpugClassSpec>` vs `DpugSpec` assignment
+
+3. **Fix Supabase Integration:**
+
+   - Add proper Supabase imports and fix undefined methods/getters
+   - Convert functions to async where futures are discarded
+
+4. **Code Quality:**
+
+   - Remove unused imports and variables
+   - Fix immutable class violations
+   - Remove unnecessary type annotations and break statements
+
+5. **Build Configuration:**
+   - `build.yaml` builder import path mismatch (noted in previous issues)
+   - Server error content type alignment (noted in previous issues)
