@@ -1,4 +1,4 @@
-import 'package:dpug/compiler/dpug_converter.dart';
+import 'package:dpug_core/dpug_core.dart';
 import 'package:test/test.dart';
 
 void main() {

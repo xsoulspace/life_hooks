@@ -1,6 +1,6 @@
 import 'package:code_builder/code_builder.dart' as cb;
 import 'package:dart_style/dart_style.dart' as ds;
-import 'package:dpug/src/dart_imports.dart';
+import 'package:dpug_code_builder/src/dart_imports.dart';
 
 import '../specs/specs.dart';
 import 'visitor.dart';

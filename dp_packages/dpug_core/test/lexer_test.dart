@@ -1,4 +1,4 @@
-import 'package:dpug/compiler/lexer.dart';
+import 'package:dpug_core/dpug_core.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -14,17 +14,18 @@ Column
       final tokens = lexer.tokenize();
 
       expect(
-          tokens,
-          containsAllInOrder([
-            isA<Token>()
-                .having((t) => t.type, 'type', TokenType.identifier)
-                .having((t) => t.value, 'value', 'Column'),
-            isA<Token>().having((t) => t.type, 'type', TokenType.indent),
-            isA<Token>()
-                .having((t) => t.type, 'type', TokenType.identifier)
-                .having((t) => t.value, 'value', 'TextField'),
-            // ... continue with other expected tokens
-          ]));
+        tokens,
+        containsAllInOrder([
+          isA<Token>()
+              .having((t) => t.type, 'type', TokenType.identifier)
+              .having((t) => t.value, 'value', 'Column'),
+          isA<Token>().having((t) => t.type, 'type', TokenType.indent),
+          isA<Token>()
+              .having((t) => t.type, 'type', TokenType.identifier)
+              .having((t) => t.value, 'value', 'TextField'),
+          // ... continue with other expected tokens
+        ]),
+      );
     });
 
     test('handles state annotations', () {
@@ -37,16 +38,17 @@ class TodoList {
       final tokens = lexer.tokenize();
 
       expect(
-          tokens,
-          containsAllInOrder([
-            isA<Token>()
-                .having((t) => t.type, 'type', TokenType.annotation)
-                .having((t) => t.value, 'value', '@stateful'),
-            isA<Token>()
-                .having((t) => t.type, 'type', TokenType.keyword)
-                .having((t) => t.value, 'value', 'class'),
-            // ... continue with other expected tokens
-          ]));
+        tokens,
+        containsAllInOrder([
+          isA<Token>()
+              .having((t) => t.type, 'type', TokenType.annotation)
+              .having((t) => t.value, 'value', '@stateful'),
+          isA<Token>()
+              .having((t) => t.type, 'type', TokenType.keyword)
+              .having((t) => t.value, 'value', 'class'),
+          // ... continue with other expected tokens
+        ]),
+      );
     });
   });
 }

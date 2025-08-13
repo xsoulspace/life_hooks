@@ -1,5 +1,5 @@
 import 'package:built_collection/built_collection.dart';
-import 'package:dpug/src/visitors/visitor.dart';
+import 'package:dpug_code_builder/src/visitors/visitor.dart';
 import 'package:source_span/source_span.dart';
 
 import '../specs/specs.dart';

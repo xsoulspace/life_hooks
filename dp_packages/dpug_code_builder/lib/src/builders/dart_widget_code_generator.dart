@@ -1,15 +1,26 @@
 import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:dpug_code_builder/src/specs/class_spec.dart';
+import 'package:dpug_code_builder/src/specs/state_field_spec.dart';
+import 'package:dpug_code_builder/src/specs/method_spec.dart';
+import 'package:dpug_code_builder/src/visitors/dpug_emitter.dart';
 
-class DpugCodeBuilder {
+class DartWidgetCodeGenerator {
   final _formatter = DartFormatter();
   final _emitter = DartEmitter();
+  final _dpugEmitter = DpugEmitter();
 
-  String buildStatefulWidget({
-    required String className,
-    required List<StateField> stateFields,
-    required Code buildMethod,
-  }) {
+  String generateStatefulWidget(DpugClassSpec dpugClassSpec) {
+    final className = dpugClassSpec.name;
+    final stateFields = dpugClassSpec.stateFields.toList();
+    final buildMethodSpec = dpugClassSpec.methods.firstWhere(
+      (method) => method.name == 'build' && method.isGetter,
+      orElse: () => throw StateError('Build method not found in DpugClassSpec'),
+    );
+
+    // Convert DpugSpec body to Code object
+    final buildMethodBody = Code(buildMethodSpec.body.accept(_dpugEmitter));
+
     final stateClassName = '_${className}State';
 
     // Build main widget class
@@ -23,7 +34,7 @@ class DpugCodeBuilder {
     // Build state class
     final stateClass = Class((b) => b
       ..name = stateClassName
-      ..extend = refer('State<$className>')
+      ..extend = refer('State<${className}>')
       ..fields.addAll(_buildStateFields(stateFields))
       ..methods.addAll([
         ..._buildStateGettersSetters(stateFields),
@@ -33,7 +44,7 @@ class DpugCodeBuilder {
           ..requiredParameters.add(Parameter((b) => b
             ..name = 'context'
             ..type = refer('BuildContext')))
-          ..body = buildMethod),
+          ..body = buildMethodBody),
       ]));
 
     final library = Library((b) => b..body.addAll([widgetClass, stateClass]));
@@ -41,7 +52,7 @@ class DpugCodeBuilder {
     return _formatter.format('${library.accept(_emitter)}');
   }
 
-  List<Field> _buildWidgetFields(List<StateField> stateFields) {
+  List<Field> _buildWidgetFields(List<DpugStateFieldSpec> stateFields) {
     return stateFields
         .map((f) => Field((b) => b
           ..name = f.name
@@ -50,7 +61,7 @@ class DpugCodeBuilder {
         .toList();
   }
 
-  Constructor _buildConstructor(List<StateField> stateFields) {
+  Constructor _buildConstructor(List<DpugStateFieldSpec> stateFields) {
     return Constructor((b) => b
       ..constant = false
       ..optionalParameters.addAll([
@@ -75,7 +86,7 @@ class DpugCodeBuilder {
       ..body = Code('$stateClassName()'));
   }
 
-  List<Field> _buildStateFields(List<StateField> stateFields) {
+  List<Field> _buildStateFields(List<DpugStateFieldSpec> stateFields) {
     return stateFields
         .map((f) => Field((b) => b
           ..name = '_${f.name}'
@@ -85,7 +96,7 @@ class DpugCodeBuilder {
         .toList();
   }
 
-  List<Method> _buildStateGettersSetters(List<StateField> stateFields) {
+  List<Method> _buildStateGettersSetters(List<DpugStateFieldSpec> stateFields) {
     final methods = <Method>[];
 
     for (final field in stateFields) {
@@ -112,16 +123,4 @@ class DpugCodeBuilder {
   }
 }
 
-class StateField {
-  final String name;
-  final String type;
-  final String annotation;
-  final Expression? initialValue;
 
-  StateField({
-    required this.name,
-    required this.type,
-    required this.annotation,
-    this.initialValue,
-  });
-}

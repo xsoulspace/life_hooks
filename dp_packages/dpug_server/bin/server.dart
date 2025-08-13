@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:dp_server/server.dart' as app;
+import 'package:dpug_server/server.dart' as app;
 
 Future<void> main(List<String> args) async {
   final int port = int.tryParse(Platform.environment['PORT'] ?? '') ?? 8080;

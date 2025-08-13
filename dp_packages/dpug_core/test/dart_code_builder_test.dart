@@ -1,32 +1,46 @@
 import 'package:code_builder/code_builder.dart';
-import 'package:dpug/compiler/dart_code_builder.dart';
+import 'package:dpug_code_builder/src/builders/dart_widget_code_generator.dart';
+import 'package:dpug_code_builder/src/specs/annotation_spec.dart';
+import 'package:dpug_code_builder/src/specs/class_spec.dart';
+import 'package:dpug_code_builder/src/specs/code_spec.dart';
+import 'package:dpug_code_builder/src/specs/expression_spec.dart';
+import 'package:dpug_code_builder/src/specs/method_spec.dart';
+import 'package:dpug_code_builder/src/specs/state_field_spec.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('DpugCodeBuilder', () {
+  group('DartWidgetCodeGenerator', () {
     test('generates stateful widget with state management', () {
-      final builder = DpugCodeBuilder();
+      final generator = DartWidgetCodeGenerator();
 
-      final code = builder.buildStatefulWidget(
-        className: 'TodoList',
+      final classSpec = DpugClassSpec(
+        name: 'TodoList',
         stateFields: [
-          StateField(
+          DpugStateFieldSpec(
             name: 'todos',
             type: 'List<Todo>',
-            annotation: '@listen',
+            annotation: DpugAnnotationSpec.listen(),
           ),
         ],
-        buildMethod: Code('''
-          return Column(
-            children: [
-              TextField(
-                value: newTodo,
-                onChanged: (value) => newTodo = value,
-              ),
-            ],
-          );
-        '''),
+        methods: [
+          DpugMethodSpec.getter(
+            name: 'build',
+            returnType: 'Widget',
+            body: DpugCodeSpec('''
+              return Column(
+                children: [
+                  TextField(
+                    value: newTodo,
+                    onChanged: (value) => newTodo = value,
+                  ),
+                ],
+              );
+            '''),
+          ),
+        ],
       );
+
+      final code = generator.generateStatefulWidget(classSpec);
 
       expect(code, contains('class TodoList extends StatefulWidget'));
       expect(code, contains('class _TodoListState extends State<TodoList>'));

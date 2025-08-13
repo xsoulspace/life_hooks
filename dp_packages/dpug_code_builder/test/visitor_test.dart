@@ -1,5 +1,5 @@
 import 'package:code_builder/code_builder.dart' as cb;
-import 'package:dpug/dpug.dart';
+import 'package:dpug_code_builder/dpug_code_builder.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -7,26 +7,27 @@ void main() {
     group('DPUG -> Dart -> DPUG Conversion', () {
       test('Simple stateful widget', () {
         // Create initial DPUG spec
-        final dpugSpec = (Dpug.classBuilder()
-              ..name('Counter')
-              ..annotation(DpugAnnotationSpec.stateful())
-              ..listenField(
-                name: 'count',
-                type: 'int',
-                initializer: DpugExpressionSpec.reference('0'),
-              )
-              ..buildMethod(
-                body: WidgetHelpers.column(
-                  children: [
-                    DpugWidgetBuilder()
-                      ..name('Text')
-                      ..positionalCascadeArgument(
-                        DpugExpressionSpec.reference('count.toString()'),
-                      ),
-                  ],
-                ),
-              ))
-            .build();
+        final dpugSpec =
+            (Dpug.classBuilder()
+                  ..name('Counter')
+                  ..annotation(DpugAnnotationSpec.stateful())
+                  ..listenField(
+                    name: 'count',
+                    type: 'int',
+                    initializer: DpugExpressionSpec.reference('0'),
+                  )
+                  ..buildMethod(
+                    body: WidgetHelpers.column(
+                      children: [
+                        DpugWidgetBuilder()
+                          ..name('Text')
+                          ..positionalCascadeArgument(
+                            DpugExpressionSpec.reference('count.toString()'),
+                          ),
+                      ],
+                    ),
+                  ))
+                .build();
 
         const expectedDpugCode = '''
 @stateful
@@ -58,18 +59,23 @@ class Counter
       });
 
       test('Widget with properties and callbacks', () {
-        final dpugSpec = (Dpug.widgetBuilder()
-              ..name('ElevatedButton')
-              ..property(
-                'onPressed',
-                DpugExpressionSpec.reference('() => setState(() => count++)'),
-              )
-              ..child(DpugWidgetBuilder()
-                ..name('Text')
-                ..positionalCascadeArgument(
-                  DpugExpressionSpec.string('Increment'),
-                )))
-            .build();
+        final dpugSpec =
+            (Dpug.widgetBuilder()
+                  ..name('ElevatedButton')
+                  ..property(
+                    'onPressed',
+                    DpugExpressionSpec.reference(
+                      '() => setState(() => count++)',
+                    ),
+                  )
+                  ..child(
+                    DpugWidgetBuilder()
+                      ..name('Text')
+                      ..positionalCascadeArgument(
+                        DpugExpressionSpec.string('Increment'),
+                      ),
+                  ))
+                .build();
 
         const expectedDpugCode = '''
 ElevatedButton
@@ -92,13 +98,16 @@ ElevatedButton
 
     group('Dart -> DPUG Conversion', () {
       test('Convert Dart class to DPUG', () {
-        final dartClass = cb.Class((b) => b
-          ..name = 'MyWidget'
-          ..extend = cb.refer('StatefulWidget')
-          ..methods.add(cb.Method((b) => b
-            ..name = 'build'
-            ..returns = cb.refer('Widget')
-            ..body = cb.Code('''
+        final dartClass = cb.Class(
+          (b) => b
+            ..name = 'MyWidget'
+            ..extend = cb.refer('StatefulWidget')
+            ..methods.add(
+              cb.Method(
+                (b) => b
+                  ..name = 'build'
+                  ..returns = cb.refer('Widget')
+                  ..body = cb.Code('''
               return Column(
                 children: [
                   Text('Hello'),
@@ -108,7 +117,10 @@ ElevatedButton
                   ),
                 ],
               );
-            '''))));
+            '''),
+              ),
+            ),
+        );
 
         const expectedDpugCode = '''
 @stateful
@@ -136,15 +148,17 @@ class MyWidget
       });
 
       test('Convert Dart method to DPUG', () {
-        final dartMethod = cb.Method((b) => b
-          ..name = 'build'
-          ..returns = cb.refer('Widget')
-          ..body = cb.Code('''
+        final dartMethod = cb.Method(
+          (b) => b
+            ..name = 'build'
+            ..returns = cb.refer('Widget')
+            ..body = cb.Code('''
             return Container(
               padding: EdgeInsets.all(16),
               child: Text('Hello'),
             );
-          '''));
+          '''),
+        );
 
         const expectedDpugCode = '''
 Widget get build =>

@@ -8,7 +8,7 @@ class DartToDpug {
   DartToDpug(this.file);
 
   String convert(String source) {
-    final az.ParseStringResult result = az.parseString(content: source);
+    final result = az.parseString(content: source);
     final ast.CompilationUnit unit = result.unit;
     for (final ast.CompilationUnitMember m in unit.declarations) {
       if (m is ast.ClassDeclaration) {

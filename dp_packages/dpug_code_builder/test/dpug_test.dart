@@ -1,4 +1,4 @@
-import 'package:dpug/dpug.dart';
+import 'package:dpug_code_builder/dpug_code_builder.dart';
 import 'package:test/test.dart';
 
 final _dartCode = '''
@@ -57,44 +57,48 @@ class TodoList
 void main() {
   group('Dpug Syntax Tests', () {
     test('Basic stateful widget', () {
-      final todoList = (Dpug.classBuilder()
-            ..name('TodoList')
-            ..annotation(DpugAnnotationSpec.stateful())
-            ..listenField(
-              name: 'todos',
-              type: 'List<Todo>',
-              initializer: DpugExpressionSpec.list([]),
-            )
-            ..listenField(
-              name: 'newTodo',
-              type: 'String',
-              initializer: DpugExpressionSpec.string(''),
-            )
-            ..buildMethod(
-              body: WidgetHelpers.column(
-                properties: {
-                  'mainAxisAlignment':
-                      DpugExpressionSpec.reference('MainAxisAlignment.center'),
-                },
-                children: [
-                  DpugWidgetBuilder()
-                    ..name('TextFormField')
-                    ..property(
-                        'initialValue', DpugExpressionSpec.reference('newTodo'))
-                    ..property(
-                      'onChanged',
-                      DpugExpressionSpec.closure(
-                        ['value'],
-                        DpugExpressionSpec.assignment(
-                          'newTodo',
-                          DpugExpressionSpec.reference('value'),
-                        ),
+      final todoList =
+          (Dpug.classBuilder()
+                ..name('TodoList')
+                ..annotation(DpugAnnotationSpec.stateful())
+                ..listenField(
+                  name: 'todos',
+                  type: 'List<Todo>',
+                  initializer: DpugExpressionSpec.list([]),
+                )
+                ..listenField(
+                  name: 'newTodo',
+                  type: 'String',
+                  initializer: DpugExpressionSpec.string(''),
+                )
+                ..buildMethod(
+                  body: WidgetHelpers.column(
+                    properties: {
+                      'mainAxisAlignment': DpugExpressionSpec.reference(
+                        'MainAxisAlignment.center',
                       ),
-                    ),
-                ],
-              ),
-            ))
-          .build();
+                    },
+                    children: [
+                      DpugWidgetBuilder()
+                        ..name('TextFormField')
+                        ..property(
+                          'initialValue',
+                          DpugExpressionSpec.reference('newTodo'),
+                        )
+                        ..property(
+                          'onChanged',
+                          DpugExpressionSpec.closure(
+                            ['value'],
+                            DpugExpressionSpec.assignment(
+                              'newTodo',
+                              DpugExpressionSpec.reference('value'),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ))
+              .build();
 
       final dartCode = todoList.accept(DpugToDartSpecVisitor()).toString();
       final dpugCode = todoList.accept(DpugEmitter());
@@ -104,51 +108,53 @@ void main() {
     });
 
     test('Widget formatting rules', () {
-      final widget = (Dpug.widgetBuilder()
-            ..name('Scaffold')
-            ..property(
-              'appBar',
-              DpugExpressionSpec.widget(
-                DpugWidgetBuilder()
-                  ..name('AppBar')
-                  ..property(
-                    'title',
-                    DpugExpressionSpec.widget(
-                      DpugWidgetBuilder()
-                        ..name('Text')
-                        ..positionalCascadeArgument(
-                          DpugExpressionSpec.string('Title'),
+      final widget =
+          (Dpug.widgetBuilder()
+                ..name('Scaffold')
+                ..property(
+                  'appBar',
+                  DpugExpressionSpec.widget(
+                    DpugWidgetBuilder()
+                      ..name('AppBar')
+                      ..property(
+                        'title',
+                        DpugExpressionSpec.widget(
+                          DpugWidgetBuilder()
+                            ..name('Text')
+                            ..positionalCascadeArgument(
+                              DpugExpressionSpec.string('Title'),
+                            ),
                         ),
+                      ),
+                  ),
+                )
+                ..property(
+                  'body',
+                  DpugExpressionSpec.widget(
+                    WidgetHelpers.container(
+                      properties: {
+                        'padding': DpugExpressionSpec.reference(
+                          'EdgeInsets.all(16)',
+                        ),
+                      },
+                      child: WidgetHelpers.column(
+                        children: [
+                          DpugWidgetBuilder()
+                            ..name('Text')
+                            ..positionalArgument(
+                              DpugExpressionSpec.string('First'),
+                            ),
+                          DpugWidgetBuilder()
+                            ..name('Text')
+                            ..positionalCascadeArgument(
+                              DpugExpressionSpec.string('Second'),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-              ),
-            )
-            ..property(
-              'body',
-              DpugExpressionSpec.widget(
-                WidgetHelpers.container(
-                  properties: {
-                    'padding':
-                        DpugExpressionSpec.reference('EdgeInsets.all(16)'),
-                  },
-                  child: WidgetHelpers.column(
-                    children: [
-                      DpugWidgetBuilder()
-                        ..name('Text')
-                        ..positionalArgument(
-                          DpugExpressionSpec.string('First'),
-                        ),
-                      DpugWidgetBuilder()
-                        ..name('Text')
-                        ..positionalCascadeArgument(
-                          DpugExpressionSpec.string('Second'),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ))
-          .build();
+                ))
+              .build();
 
       final dpugCode = widget.accept(DpugEmitter());
 
@@ -170,137 +176,178 @@ Scaffold
 
     group('Critical Widget Cases', () {
       test('Single child widget with properties', () {
-        final widget = (DpugWidgetBuilder()
-              ..name('Container')
-              ..property('color', DpugExpressionSpec.reference('Colors.red'))
-              ..child(DpugWidgetBuilder()
-                ..name('Text')
-                ..positionalCascadeArgument(
-                    DpugExpressionSpec.string('Child'))))
-            .build();
+        final widget =
+            (DpugWidgetBuilder()
+                  ..name('Container')
+                  ..property(
+                    'color',
+                    DpugExpressionSpec.reference('Colors.red'),
+                  )
+                  ..child(
+                    DpugWidgetBuilder()
+                      ..name('Text')
+                      ..positionalCascadeArgument(
+                        DpugExpressionSpec.string('Child'),
+                      ),
+                  ))
+                .build();
 
         final dpugCode = widget.accept(DpugEmitter());
-        expect(dpugCode, equals('''
+        expect(
+          dpugCode,
+          equals('''
 Container
   ..color: Colors.red
   Text
-    ..'Child\''''));
+    ..'Child\''''),
+        );
       });
 
       test('Nested properties with cascade notation', () {
-        final widget = (DpugWidgetBuilder()
-              ..name('Container')
-              ..property(
-                'decoration',
-                DpugExpressionSpec.widget(DpugWidgetBuilder()
-                  ..name('BoxDecoration')
+        final widget =
+            (DpugWidgetBuilder()
+                  ..name('Container')
                   ..property(
-                      'color', DpugExpressionSpec.reference('Colors.blue'))
-                  ..property(
-                      'borderRadius',
-                      DpugExpressionSpec.reference(
-                          'BorderRadius.circular(8)'))),
-              ))
-            .build();
+                    'decoration',
+                    DpugExpressionSpec.widget(
+                      DpugWidgetBuilder()
+                        ..name('BoxDecoration')
+                        ..property(
+                          'color',
+                          DpugExpressionSpec.reference('Colors.blue'),
+                        )
+                        ..property(
+                          'borderRadius',
+                          DpugExpressionSpec.reference(
+                            'BorderRadius.circular(8)',
+                          ),
+                        ),
+                    ),
+                  ))
+                .build();
 
         final dpugCode = widget.accept(DpugEmitter());
-        expect(dpugCode, equals('''
+        expect(
+          dpugCode,
+          equals('''
 Container
   ..decoration: BoxDecoration
     ..color: Colors.blue
-    ..borderRadius: BorderRadius.circular(8)'''));
+    ..borderRadius: BorderRadius.circular(8)'''),
+        );
       });
 
       test('Complex callbacks with state management', () {
-        final widget = (DpugWidgetBuilder()
-              ..name('ElevatedButton')
-              ..property(
-                'onPressed',
-                DpugExpressionSpec.closure(
-                  [],
-                  DpugExpressionSpec.reference(
-                    'setState(() { count++; update(); })',
-                  ),
-                ),
-              )
-              ..child(DpugWidgetBuilder()
-                ..name('Text')
-                ..positionalCascadeArgument(
-                    DpugExpressionSpec.string('Increment'))))
-            .build();
+        final widget =
+            (DpugWidgetBuilder()
+                  ..name('ElevatedButton')
+                  ..property(
+                    'onPressed',
+                    DpugExpressionSpec.closure(
+                      [],
+                      DpugExpressionSpec.reference(
+                        'setState(() { count++; update(); })',
+                      ),
+                    ),
+                  )
+                  ..child(
+                    DpugWidgetBuilder()
+                      ..name('Text')
+                      ..positionalCascadeArgument(
+                        DpugExpressionSpec.string('Increment'),
+                      ),
+                  ))
+                .build();
 
         final dpugCode = widget.accept(DpugEmitter());
-        expect(dpugCode, equals('''
+        expect(
+          dpugCode,
+          equals('''
 ElevatedButton
   ..onPressed: () => setState(() { count++; update(); })
   Text
-    ..'Increment\''''));
+    ..'Increment\''''),
+        );
       });
 
       test('Mixed positional and named arguments', () {
-        final widget = (DpugWidgetBuilder()
-              ..name('Padding')
-              ..property(
-                'padding',
-                DpugExpressionSpec.reference('EdgeInsets.all(16)'),
-              )
-              ..child(DpugWidgetBuilder()
-                ..name('Text')
-                ..positionalArgument(DpugExpressionSpec.string('Hello'))
-                ..property('style', DpugExpressionSpec.reference('boldStyle'))))
-            .build();
+        final widget =
+            (DpugWidgetBuilder()
+                  ..name('Padding')
+                  ..property(
+                    'padding',
+                    DpugExpressionSpec.reference('EdgeInsets.all(16)'),
+                  )
+                  ..child(
+                    DpugWidgetBuilder()
+                      ..name('Text')
+                      ..positionalArgument(DpugExpressionSpec.string('Hello'))
+                      ..property(
+                        'style',
+                        DpugExpressionSpec.reference('boldStyle'),
+                      ),
+                  ))
+                .build();
 
         final dpugCode = widget.accept(DpugEmitter());
-        expect(dpugCode, equals('''
+        expect(
+          dpugCode,
+          equals('''
 Padding
   ..padding: EdgeInsets.all(16)
   Text('Hello')
-    ..style: boldStyle'''));
+    ..style: boldStyle'''),
+        );
       });
     });
 
     group('Critical State Management Cases', () {
       test('Complex state field with initializer', () {
-        final widget = (Dpug.classBuilder()
-              ..name('ComplexWidget')
-              ..annotation(DpugAnnotationSpec.stateful())
-              ..listenField(
-                name: 'items',
-                type: 'List<CustomItem>',
-                initializer: DpugExpressionSpec.reference(
-                    '[CustomItem(), CustomItem()]'),
-              ))
-            .build();
+        final widget =
+            (Dpug.classBuilder()
+                  ..name('ComplexWidget')
+                  ..annotation(DpugAnnotationSpec.stateful())
+                  ..listenField(
+                    name: 'items',
+                    type: 'List<CustomItem>',
+                    initializer: DpugExpressionSpec.reference(
+                      '[CustomItem(), CustomItem()]',
+                    ),
+                  ))
+                .build();
 
         final dartCode = widget.accept(DpugToDartSpecVisitor()).toString();
         expect(dartCode, contains('late List<CustomItem> _items'));
         expect(dartCode, contains('List<CustomItem> get items => _items'));
         expect(
-            dartCode,
-            contains(
-                'set items(List<CustomItem> value) => setState(() => _items = value)'));
+          dartCode,
+          contains(
+            'set items(List<CustomItem> value) => setState(() => _items = value)',
+          ),
+        );
       });
 
       test('Multiple interdependent state fields', () {
-        final widget = (Dpug.classBuilder()
-              ..name('InterconnectedWidget')
-              ..annotation(DpugAnnotationSpec.stateful())
-              ..listenField(
-                name: 'isLoading',
-                type: 'bool',
-                initializer: DpugExpressionSpec.reference('false'),
-              )
-              ..listenField(
-                name: 'error',
-                type: 'String?',
-                initializer: DpugExpressionSpec.reference('null'),
-              )
-              ..listenField(
-                name: 'data',
-                type: 'List<dynamic>',
-                initializer: DpugExpressionSpec.list([]),
-              ))
-            .build();
+        final widget =
+            (Dpug.classBuilder()
+                  ..name('InterconnectedWidget')
+                  ..annotation(DpugAnnotationSpec.stateful())
+                  ..listenField(
+                    name: 'isLoading',
+                    type: 'bool',
+                    initializer: DpugExpressionSpec.reference('false'),
+                  )
+                  ..listenField(
+                    name: 'error',
+                    type: 'String?',
+                    initializer: DpugExpressionSpec.reference('null'),
+                  )
+                  ..listenField(
+                    name: 'data',
+                    type: 'List<dynamic>',
+                    initializer: DpugExpressionSpec.list([]),
+                  ))
+                .build();
 
         final dartCode = widget.accept(DpugToDartSpecVisitor()).toString();
         expect(dartCode, contains('late bool _isLoading = false'));
@@ -311,41 +358,41 @@ Padding
 
     group('Error Cases', () {
       test('Widget without name should throw', () {
-        expect(
-          () => DpugWidgetBuilder().build(),
-          throwsStateError,
-        );
+        expect(() => DpugWidgetBuilder().build(), throwsStateError);
       });
 
       test('Class without name should throw', () {
-        expect(
-          () => Dpug.classBuilder().build(),
-          throwsStateError,
-        );
+        expect(() => Dpug.classBuilder().build(), throwsStateError);
       });
     });
 
     group('Complex Callback Cases', () {
       test('Multi-line callback with state', () {
-        final widget = (DpugWidgetBuilder()
-              ..name('ElevatedButton')
-              ..property(
-                'onPressed',
-                DpugExpressionSpec.reference('''() {
+        final widget =
+            (DpugWidgetBuilder()
+                  ..name('ElevatedButton')
+                  ..property(
+                    'onPressed',
+                    DpugExpressionSpec.reference('''() {
                   setState(() {
                     count++;
                     updateUI();
                   });
                 }'''),
-              )
-              ..child(DpugWidgetBuilder()
-                ..name('Text')
-                ..positionalCascadeArgument(
-                    DpugExpressionSpec.string('Click me'))))
-            .build();
+                  )
+                  ..child(
+                    DpugWidgetBuilder()
+                      ..name('Text')
+                      ..positionalCascadeArgument(
+                        DpugExpressionSpec.string('Click me'),
+                      ),
+                  ))
+                .build();
 
         final dpugCode = widget.accept(DpugEmitter());
-        expect(dpugCode, equals('''
+        expect(
+          dpugCode,
+          equals('''
 ElevatedButton
   ..onPressed: () {
     setState(() {
@@ -354,15 +401,17 @@ ElevatedButton
     });
   }
   Text
-    ..'Click me\''''));
+    ..'Click me\''''),
+        );
       });
 
       test('Nested callbacks with multiple state updates', () {
-        final widget = (DpugWidgetBuilder()
-              ..name('GestureDetector')
-              ..property(
-                'onTap',
-                DpugExpressionSpec.reference('''() {
+        final widget =
+            (DpugWidgetBuilder()
+                  ..name('GestureDetector')
+                  ..property(
+                    'onTap',
+                    DpugExpressionSpec.reference('''() {
                   if (isEnabled) {
                     setState(() {
                       count++;
@@ -370,10 +419,10 @@ ElevatedButton
                     doSomething();
                   }
                 }'''),
-              )
-              ..property(
-                'onLongPress',
-                DpugExpressionSpec.reference('''() {
+                  )
+                  ..property(
+                    'onLongPress',
+                    DpugExpressionSpec.reference('''() {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -392,18 +441,28 @@ ElevatedButton
                     ),
                   );
                 }'''),
-              )
-              ..child(DpugWidgetBuilder()
-                ..name('Container')
-                ..property('color', DpugExpressionSpec.reference('Colors.blue'))
-                ..child(DpugWidgetBuilder()
-                  ..name('Text')
-                  ..positionalCascadeArgument(
-                      DpugExpressionSpec.string('Tap or Long Press')))))
-            .build();
+                  )
+                  ..child(
+                    DpugWidgetBuilder()
+                      ..name('Container')
+                      ..property(
+                        'color',
+                        DpugExpressionSpec.reference('Colors.blue'),
+                      )
+                      ..child(
+                        DpugWidgetBuilder()
+                          ..name('Text')
+                          ..positionalCascadeArgument(
+                            DpugExpressionSpec.string('Tap or Long Press'),
+                          ),
+                      ),
+                  ))
+                .build();
 
         final dpugCode = widget.accept(DpugEmitter());
-        expect(dpugCode, equals('''
+        expect(
+          dpugCode,
+          equals('''
 GestureDetector
   ..onTap: () {
     if (isEnabled) {
@@ -435,15 +494,17 @@ GestureDetector
   Container
     ..color: Colors.blue
     Text
-      ..'Tap or Long Press\''''));
+      ..'Tap or Long Press\''''),
+        );
       });
 
       test('Async callbacks with error handling', () {
-        final widget = (DpugWidgetBuilder()
-              ..name('FloatingActionButton')
-              ..property(
-                'onPressed',
-                DpugExpressionSpec.reference('''() async {
+        final widget =
+            (DpugWidgetBuilder()
+                  ..name('FloatingActionButton')
+                  ..property(
+                    'onPressed',
+                    DpugExpressionSpec.reference('''() async {
                   try {
                     setState(() {
                       isLoading = true;
@@ -461,15 +522,20 @@ GestureDetector
                     showError(context);
                   }
                 }'''),
-              )
-              ..child(DpugWidgetBuilder()
-                ..name('Icon')
-                ..positionalArgument(
-                    DpugExpressionSpec.reference('Icons.refresh'))))
-            .build();
+                  )
+                  ..child(
+                    DpugWidgetBuilder()
+                      ..name('Icon')
+                      ..positionalArgument(
+                        DpugExpressionSpec.reference('Icons.refresh'),
+                      ),
+                  ))
+                .build();
 
         final dpugCode = widget.accept(DpugEmitter());
-        expect(dpugCode, equals('''
+        expect(
+          dpugCode,
+          equals('''
 FloatingActionButton
   ..onPressed: () async {
     try {
@@ -489,73 +555,79 @@ FloatingActionButton
       showError(context);
     }
   }
-  Icon(Icons.refresh)'''));
+  Icon(Icons.refresh)'''),
+        );
       });
     });
 
     group('Multiple Classes', () {
       test('Two stateful widgets in one file', () {
-        final counterWidget = (Dpug.widgetBuilder()
-              ..name('Counter')
-              ..annotation(DpugAnnotationSpec.stateful())
-              ..listenField(
-                name: 'count',
-                type: 'int',
-                initializer: DpugExpressionSpec.reference('0'),
-              )
-              ..buildMethod(
-                body: WidgetHelpers.withChildren(
-                  'Column',
-                  children: [
-                    DpugWidgetBuilder()
-                      ..name('Text')
-                      ..positionalCascadeArgument(
-                        DpugExpressionSpec.reference('count.toString()'),
-                      ),
-                    DpugWidgetBuilder()
-                      ..name('ElevatedButton')
-                      ..property(
-                        'onPressed',
-                        DpugExpressionSpec.closure(
-                          [],
-                          DpugExpressionSpec.assignment(
-                            'count',
-                            DpugExpressionSpec.reference('count + 1'),
+        final counterWidget =
+            (Dpug.widgetBuilder()
+                  ..name('Counter')
+                  ..annotation(DpugAnnotationSpec.stateful())
+                  ..listenField(
+                    name: 'count',
+                    type: 'int',
+                    initializer: DpugExpressionSpec.reference('0'),
+                  )
+                  ..buildMethod(
+                    body: WidgetHelpers.withChildren(
+                      'Column',
+                      children: [
+                        DpugWidgetBuilder()
+                          ..name('Text')
+                          ..positionalCascadeArgument(
+                            DpugExpressionSpec.reference('count.toString()'),
                           ),
+                        DpugWidgetBuilder()
+                          ..name('ElevatedButton')
+                          ..property(
+                            'onPressed',
+                            DpugExpressionSpec.closure(
+                              [],
+                              DpugExpressionSpec.assignment(
+                                'count',
+                                DpugExpressionSpec.reference('count + 1'),
+                              ),
+                            ),
+                          )
+                          ..child(
+                            DpugWidgetBuilder()
+                              ..name('Text')
+                              ..positionalCascadeArgument(
+                                DpugExpressionSpec.string('Increment'),
+                              ),
+                          ),
+                      ],
+                    ),
+                  ))
+                .build();
+
+        final displayWidget =
+            (Dpug.widgetBuilder()
+                  ..name('Display')
+                  ..annotation(DpugAnnotationSpec.stateful())
+                  ..listenField(
+                    name: 'text',
+                    type: 'String',
+                    initializer: DpugExpressionSpec.string(''),
+                  )
+                  ..buildMethod(
+                    body: WidgetHelpers.container(
+                      properties: {
+                        'padding': DpugExpressionSpec.reference(
+                          'EdgeInsets.all(16)',
                         ),
-                      )
-                      ..child(DpugWidgetBuilder()
+                      },
+                      child: DpugWidgetBuilder()
                         ..name('Text')
                         ..positionalCascadeArgument(
-                          DpugExpressionSpec.string('Increment'),
-                        )),
-                  ],
-                ),
-              ))
-            .build();
-
-        final displayWidget = (Dpug.widgetBuilder()
-              ..name('Display')
-              ..annotation(DpugAnnotationSpec.stateful())
-              ..listenField(
-                name: 'text',
-                type: 'String',
-                initializer: DpugExpressionSpec.string(''),
-              )
-              ..buildMethod(
-                body: WidgetHelpers.container(
-                  properties: {
-                    'padding':
-                        DpugExpressionSpec.reference('EdgeInsets.all(16)'),
-                  },
-                  child: DpugWidgetBuilder()
-                    ..name('Text')
-                    ..positionalCascadeArgument(
-                      DpugExpressionSpec.reference('text'),
+                          DpugExpressionSpec.reference('text'),
+                        ),
                     ),
-                ),
-              ))
-            .build();
+                  ))
+                .build();
 
         final dpugCode = '''
 @stateful
@@ -641,10 +713,14 @@ class _DisplayState extends State<Display> {
   }
 }''';
         final emitter = DpugEmitter();
-        final resultDpugCode =
-            emitter.visitClasses([counterWidget, displayWidget]);
-        final resultDartCode =
-            Dpug.toDartString(([counterWidget, displayWidget]));
+        final resultDpugCode = emitter.visitClasses([
+          counterWidget,
+          displayWidget,
+        ]);
+        final resultDartCode = Dpug.toDartString(([
+          counterWidget,
+          displayWidget,
+        ]));
 
         expect(resultDpugCode, equals(dpugCode));
         expect(resultDartCode, equals(dartCode));

@@ -1,4 +1,4 @@
-import 'package:dpug/compiler/dpug_converter.dart';
+import 'package:dpug_core/compiler/dpug_converter.dart';
 import 'package:test/test.dart';
 
 final _dartCode = '''

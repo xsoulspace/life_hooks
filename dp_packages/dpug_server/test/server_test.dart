@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dp_server/server.dart' as app;
+import 'package:dpug_server/server.dart' as app;
 import 'package:test/test.dart';
 
 void main() {

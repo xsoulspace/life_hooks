@@ -2,7 +2,12 @@ import 'package:code_builder/code_builder.dart' as cb;
 import 'package:source_span/source_span.dart';
 
 import 'ast_builder.dart';
-import 'dart_code_builder.dart';
+import 'package:dpug_code_builder/src/builders/dart_widget_code_generator.dart';
+import 'package:dpug_code_builder/src/specs/annotation_spec.dart';
+import 'package:dpug_code_builder/src/specs/class_spec.dart';
+import 'package:dpug_code_builder/src/specs/expression_spec.dart';
+import 'package:dpug_code_builder/src/specs/method_spec.dart';
+import 'package:dpug_code_builder/src/specs/state_field_spec.dart';
 
 /// Transforms parsed AST into Dart source using [DpugCodeBuilder].
 class AstToDart {
@@ -20,13 +25,13 @@ class AstToDart {
   }
 
   String _classToDart(ClassNode node) {
-    final List<StateField> fields = <StateField>[];
+    final List<DpugStateFieldSpec> fields = <DpugStateFieldSpec>[];
     for (final StateVariable f in node.stateVariables) {
-      fields.add(StateField(
+      fields.add(DpugStateFieldSpec(
         name: f.name,
         type: f.type,
-        annotation: f.annotation,
-        initialValue: f.initializer != null
+        annotation: DpugAnnotationSpec(name: f.annotation),
+        initializer: f.initializer != null
             ? cb.CodeExpression(cb.Code(_exprToDart(f.initializer!)))
             : null,
       ));
@@ -47,12 +52,20 @@ class AstToDart {
     final String widgetExpr = _widgetToDartExpr(buildRoot);
     final cb.Code buildBody = cb.Code('return $widgetExpr;');
 
-    final DpugCodeBuilder builder = DpugCodeBuilder();
-    return builder.buildStatefulWidget(
-      className: node.name,
+    final DpugClassSpec classSpec = DpugClassSpec(
+      name: node.name,
       stateFields: fields,
-      buildMethod: buildBody,
+      methods: [
+        DpugMethodSpec.getter(
+          name: 'build',
+          returnType: 'Widget',
+          body: DpugExpressionSpec.code('return $widgetExpr;'),
+        ),
+      ],
     );
+
+    final DartWidgetCodeGenerator generator = DartWidgetCodeGenerator();
+    return generator.generateStatefulWidget(classSpec);
   }
 
   // Widget emission

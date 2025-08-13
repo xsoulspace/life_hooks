@@ -1,5 +1,5 @@
 import 'package:built_collection/built_collection.dart';
-import 'package:dpug/dpug.dart';
+import 'package:dpug_code_builder/dpug_code_builder.dart';
 
 class DpugWidgetBuilder extends DpugClassBuilder implements DpugSpec {
   String _name = '';
@@ -45,12 +45,13 @@ class DpugWidgetBuilder extends DpugClassBuilder implements DpugSpec {
     }
 
     return DpugWidgetSpec.build(
-      name: _name,
-      children: _children.build(),
-      properties: _properties.build(),
-      positionalArgs: _positionalArgs.build(),
-      positionalCascadeArgs: _positionalCascadeArgs.build(),
-    ) as DpugClassSpec;
+          name: _name,
+          children: _children.build(),
+          properties: _properties.build(),
+          positionalArgs: _positionalArgs.build(),
+          positionalCascadeArgs: _positionalCascadeArgs.build(),
+        )
+        as DpugClassSpec;
   }
 
   @override
