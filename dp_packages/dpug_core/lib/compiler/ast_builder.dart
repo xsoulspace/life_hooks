@@ -11,8 +11,10 @@ class WidgetNode extends ASTNode {
   final String name;
   final List<ASTNode> children;
   final Map<String, Expression> properties;
+  final List<Expression> positionalArgs;
 
-  WidgetNode(this.name, this.children, this.properties, FileSpan span)
+  WidgetNode(this.name, this.children, this.properties, this.positionalArgs,
+      FileSpan span)
       : super(span);
 }
 
@@ -201,12 +203,36 @@ class ASTBuilder {
     final String widgetName = nameTok.value;
     final Map<String, Expression> properties = <String, Expression>{};
     final List<ASTNode> children = <ASTNode>[];
+    final List<Expression> positionalArgs = <Expression>[];
+
+    // Optional constructor-style positional arguments: Text('World')
+    if (_check(TokenType.symbol) && _peek().value == '(') {
+      _advance(); // consume '('
+      // parse comma-separated expressions until ')'
+      while (
+          !_isAtEnd() && !(_check(TokenType.symbol) && _peek().value == ')')) {
+        // skip stray commas
+        if (_check(TokenType.symbol) && _peek().value == ',') {
+          _advance();
+          continue;
+        }
+        final Expression arg = _parseExpressionUntilEOL();
+        positionalArgs.add(arg);
+        // if the expression parser stopped at newline, we are likely malformed inside ()
+        // try to consume optional comma
+        if (_check(TokenType.symbol) && _peek().value == ',') {
+          _advance();
+        }
+      }
+      _expectValue(')');
+    }
 
     _consumeOptNewline();
     // Optional INDENT block for props/children
     if (_check(TokenType.indent)) {
       _advance();
       while (!_check(TokenType.dedent) && !_isAtEnd()) {
+        // Skip blank lines
         // Property: identifier ':' expr
         if (_check(TokenType.identifier)) {
           final Token possibleName = _peek();
@@ -221,6 +247,25 @@ class ASTBuilder {
           }
         }
 
+        // Cascade style: ..prop: expr OR ..'positional'
+        if (_check(TokenType.operator) && _peek().value == '..') {
+          _advance(); // consume '..'
+          if (_check(TokenType.identifier) && _lookaheadIsColon()) {
+            // Property after cascade
+            final Token name = _advance();
+            _expectValue(':');
+            final Expression expr = _parseExpressionUntilEOL();
+            properties[name.value] = expr;
+            _consumeOptNewline();
+            continue;
+          }
+          // Treat the rest of line as a positional argument expression
+          final Expression expr = _parseExpressionUntilEOL();
+          positionalArgs.add(expr);
+          _consumeOptNewline();
+          continue;
+        }
+
         // Child widget
         final WidgetNode child = _parseWidget();
         children.add(child);
@@ -229,7 +274,8 @@ class ASTBuilder {
       if (_check(TokenType.dedent)) _advance();
     }
 
-    return WidgetNode(widgetName, children, properties, nameTok.span);
+    return WidgetNode(
+        widgetName, children, properties, positionalArgs, nameTok.span);
   }
 
   StateVariable _parseStateField(String annotationName) {

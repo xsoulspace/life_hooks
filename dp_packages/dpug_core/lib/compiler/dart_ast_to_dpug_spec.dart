@@ -1,6 +1,6 @@
 import 'package:analyzer/dart/analysis/utilities.dart' as az;
 import 'package:analyzer/dart/ast/ast.dart' as ast;
-import 'package:dpug/dpug.dart' as dp;
+import 'package:dpug_code_builder/dpug.dart' as dp;
 import 'package:source_span/source_span.dart';
 
 /// Minimal analyzer -> DPug IR transformer supporting a subset needed by tests.

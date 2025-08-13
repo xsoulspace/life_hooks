@@ -1,4 +1,4 @@
-import 'package:dpug/dpug.dart' as dp;
+import 'package:dpug_code_builder/dpug.dart' as dp;
 import 'package:source_span/source_span.dart';
 
 import 'ast_builder.dart';
@@ -64,6 +64,12 @@ class AstToDpugSpec {
     node.properties.forEach((String key, Expression value) {
       b.property(key, _exprToSpec(value));
     });
+
+    // Positional/cascade arguments
+    for (final Expression e in node.positionalArgs) {
+      // Prefer cascade style in DPug output per README examples
+      b.positionalCascadeArgument(_exprToSpec(e));
+    }
 
     // Children
     for (final ASTNode child in node.children) {

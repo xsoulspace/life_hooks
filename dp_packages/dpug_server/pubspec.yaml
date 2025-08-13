@@ -1,13 +1,13 @@
-name: dp_server
+name: dpug_server
 
 environment:
-  sdk: ^3.5.3
+  sdk: ^3.8.3
 
 dependencies:
   shelf: ^1.4.1
   shelf_router: ^1.1.4
-  dpug_code_builder:
-    path: ../dpug_code_builder
+  dpug_core:
+    path: ../dpug_core
 
 dev_dependencies:
   test: ^1.24.0

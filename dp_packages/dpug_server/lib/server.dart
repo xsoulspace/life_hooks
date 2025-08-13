@@ -13,6 +13,9 @@ class DpServer {
   /// Build router with routes.
   Router buildRouter() {
     final Router router = Router();
+    router.get('/health', (shelf.Request req) async {
+      return shelf.Response.ok('ok', headers: {'content-type': 'text/plain'});
+    });
 
     router.post('/dpug/to-dart', (shelf.Request req) async {
       final String body = await req.readAsString();
@@ -58,6 +61,7 @@ Future<HttpServer> serve({int port = 8080}) async {
   final DpServer app = DpServer();
   final shelf.Handler handler = const shelf.Pipeline()
       .addMiddleware(shelf.logRequests())
+      .addMiddleware(_corsMiddleware())
       .addHandler(app.buildRouter());
   final HttpServer server = await shelf_io.serve(
     handler,
@@ -66,3 +70,21 @@ Future<HttpServer> serve({int port = 8080}) async {
   );
   return server;
 }
+
+shelf.Middleware _corsMiddleware() {
+  return (innerHandler) {
+    return (request) async {
+      if (request.method == 'OPTIONS') {
+        return shelf.Response.ok('', headers: _corsHeaders());
+      }
+      final response = await innerHandler(request);
+      return response.change(headers: _corsHeaders());
+    };
+  };
+}
+
+Map<String, String> _corsHeaders() => {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    };

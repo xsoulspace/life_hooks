@@ -62,6 +62,12 @@ class AstToDart {
       props[key] = _exprToDart(value);
     });
 
+    // Positional arguments (including cascade positional style)
+    final List<String> posArgs = <String>[];
+    for (final Expression a in node.positionalArgs) {
+      posArgs.add(_exprToDart(a));
+    }
+
     // Children sugar
     if (node.children.isNotEmpty) {
       if (node.children.length == 1) {
@@ -80,8 +86,21 @@ class AstToDart {
         ? ''
         : props.entries.map((e) => '${e.key}: ${e.value}').join(',\n      ');
 
-    final String args = named.isEmpty ? '' : '\n      $named\n    ';
-    return '${node.name}(${args.isEmpty ? '' : '\n  '}$args${args.isEmpty ? '' : '\n'})';
+    final String positional =
+        posArgs.isEmpty ? '' : posArgs.map((e) => e).join(', ');
+
+    final String combined;
+    if (named.isEmpty && positional.isEmpty) {
+      combined = '';
+    } else if (named.isEmpty) {
+      combined = positional;
+    } else if (positional.isEmpty) {
+      combined = '\n      $named\n    ';
+    } else {
+      combined = '$positional,\n      $named\n    ';
+    }
+
+    return '${node.name}(${combined.isEmpty ? '' : '\n  '}$combined${combined.isEmpty ? '' : '\n'})';
   }
 
   // Expressions to Dart source

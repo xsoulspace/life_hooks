@@ -1,7 +1,7 @@
-name: dpug
+name: dpug_core
 
 environment:
-  sdk: ^3.5.3
+  sdk: ^3.8.3
 
 dependencies:
   analyzer: ^6.8.0
@@ -9,6 +9,8 @@ dependencies:
   dart_style: ^2.3.4
   source_span: ^1.10.0
   build: ^2.4.1
+  dpug_code_builder:
+    path: ../dpug_code_builder
 
 dev_dependencies:
   analyzer_plugin: ^0.11.3
