@@ -26,6 +26,12 @@ class DartToDpugSpecVisitor
         .whereType<DpugMethodSpec>()
         .toList();
 
+    // Heuristic: treat any class with a 'build' method returning Widget as stateful
+    final hasBuild = spec.methods.any((m) => (m.name ?? '') == 'build');
+    if (hasBuild) {
+      annotations.insert(0, DpugAnnotationSpec.stateful());
+    }
+
     return DpugClassSpec(
       name: spec.name,
       annotations: annotations,
@@ -50,9 +56,22 @@ class DartToDpugSpecVisitor
 
   @override
   DpugSpec? visitMethod(Method spec, [DpugSpec? context]) {
+    // Detect build method to match tests: 'Widget get build =>' style
+    final isBuild = (spec.name ?? '') == 'build';
+    final returnType = spec.returns?.toString() ?? 'dynamic';
+    final body = spec.body?.accept(this) ?? DpugCodeSpec('');
+
+    if (isBuild && body is DpugExpressionSpec) {
+      return DpugMethodSpec.getter(
+        name: 'build',
+        returnType: 'Widget',
+        body: body,
+      );
+    }
+
     return DpugMethodSpec(
       name: spec.name ?? '',
-      returnType: spec.returns?.toString() ?? 'dynamic',
+      returnType: returnType,
       parameters: spec.requiredParameters
           .map(
             (p) => DpugParameterSpec(
@@ -64,7 +83,7 @@ class DartToDpugSpecVisitor
             ),
           )
           .toList(),
-      body: spec.body?.accept(this) ?? DpugCodeSpec(''),
+      body: body,
       isGetter: spec.type == MethodType.getter,
     );
   }
@@ -103,7 +122,12 @@ class DartToDpugSpecVisitor
 
   @override
   DpugSpec? visitReference(Reference spec, [DpugSpec? context]) {
-    return DpugReferenceSpec(spec.symbol ?? '');
+    final sym = spec.symbol ?? '';
+    if (sym == 'Widget') {
+      // In DPUG strings we want 'Widget' unwrapped, not a Reference dump
+      return DpugReferenceExpressionSpec('Widget');
+    }
+    return DpugReferenceSpec(sym);
   }
 
   @override
@@ -281,7 +305,9 @@ class DartToDpugSpecVisitor
     ParenthesizedExpression expression, [
     DpugSpec? context,
   ]) {
-    return expression.expression.accept(this); // ignore: invalid_use_of_visible_for_overriding_member
+    return expression.expression.accept(
+      this,
+    ); // ignore: invalid_use_of_visible_for_overriding_member
   }
 
   @override

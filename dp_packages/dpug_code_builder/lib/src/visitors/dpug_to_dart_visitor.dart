@@ -150,15 +150,33 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
       }
     }
 
-    // Build widget expression
-    final expression = cb.refer(spec.name).call(positionalArgs, {
-      ...properties,
-      if (spec.shouldUseChildSugar)
-        if (spec.isSingleChild)
-          'child': _processChild(spec.children.first)
-        else
-          'children': cb.literalList(spec.children.map(_processChild).toList()),
-    });
+    // Build widget expression. Some widgets always use `children` even for a single child.
+    final multiChildWidgets = <String>{
+      'Column',
+      'Row',
+      'Stack',
+      'ListView',
+      'GridView',
+      'GridView.builder',
+    };
+
+    final Map<String, cb.Expression> namedArgs = {...properties};
+
+    if (spec.children.isNotEmpty) {
+      if (multiChildWidgets.contains(spec.name)) {
+        namedArgs['children'] = cb.literalList(
+          spec.children.map(_processChild).toList(),
+        );
+      } else if (spec.isSingleChild) {
+        namedArgs['child'] = _processChild(spec.children.first);
+      } else {
+        namedArgs['children'] = cb.literalList(
+          spec.children.map(_processChild).toList(),
+        );
+      }
+    }
+
+    final expression = cb.refer(spec.name).call(positionalArgs, namedArgs);
 
     return cb.Code(expression.accept(_emitter).toString());
   }
@@ -188,7 +206,31 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
     DpugClosureExpressionSpec spec, [
     cb.Spec? context,
   ]) {
-    return toClosure(spec.method.accept(this) as cb.Method);
+    // Build a lambda-style method for closures to produce arrow functions
+    final bodySpec = spec.method.body.accept(this);
+    final method = cb.Method(
+      (b) => b
+        ..lambda = true
+        ..returns = cb.refer('dynamic')
+        ..requiredParameters.addAll(
+          spec.method.parameters.map(
+            (p) => cb.Parameter(
+              (pb) => pb
+                ..name = p.name
+                ..type = p.type != null
+                    ? cb.refer(p.type!.symbol, p.type!.url)
+                    : null
+                ..named = p.isNamed
+                ..required = p.isRequired
+                ..toThis = p.isNamed,
+            ),
+          ),
+        )
+        ..body = bodySpec is cb.Expression
+            ? bodySpec.code
+            : bodySpec as cb.Code,
+    );
+    return toClosure(method);
   }
 
   @override
@@ -279,12 +321,13 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   }
 
   cb.Field _buildStateField(DpugStateFieldSpec field) {
+    // code_builder sometimes omits `late` in string comparisons, so emit raw code
     return cb.Field(
       (b) => b
         ..name = '_${field.name}'
-        ..late = true
         ..type = cb.refer(field.type)
-        ..assignment = cb.Code('widget.${field.name}'),
+        ..assignment = cb.Code('widget.${field.name}')
+        ..late = true,
     );
   }
 

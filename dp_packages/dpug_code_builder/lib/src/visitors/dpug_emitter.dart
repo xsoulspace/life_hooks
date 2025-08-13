@@ -112,26 +112,57 @@ class DpugEmitter extends BaseVisitor<String> {
     return visitSafely(spec, (s) {
       final buffer = StringBuffer();
 
-      // Write widget name
-      buffer.write('$_indentation${s.name}');
-
-      // Handle positional arguments for constructor calls
+      // Write widget name with inline positional args if present
       if (s.positionalArgs.isNotEmpty) {
         final args = s.positionalArgs.map((a) => a.accept(this)).join(', ');
-        buffer.write('($args)');
+        buffer.writeln('$_indentation${s.name}($args)');
+      } else {
+        buffer.writeln('$_indentation${s.name}');
       }
-      buffer.writeln();
 
       // Handle properties and children
       if (s.properties.isNotEmpty ||
           s.children.isNotEmpty ||
           s.positionalCascadeArgs.isNotEmpty) {
         return _withIndent(1, () {
-          // Properties with cascade notation
+          // Convert `child:` widget property into sugar children for emission
+          final syntheticChildren = <DpugWidgetSpec>[];
+          final filteredEntries = <MapEntry<String, DpugExpressionSpec>>[];
           for (final entry in s.properties.entries) {
-            buffer.writeln(
-              '$_indentation..${entry.key}: ${entry.value.accept(this)}',
-            );
+            if (entry.key == 'child' &&
+                s.children.isEmpty &&
+                entry.value is DpugWidgetExpressionSpec) {
+              final widgetExpr = entry.value as DpugWidgetExpressionSpec;
+              syntheticChildren.add(widgetExpr.builder.build());
+              continue; // skip emitting ..child:
+            }
+            filteredEntries.add(entry);
+          }
+
+          // Properties with cascade notation. If the value spans multiple
+          // lines, align the first token after ':' and preserve child block
+          // indentation relative to the current widget level.
+          for (final entry in filteredEntries) {
+            final valueStr = entry.value.accept(this);
+            if (valueStr.contains('\n')) {
+              final lines = valueStr.split('\n');
+              String stripPrefix(String line) => line.startsWith(_indentation)
+                  ? line.substring(_indentation.length)
+                  : line;
+              buffer.writeln(
+                '$_indentation..${entry.key}: ${stripPrefix(lines.first)}',
+              );
+              for (var i = 1; i < lines.length; i++) {
+                final line = stripPrefix(lines[i]);
+                if (line.trim().isEmpty) {
+                  buffer.writeln();
+                } else {
+                  buffer.writeln('$_indentation$line');
+                }
+              }
+            } else {
+              buffer.writeln('$_indentation..${entry.key}: $valueStr');
+            }
             if (config.spaceBetweenProperties) buffer.writeln();
           }
 
@@ -140,20 +171,19 @@ class DpugEmitter extends BaseVisitor<String> {
             buffer.writeln('$_indentation..${arg.accept(this)}');
           }
 
-          // Children handling
-          if (s.children.isNotEmpty) {
-            if (s.isSingleChild) {
-              // buffer.writeln(
-              //     '$_indentation..child: ${s.children.first.accept(this)}');
-              buffer.writeln('$_indentation${s.children.first.accept(this)}');
+          // Children handling (including synthetic ones from `child:`)
+          final allChildren = [...s.children, ...syntheticChildren];
+          if (allChildren.isNotEmpty) {
+            if (allChildren.length == 1) {
+              buffer.write(allChildren.first.accept(this));
             } else {
-              for (final child in s.children) {
+              for (final child in allChildren) {
                 buffer.write(child.accept(this));
               }
             }
           }
 
-          return buffer.toString().trimRight();
+          return buffer.toString();
         });
       }
 
@@ -204,6 +234,20 @@ class DpugEmitter extends BaseVisitor<String> {
   ]) {
     final params = spec.method.parameters.map((p) => p.name).join(', ');
     final body = spec.method.body.accept(this);
+    // If body contains newlines, preserve multiline block after the colon
+    if (body.contains('\n')) {
+      final lines = body.split('\n');
+      final buf = StringBuffer('($params) {\n');
+      for (final line in lines) {
+        if (line.trim().isEmpty) {
+          buf.writeln();
+        } else {
+          buf.writeln('${config.indent}$line');
+        }
+      }
+      buf.write('}');
+      return buf.toString();
+    }
     return '($params) => $body';
   }
 
