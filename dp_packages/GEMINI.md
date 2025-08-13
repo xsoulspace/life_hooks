@@ -28,3 +28,29 @@ The server exposes the following endpoints:
 
 - `POST /dpug/to-dart`: Converts a DPug string to Dart.
 - `POST /dart/to-dpug`: Converts a Dart string to DPug.
+
+### Additional endpoint
+
+- `GET /health`: Returns `ok` for liveness checks.
+
+### Error handling
+
+- Errors are returned as YAML-shaped text in the response body with keys: `error`, `message`, `span`.
+- Current content type is `text/plain`.
+- Example body:
+
+```
+error: DartToDpugError
+message: description of the error
+span: "1:1..1:1"
+```
+
+### Current limitations
+
+- Dart → DPug supports a subset of StatefulWidget patterns (simple constructor args, basic widget trees).
+- Complex expressions and advanced Flutter APIs may be emitted as raw source references.
+
+### Conversion pipeline (high level)
+
+- DPug → Dart: Lexer → AST → `AstToDart` → `DartWidgetCodeGenerator` → formatted Dart.
+- Dart → DPug: Analyzer AST → minimal transformer → DPug text.
