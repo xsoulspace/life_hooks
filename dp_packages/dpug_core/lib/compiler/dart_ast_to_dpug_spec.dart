@@ -1,6 +1,7 @@
+import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart' as az;
 import 'package:analyzer/dart/ast/ast.dart' as ast;
-import 'package:dpug_code_builder/dpug.dart' as dp;
+import 'package:dpug_code_builder/dpug_code_builder.dart' as dp;
 import 'package:source_span/source_span.dart';
 
 /// Minimal analyzer -> DPug IR transformer supporting a subset needed by tests.
@@ -10,7 +11,7 @@ class DartAstToDpugSpec {
 
   /// Parse source and transform the first supported class to a `DpugSpec`.
   dp.DpugSpec transformFromSource(String source) {
-    final az.ParseStringResult result = az.parseString(content: source);
+    final ParseStringResult result = az.parseString(content: source);
     final ast.CompilationUnit unit = result.unit;
 
     for (final ast.CompilationUnitMember member in unit.declarations) {
@@ -25,7 +26,7 @@ class DartAstToDpugSpec {
   dp.DpugClassSpec? _classToSpec(ast.ClassDeclaration c) {
     // Look for StatefulWidget pattern and its State class
     final bool isStateful =
-        c.extendsClause?.superclass.name.lexeme == 'StatefulWidget';
+        c.extendsClause?.superclass.name2.lexeme == 'StatefulWidget';
     if (!isStateful) return null;
 
     final String name = c.name.lexeme;
@@ -46,12 +47,15 @@ class DartAstToDpugSpec {
 
     // Locate the State class with build method
     final ast.ClassDeclaration? stateClass = _findStateClass(
-        unit: c.parent as ast.CompilationUnit, widgetName: name);
+      unit: c.parent as ast.CompilationUnit,
+      widgetName: name,
+    );
     if (stateClass != null) {
-      final ast.MethodDeclaration? build = stateClass.members
+      final buildMethods = stateClass.members
           .whereType<ast.MethodDeclaration>()
-          .firstWhere((m) => m.name.lexeme == 'build', orElse: () => null);
-      if (build != null) {
+          .where((m) => m.name.lexeme == 'build');
+      if (buildMethods.isNotEmpty) {
+        final ast.MethodDeclaration build = buildMethods.first;
         final dp.DpugWidgetBuilder wb = _extractBuildBody(build);
         builder.buildMethod(body: wb);
       }
@@ -60,8 +64,10 @@ class DartAstToDpugSpec {
     return builder.build();
   }
 
-  ast.ClassDeclaration? _findStateClass(
-      {required ast.CompilationUnit unit, required String widgetName}) {
+  ast.ClassDeclaration? _findStateClass({
+    required ast.CompilationUnit unit,
+    required String widgetName,
+  }) {
     for (final ast.CompilationUnitMember m in unit.declarations) {
       if (m is ast.ClassDeclaration) {
         final String n = m.name.lexeme;
@@ -88,7 +94,7 @@ class DartAstToDpugSpec {
 
   dp.DpugWidgetBuilder _exprToWidget(ast.Expression expr) {
     if (expr is ast.InstanceCreationExpression) {
-      final String name = expr.constructorName.type.name.toSource();
+      final String name = expr.constructorName.type.name2.lexeme;
       final dp.DpugWidgetBuilder b = dp.DpugWidgetBuilder()..name(name);
       // Positional args
       for (final ast.Expression arg
@@ -96,8 +102,9 @@ class DartAstToDpugSpec {
         // Not typically used; skip
       }
       // Named args and common patterns
-      for (final ast.Expression e
-          in expr.argumentList.arguments.map((a) => a)) {
+      for (final ast.Expression e in expr.argumentList.arguments.map(
+        (a) => a,
+      )) {
         if (e is ast.NamedExpression) {
           final String key = e.name.label.name;
           final dp.DpugExpressionSpec value = _anyExprToDpug(e.expression);
@@ -115,10 +122,10 @@ class DartAstToDpugSpec {
       return dp.DpugExpressionSpec.string(e.value);
     }
     if (e is ast.IntegerLiteral) {
-      return dp.DpugExpressionSpec.literal(e.value ?? 0);
+      return dp.DpugExpressionSpec.numLiteral(e.value ?? 0);
     }
     if (e is ast.BooleanLiteral) {
-      return dp.DpugExpressionSpec.literal(e.value);
+      return dp.DpugExpressionSpec.boolLiteral(e.value);
     }
     if (e is ast.SimpleIdentifier) {
       return dp.DpugExpressionSpec.reference(e.name);
@@ -127,13 +134,15 @@ class DartAstToDpugSpec {
       // Render invocation as reference text for now
       return dp.DpugExpressionSpec.reference(e.toSource());
     }
-    if (e is ast.LambdaExpression) {
-      // Map to closure with single statement body as reference
-      final String body = e.body.toSource();
-      return dp.DpugExpressionSpec.closure(
-          <String>[], dp.DpugExpressionSpec.reference(body));
-    }
     if (e is ast.FunctionExpression) {
+      final body = e.body;
+      if (body is ast.ExpressionFunctionBody) {
+        final String bodyStr = body.expression.toSource();
+        return dp.DpugExpressionSpec.closure(
+          <String>[],
+          dp.DpugExpressionSpec.reference(bodyStr),
+        );
+      }
       return dp.DpugExpressionSpec.reference(e.toSource());
     }
     if (e is ast.InstanceCreationExpression) {

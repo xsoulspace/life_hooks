@@ -2,10 +2,12 @@ import '../builders/builders.dart';
 import '../visitors/visitors.dart';
 import 'assignment_spec.dart';
 import 'binary_spec.dart';
+import 'bool_literal_spec.dart';
 import 'closure_spec.dart';
 import 'invoke_spec.dart';
 import 'list_literal_spec.dart';
 import 'method_spec.dart';
+import 'num_literal_spec.dart';
 import 'reference_expression_spec.dart';
 import 'reference_spec.dart';
 import 'spec.dart';
@@ -19,6 +21,8 @@ class DpugExpressionSpec implements DpugSpec {
       DpugReferenceExpressionSpec;
   factory DpugExpressionSpec.widget(DpugWidgetBuilder builder) =
       DpugWidgetExpressionSpec;
+  factory DpugExpressionSpec.boolLiteral(bool value) = DpugBoolLiteralSpec;
+  factory DpugExpressionSpec.numLiteral(num value) = DpugNumLiteralSpec;
   factory DpugExpressionSpec.string(String value) = DpugStringLiteralSpec;
   factory DpugExpressionSpec.list(List<DpugExpressionSpec> values) =
       DpugListLiteralSpec;
@@ -32,10 +36,14 @@ class DpugExpressionSpec implements DpugSpec {
   factory DpugExpressionSpec.closureFromMethod(DpugMethodSpec method) =
       DpugClosureExpressionSpec;
   factory DpugExpressionSpec.assignment(
-      String target, DpugExpressionSpec value) = DpugAssignmentSpec;
+    String target,
+    DpugExpressionSpec value,
+  ) = DpugAssignmentSpec;
   factory DpugExpressionSpec.binary(
-          String operator, DpugExpressionSpec left, DpugExpressionSpec right) =
-      DpugBinarySpec;
+    String operator,
+    DpugExpressionSpec left,
+    DpugExpressionSpec right,
+  ) = DpugBinarySpec;
   factory DpugExpressionSpec.invoke({
     required DpugExpressionSpec target,
     List<DpugExpressionSpec> positionedArguments,

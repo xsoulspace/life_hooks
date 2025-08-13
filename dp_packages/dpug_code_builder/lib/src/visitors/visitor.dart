@@ -1,3 +1,5 @@
+import 'package:dpug_code_builder/src/specs/bool_literal_spec.dart';
+
 import '../specs/specs.dart';
 
 abstract class DpugSpecVisitor<R> {
@@ -9,6 +11,8 @@ abstract class DpugSpecVisitor<R> {
   R visitReferenceExpression(DpugReferenceExpressionSpec spec, [R? context]);
   R visitWidget(DpugWidgetSpec spec, [R? context]);
   R visitAnnotation(DpugAnnotationSpec spec, [R? context]);
+  R visitBoolLiteral(DpugBoolLiteralSpec spec, [R? context]);
+  R visitNumLiteral(DpugNumLiteralSpec spec, [R? context]);
   R visitCode(DpugCodeSpec spec, [R? context]);
   R visitLiteral(DpugLiteralSpec spec, [R? context]);
   R visitBinary(DpugBinarySpec spec, [R? context]);

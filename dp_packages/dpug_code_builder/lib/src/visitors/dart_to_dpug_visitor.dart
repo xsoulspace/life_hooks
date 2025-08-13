@@ -17,12 +17,12 @@ class DartToDpugSpecVisitor
         .toList();
 
     final fields = spec.fields
-        .map((f) => visitField(f, context))
+        .map((f) => f.accept(this, context))
         .whereType<DpugStateFieldSpec>()
         .toList();
 
     final methods = spec.methods
-        .map((m) => visitMethod(m, context))
+        .map((m) => m.accept(this, context))
         .whereType<DpugMethodSpec>()
         .toList();
 
@@ -54,13 +54,15 @@ class DartToDpugSpecVisitor
       name: spec.name ?? '',
       returnType: spec.returns?.toString() ?? 'dynamic',
       parameters: spec.requiredParameters
-          .map((p) => DpugParameterSpec(
-                name: p.name,
-                type: p.type != null
-                    ? DpugReferenceSpec(p.type!.toString())
-                    : null,
-                isRequired: true,
-              ))
+          .map(
+            (p) => DpugParameterSpec(
+              name: p.name,
+              type: p.type != null
+                  ? DpugReferenceSpec(p.type!.toString())
+                  : null,
+              isRequired: true,
+            ),
+          )
           .toList(),
       body: spec.body?.accept(this) ?? DpugCodeSpec(''),
       isGetter: spec.type == MethodType.getter,
@@ -75,9 +77,11 @@ class DartToDpugSpecVisitor
   DpugSpec? visitEnum(Enum spec, [DpugSpec? context]) => null;
 
   @override
-  DpugSpec? visitConstructor(Constructor spec, String clazz,
-          [DpugSpec? context]) =>
-      null;
+  DpugSpec? visitConstructor(
+    Constructor spec,
+    String clazz, [
+    DpugSpec? context,
+  ]) => null;
 
   @override
   DpugSpec? visitExtension(Extension spec, [DpugSpec? context]) => null;
@@ -112,9 +116,10 @@ class DartToDpugSpecVisitor
       DpugReferenceSpec(spec.toString());
 
   @override
-  DpugSpec? visitTypeParameters(Iterable<Reference> specs,
-          [DpugSpec? context]) =>
-      DpugReferenceSpec(specs.map((s) => s.toString()).join(', '));
+  DpugSpec? visitTypeParameters(
+    Iterable<Reference> specs, [
+    DpugSpec? context,
+  ]) => DpugReferenceSpec(specs.map((s) => s.toString()).join(', '));
 
   @override
   DpugSpec? visitTypeDef(TypeDef spec, [DpugSpec? context]) => null;
@@ -137,8 +142,10 @@ class DartToDpugSpecVisitor
 
   // ExpressionVisitor methods
   @override
-  DpugSpec? visitBinaryExpression(BinaryExpression expression,
-      [DpugSpec? context]) {
+  DpugSpec? visitBinaryExpression(
+    BinaryExpression expression, [
+    DpugSpec? context,
+  ]) {
     final left = expression.left.accept(this);
     final right = expression.right.accept(this);
 
@@ -146,16 +153,14 @@ class DartToDpugSpecVisitor
       return DpugReferenceSpec(expression.toString());
     }
 
-    return DpugBinarySpec(
-      expression.operator,
-      left,
-      right,
-    );
+    return DpugBinarySpec(expression.operator, left, right);
   }
 
   @override
-  DpugSpec? visitInvokeExpression(InvokeExpression expression,
-      [DpugSpec? context]) {
+  DpugSpec? visitInvokeExpression(
+    InvokeExpression expression, [
+    DpugSpec? context,
+  ]) {
     final args = <DpugExpressionSpec>[];
     final namedArgs = <String, DpugExpressionSpec>{};
 
@@ -175,8 +180,9 @@ class DartToDpugSpecVisitor
       if (converted is DpugExpressionSpec) {
         namedArgs[entry.key] = converted;
       } else {
-        namedArgs[entry.key] =
-            DpugReferenceExpressionSpec(entry.value.toString());
+        namedArgs[entry.key] = DpugReferenceExpressionSpec(
+          entry.value.toString(),
+        );
       }
     }
 
@@ -193,14 +199,18 @@ class DartToDpugSpecVisitor
   }
 
   @override
-  DpugSpec? visitLiteralExpression(LiteralExpression expression,
-      [DpugSpec? context]) {
+  DpugSpec? visitLiteralExpression(
+    LiteralExpression expression, [
+    DpugSpec? context,
+  ]) {
     return DpugStringLiteralSpec(expression.literal);
   }
 
   @override
-  DpugSpec? visitLiteralListExpression(LiteralListExpression expression,
-      [DpugSpec? context]) {
+  DpugSpec? visitLiteralListExpression(
+    LiteralListExpression expression, [
+    DpugSpec? context,
+  ]) {
     final values = <DpugExpressionSpec>[];
 
     for (final value in expression.values) {
@@ -233,46 +243,60 @@ class DartToDpugSpecVisitor
   }
 
   @override
-  DpugSpec? visitClosureExpression(ClosureExpression expression,
-      [DpugSpec? context]) {
+  DpugSpec? visitClosureExpression(
+    ClosureExpression expression, [
+    DpugSpec? context,
+  ]) {
     return DpugClosureExpressionSpec(
       expression.method.accept(this) as DpugMethodSpec,
     );
   }
 
   @override
-  DpugSpec? visitCodeExpression(CodeExpression expression,
-      [DpugSpec? context]) {
+  DpugSpec? visitCodeExpression(
+    CodeExpression expression, [
+    DpugSpec? context,
+  ]) {
     return DpugReferenceSpec(expression.code.toString());
   }
 
   @override
-  DpugSpec? visitLiteralMapExpression(LiteralMapExpression expression,
-      [DpugSpec? context]) {
+  DpugSpec? visitLiteralMapExpression(
+    LiteralMapExpression expression, [
+    DpugSpec? context,
+  ]) {
     return DpugReferenceSpec(expression.toString());
   }
 
   @override
-  DpugSpec? visitLiteralRecordExpression(LiteralRecordExpression expression,
-      [DpugSpec? context]) {
+  DpugSpec? visitLiteralRecordExpression(
+    LiteralRecordExpression expression, [
+    DpugSpec? context,
+  ]) {
     return DpugReferenceSpec(expression.toString());
   }
 
   @override
-  DpugSpec? visitParenthesizedExpression(ParenthesizedExpression expression,
-      [DpugSpec? context]) {
+  DpugSpec? visitParenthesizedExpression(
+    ParenthesizedExpression expression, [
+    DpugSpec? context,
+  ]) {
     return expression.expression.accept(this);
   }
 
   @override
-  DpugSpec? visitToCodeExpression(ToCodeExpression expression,
-      [DpugSpec? context]) {
+  DpugSpec? visitToCodeExpression(
+    ToCodeExpression expression, [
+    DpugSpec? context,
+  ]) {
     return DpugReferenceSpec(expression.toString());
   }
 
   @override
-  DpugSpec? visitLiteralSetExpression(LiteralSetExpression expression,
-      [DpugSpec? context]) {
+  DpugSpec? visitLiteralSetExpression(
+    LiteralSetExpression expression, [
+    DpugSpec? context,
+  ]) {
     return DpugReferenceSpec(expression.toString());
   }
 

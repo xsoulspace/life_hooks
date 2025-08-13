@@ -563,7 +563,7 @@ FloatingActionButton
     group('Multiple Classes', () {
       test('Two stateful widgets in one file', () {
         final counterWidget =
-            (Dpug.widgetBuilder()
+            (Dpug.classBuilder()
                   ..name('Counter')
                   ..annotation(DpugAnnotationSpec.stateful())
                   ..listenField(
@@ -605,7 +605,7 @@ FloatingActionButton
                 .build();
 
         final displayWidget =
-            (Dpug.widgetBuilder()
+            (Dpug.classBuilder()
                   ..name('Display')
                   ..annotation(DpugAnnotationSpec.stateful())
                   ..listenField(
@@ -717,10 +717,10 @@ class _DisplayState extends State<Display> {
           counterWidget,
           displayWidget,
         ]);
-        final resultDartCode = Dpug.toDartString(([
+        final resultDartCode = Dpug.toIterableDartString([
           counterWidget,
           displayWidget,
-        ]));
+        ]);
 
         expect(resultDpugCode, equals(dpugCode));
         expect(resultDartCode, equals(dartCode));

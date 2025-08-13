@@ -1,13 +1,14 @@
 import 'package:code_builder/code_builder.dart' as cb;
-import 'package:source_span/source_span.dart';
-
-import 'ast_builder.dart';
 import 'package:dpug_code_builder/src/builders/dart_widget_code_generator.dart';
 import 'package:dpug_code_builder/src/specs/annotation_spec.dart';
 import 'package:dpug_code_builder/src/specs/class_spec.dart';
+import 'package:dpug_code_builder/src/specs/code_spec.dart';
 import 'package:dpug_code_builder/src/specs/expression_spec.dart';
 import 'package:dpug_code_builder/src/specs/method_spec.dart';
 import 'package:dpug_code_builder/src/specs/state_field_spec.dart';
+import 'package:source_span/source_span.dart';
+
+import 'ast_builder.dart';
 
 /// Transforms parsed AST into Dart source using [DpugCodeBuilder].
 class AstToDart {
@@ -27,14 +28,16 @@ class AstToDart {
   String _classToDart(ClassNode node) {
     final List<DpugStateFieldSpec> fields = <DpugStateFieldSpec>[];
     for (final StateVariable f in node.stateVariables) {
-      fields.add(DpugStateFieldSpec(
-        name: f.name,
-        type: f.type,
-        annotation: DpugAnnotationSpec(name: f.annotation),
-        initializer: f.initializer != null
-            ? cb.CodeExpression(cb.Code(_exprToDart(f.initializer!)))
-            : null,
-      ));
+      fields.add(
+        DpugStateFieldSpec(
+          name: f.name,
+          type: f.type,
+          annotation: DpugAnnotationSpec(name: f.annotation),
+          initializer: f.initializer != null
+              ? DpugExpressionSpec.reference(_exprToDart(f.initializer!))
+              : null,
+        ),
+      );
     }
 
     // Find build method widget body
@@ -59,7 +62,7 @@ class AstToDart {
         DpugMethodSpec.getter(
           name: 'build',
           returnType: 'Widget',
-          body: DpugExpressionSpec.code('return $widgetExpr;'),
+          body: DpugCodeSpec('return $widgetExpr;'),
         ),
       ],
     );
@@ -99,8 +102,9 @@ class AstToDart {
         ? ''
         : props.entries.map((e) => '${e.key}: ${e.value}').join(',\n      ');
 
-    final String positional =
-        posArgs.isEmpty ? '' : posArgs.map((e) => e).join(', ');
+    final String positional = posArgs.isEmpty
+        ? ''
+        : posArgs.map((e) => e).join(', ');
 
     final String combined;
     if (named.isEmpty && positional.isEmpty) {

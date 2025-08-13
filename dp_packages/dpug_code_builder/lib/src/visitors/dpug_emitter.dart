@@ -35,37 +35,39 @@ class DpugEmitter extends BaseVisitor<String> {
       buffer.writeln('class ${s.name}');
 
       // Write class body
-      buffer.write(_withIndent(1, () {
-        final bodyBuffer = StringBuffer();
+      buffer.write(
+        _withIndent(1, () {
+          final bodyBuffer = StringBuffer();
 
-        // Write fields
-        var first = true;
-        for (final field in s.stateFields) {
-          if (!first && config.spaceBetweenMembers) bodyBuffer.writeln();
-          first = false;
-
-          final fieldStr = field.accept(this);
-          bodyBuffer.writeln('$_indentation$fieldStr');
-        }
-
-        // Write methods
-        if (s.methods.isNotEmpty) {
-          if (s.stateFields.isNotEmpty && config.spaceBetweenMembers) {
-            bodyBuffer.writeln();
-          }
-
-          first = true;
-          for (final method in s.methods) {
+          // Write fields
+          var first = true;
+          for (final field in s.stateFields) {
             if (!first && config.spaceBetweenMembers) bodyBuffer.writeln();
             first = false;
 
-            bodyBuffer.write(method.accept(this));
-            bodyBuffer.writeln();
+            final fieldStr = field.accept(this);
+            bodyBuffer.writeln('$_indentation$fieldStr');
           }
-        }
 
-        return bodyBuffer.toString();
-      }));
+          // Write methods
+          if (s.methods.isNotEmpty) {
+            if (s.stateFields.isNotEmpty && config.spaceBetweenMembers) {
+              bodyBuffer.writeln();
+            }
+
+            first = true;
+            for (final method in s.methods) {
+              if (!first && config.spaceBetweenMembers) bodyBuffer.writeln();
+              first = false;
+
+              bodyBuffer.write(method.accept(this));
+              bodyBuffer.writeln();
+            }
+          }
+
+          return bodyBuffer.toString();
+        }),
+      );
 
       return buffer.toString();
     });
@@ -128,7 +130,8 @@ class DpugEmitter extends BaseVisitor<String> {
           // Properties with cascade notation
           for (final entry in s.properties.entries) {
             buffer.writeln(
-                '$_indentation..${entry.key}: ${entry.value.accept(this)}');
+              '$_indentation..${entry.key}: ${entry.value.accept(this)}',
+            );
             if (config.spaceBetweenProperties) buffer.writeln();
           }
 
@@ -195,8 +198,10 @@ class DpugEmitter extends BaseVisitor<String> {
   }
 
   @override
-  String visitClosureExpression(DpugClosureExpressionSpec spec,
-      [String? context]) {
+  String visitClosureExpression(
+    DpugClosureExpressionSpec spec, [
+    String? context,
+  ]) {
     final params = spec.method.parameters.map((p) => p.name).join(', ');
     final body = spec.method.body.accept(this);
     return '($params) => $body';
@@ -222,8 +227,9 @@ class DpugEmitter extends BaseVisitor<String> {
   @override
   String visitStateField(DpugStateFieldSpec spec, [String? context]) {
     final annotation = spec.annotation.accept(this);
-    final initializer =
-        spec.initializer != null ? ' = ${spec.initializer!.accept(this)}' : '';
+    final initializer = spec.initializer != null
+        ? ' = ${spec.initializer!.accept(this)}'
+        : '';
     return '$annotation ${spec.type} ${spec.name}$initializer';
   }
 
@@ -243,14 +249,17 @@ class DpugEmitter extends BaseVisitor<String> {
 
   @override
   String visitConstructor(DpugConstructorSpec spec, [String? context]) {
-    final params =
-        spec.optionalParameters.map((p) => p.accept(this)).join(', ');
+    final params = spec.optionalParameters
+        .map((p) => p.accept(this))
+        .join(', ');
     return '$_indentation${spec.name}($params)';
   }
 
   @override
-  String visitReferenceExpression(DpugReferenceExpressionSpec spec,
-      [String? context]) {
+  String visitReferenceExpression(
+    DpugReferenceExpressionSpec spec, [
+    String? context,
+  ]) {
     return spec.name;
   }
 
@@ -269,6 +278,10 @@ class DpugEmitter extends BaseVisitor<String> {
       return spec.builder.accept(this);
     } else if (spec is DpugInvokeSpec) {
       return visitInvoke(spec);
+    } else if (spec is DpugBoolLiteralSpec) {
+      return visitBoolLiteral(spec);
+    } else if (spec is DpugNumLiteralSpec) {
+      return visitNumLiteral(spec);
     } else if (spec is DpugAssignmentSpec) {
       return visitAssignment(spec);
     } else if (spec is DpugBinarySpec) {
@@ -281,5 +294,15 @@ class DpugEmitter extends BaseVisitor<String> {
       return visitListLiteral(spec);
     }
     return spec.toString();
+  }
+
+  @override
+  String visitBoolLiteral(DpugBoolLiteralSpec spec, [String? context]) {
+    return spec.value.toString();
+  }
+
+  @override
+  String visitNumLiteral(DpugNumLiteralSpec spec, [String? context]) {
+    return spec.value.toString();
   }
 }

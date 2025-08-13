@@ -1,4 +1,4 @@
-import 'package:dpug_code_builder/dpug.dart' as dp;
+import 'package:dpug_code_builder/dpug_code_builder.dart' as dp;
 import 'package:source_span/source_span.dart';
 
 import 'ast_builder.dart';
@@ -37,14 +37,11 @@ class AstToDpugSpec {
     }
 
     for (final StateVariable f in node.stateVariables) {
-      final dp.DpugExpressionSpec? init =
-          f.initializer != null ? _exprToSpec(f.initializer!) : null;
+      final dp.DpugExpressionSpec? init = f.initializer != null
+          ? _exprToSpec(f.initializer!)
+          : null;
       if (f.annotation == 'listen' || f.annotation == 'state') {
-        builder.listenField(
-          name: f.name,
-          type: f.type,
-          initializer: init,
-        );
+        builder.listenField(name: f.name, type: f.type, initializer: init);
       }
     }
 
@@ -85,23 +82,22 @@ class AstToDpugSpec {
       return dp.DpugExpressionSpec.string(expr.value);
     }
     if (expr is NumberExpression) {
-      return dp.DpugExpressionSpec.literal(expr.value);
+      return dp.DpugExpressionSpec.numLiteral(expr.value);
     }
     if (expr is BooleanExpression) {
-      return dp.DpugExpressionSpec.literal(expr.value);
+      return dp.DpugExpressionSpec.boolLiteral(expr.value);
     }
     if (expr is IdentifierExpression) {
       return dp.DpugExpressionSpec.reference(expr.name);
     }
     if (expr is AssignmentExpression) {
       return dp.DpugExpressionSpec.assignment(
-          expr.target, _exprToSpec(expr.value));
+        expr.target,
+        _exprToSpec(expr.value),
+      );
     }
     if (expr is ClosureExpression) {
-      return dp.DpugExpressionSpec.closure(
-        expr.params,
-        _exprToSpec(expr.body),
-      );
+      return dp.DpugExpressionSpec.closure(expr.params, _exprToSpec(expr.body));
     }
     throw StateError('Unsupported expression: ${expr.runtimeType}');
   }
