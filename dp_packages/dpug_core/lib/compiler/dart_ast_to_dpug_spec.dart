@@ -40,8 +40,9 @@ class DartAstToDpugSpec {
         for (final ast.VariableDeclaration v in m.fields.variables) {
           final String fieldName = v.name.lexeme;
           final String typeStr = m.fields.type?.toSource() ?? 'dynamic';
-          final dp.DpugExpressionSpec? initializer =
-              v.initializer != null ? _anyExprToDpug(v.initializer!) : null;
+          final dp.DpugExpressionSpec? initializer = v.initializer != null
+              ? _anyExprToDpug(v.initializer!)
+              : null;
           builder.listenField(
             name: fieldName,
             type: typeStr,
@@ -103,17 +104,27 @@ class DartAstToDpugSpec {
       final String name = expr.constructorName.type.name2.lexeme;
       final dp.DpugWidgetBuilder b = dp.DpugWidgetBuilder()..name(name);
       // Positional args
-      for (final ast.Expression _ in expr.argumentList.arguments.whereType<ast.SimpleIdentifier>()) {
+      for (final ast.Expression _
+          in expr.argumentList.arguments.whereType<ast.SimpleIdentifier>()) {
         // Not typically used; skip
       }
       // Named args and common patterns
-      for (final ast.Expression e in expr.argumentList.arguments.map(
-        (a) => a,
-      )) {
+      for (final ast.Expression e in expr.argumentList.arguments) {
         if (e is ast.NamedExpression) {
           final String key = e.name.label.name;
-          final dp.DpugExpressionSpec value = _anyExprToDpug(e.expression);
-          b.property(key, value);
+          if ((key == 'child' || key == 'children')) {
+            final ast.Expression childExpr = e.expression;
+            if (childExpr is ast.InstanceCreationExpression) {
+              b.child(_exprToWidget(childExpr));
+            } else if (childExpr is ast.ListLiteral) {
+              for (final ast.CollectionElement item in childExpr.elements) {
+                b.child(_exprToWidget(item as ast.Expression));
+              }
+            }
+          } else {
+            final dp.DpugExpressionSpec value = _anyExprToDpug(e.expression);
+            b.property(key, value);
+          }
         }
       }
       // children/child may contain nested constructors

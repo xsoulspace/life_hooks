@@ -41,7 +41,8 @@ class Lexer {
   final SourceFile _file;
   int _index = 0;
   int _line = 1;
-  int _column = 0;
+  int _column = 1;
+  int _lastNewlineIndex = 0;
   bool _atLineStart = true;
   final List<int> _indentStack = <int>[0];
 
@@ -74,6 +75,13 @@ class Lexer {
   Token? _nextToken() {
     if (_isEOF) return null;
 
+    if (_atLineStart) {
+      // Indentation is handled in tokenize() loop
+    }
+    _skipInlineWhitespace();
+
+    if (_isEOF) return null;
+
     final String ch = _peekChar();
 
     // Newline
@@ -81,8 +89,9 @@ class Lexer {
       final int start = _index;
       _advance();
       _line += 1;
-      _column = 0;
+      _column = 1;
       _atLineStart = true;
+      _lastNewlineIndex = _index;
       return _makeToken(TokenType.newline, '\n', start, _index);
     }
 
@@ -142,11 +151,11 @@ class Lexer {
     final int current = _indentStack.last;
     if (width > current) {
       _indentStack.add(width);
-      out.add(_makeToken(TokenType.indent, '', _index, _index));
+      out.add(_makeToken(TokenType.indent, '', i, i));
     } else if (width < current) {
       while (_indentStack.length > 1 && width < _indentStack.last) {
         _indentStack.removeLast();
-        out.add(_makeToken(TokenType.dedent, '', _index, _index));
+        out.add(_makeToken(TokenType.dedent, '', i, i));
       }
     }
 
@@ -267,8 +276,10 @@ class Lexer {
   String _peekChar() => source[_index];
 
   void _advance() {
-    _index += 1;
-    _column += 1;
+    if (!_isEOF) {
+      _index += 1;
+      _column += 1;
+    }
   }
 
   void _skipInlineWhitespace() {
@@ -297,15 +308,18 @@ class Lexer {
   bool _isDigit(String ch) => RegExp(r'[0-9]').hasMatch(ch);
 
   Token _makeToken(TokenType type, String value, int start, int end) {
+    final int startColumn = start - _lastNewlineIndex;
+    final int endColumn = end - _lastNewlineIndex;
+
     final SourceLocation startLoc = SourceLocation(
       start,
-      line: _line,
-      column: _column - (end - start),
+      line: _line - 1,
+      column: startColumn,
     );
     final SourceLocation endLoc = SourceLocation(
       end,
-      line: _line,
-      column: _column,
+      line: _line - 1,
+      column: endColumn,
     );
     return Token(type, value, _file.span(startLoc.offset, endLoc.offset));
   }

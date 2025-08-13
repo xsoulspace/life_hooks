@@ -13,9 +13,13 @@ class WidgetNode extends ASTNode {
   final Map<String, Expression> properties;
   final List<Expression> positionalArgs;
 
-  WidgetNode(this.name, this.children, this.properties, this.positionalArgs,
-      FileSpan span)
-      : super(span);
+  WidgetNode(
+    this.name,
+    this.children,
+    this.properties,
+    this.positionalArgs,
+    FileSpan span,
+  ) : super(span);
 }
 
 class ClassNode extends ASTNode {
@@ -24,13 +28,13 @@ class ClassNode extends ASTNode {
   final List<StateVariable> stateVariables;
   final List<MethodNode> methods;
 
-  ClassNode(
-      {required this.name,
-      required this.annotations,
-      required this.stateVariables,
-      required this.methods,
-      required FileSpan span})
-      : super(span);
+  ClassNode({
+    required this.name,
+    required this.annotations,
+    required this.stateVariables,
+    required this.methods,
+    required FileSpan span,
+  }) : super(span);
 }
 
 class StateVariable {
@@ -39,11 +43,12 @@ class StateVariable {
   final String annotation;
   final Expression? initializer;
 
-  StateVariable(
-      {required this.name,
-      required this.type,
-      required this.annotation,
-      this.initializer});
+  StateVariable({
+    required this.name,
+    required this.type,
+    required this.annotation,
+    this.initializer,
+  });
 }
 
 class Expression extends ASTNode {
@@ -88,7 +93,7 @@ class MethodNode extends ASTNode {
   final ASTNode body;
 
   MethodNode(this.name, this.parameters, this.body, FileSpan span)
-      : super(span);
+    : super(span);
 }
 
 class ParameterNode extends ASTNode {
@@ -209,14 +214,14 @@ class ASTBuilder {
     if (_check(TokenType.symbol) && _peek().value == '(') {
       _advance(); // consume '('
       // parse comma-separated expressions until ')'
-      while (
-          !_isAtEnd() && !(_check(TokenType.symbol) && _peek().value == ')')) {
+      while (!_isAtEnd() &&
+          !(_check(TokenType.symbol) && _peek().value == ')')) {
         // skip stray commas
         if (_check(TokenType.symbol) && _peek().value == ',') {
           _advance();
           continue;
         }
-        final Expression arg = _parseExpressionUntilEOL();
+        final Expression arg = _parseExpression();
         positionalArgs.add(arg);
         // if the expression parser stopped at newline, we are likely malformed inside ()
         // try to consume optional comma
@@ -240,7 +245,7 @@ class ASTBuilder {
           if (_lookaheadIsColon()) {
             _advance(); // consume name
             _expectValue(':');
-            final Expression expr = _parseExpressionUntilEOL();
+            final Expression expr = _parseExpression();
             properties[possibleName.value] = expr;
             _consumeOptNewline();
             continue;
@@ -254,13 +259,13 @@ class ASTBuilder {
             // Property after cascade
             final Token name = _advance();
             _expectValue(':');
-            final Expression expr = _parseExpressionUntilEOL();
+            final Expression expr = _parseExpression();
             properties[name.value] = expr;
             _consumeOptNewline();
             continue;
           }
           // Treat the rest of line as a positional argument expression
-          final Expression expr = _parseExpressionUntilEOL();
+          final Expression expr = _parseExpression();
           positionalArgs.add(expr);
           _consumeOptNewline();
           continue;
@@ -275,48 +280,47 @@ class ASTBuilder {
     }
 
     return WidgetNode(
-        widgetName, children, properties, positionalArgs, nameTok.span);
+      widgetName,
+      children,
+      properties,
+      positionalArgs,
+      nameTok.span,
+    );
   }
 
   StateVariable _parseStateField(String annotationName) {
     // Parse type tokens until variable name encountered
-    final int typeStart = _position;
-    // Scan forward to name token (identifier followed by either '=' or newline)
-    String typeStr = '';
+    final List<String> typeParts = <String>[];
     String nameStr = '';
+    // Scan until we find an identifier followed by '=', ';', or newline
     while (!_isAtEnd()) {
-      final Token t = _advance();
+      final Token t = _peek();
       if (t.type == TokenType.identifier) {
-        // Peek next non-newline token
-        int i = _position;
-        while (i < tokens.length && tokens[i].type == TokenType.newline) i++;
-        if (i < tokens.length &&
-            (tokens[i].value == '=' || tokens[i].type == TokenType.operator)) {
-          // This identifier is likely the variable name when followed by '='
+        final int next = _position + 1;
+        if (next < tokens.length) {
+          final Token nextTok = tokens[next];
+          if (nextTok.value == '=' || nextTok.type == TokenType.newline) {
+            nameStr = t.value;
+            _advance(); // consume name
+            break;
+          }
+        } else {
+          // Identifier at end of stream
           nameStr = t.value;
-          break;
-        }
-        // Or next token is newline (end-of-declaration without initializer)
-        if (i < tokens.length && tokens[i].type == TokenType.newline) {
-          nameStr = t.value;
+          _advance();
           break;
         }
       }
+      typeParts.add(_advance().value);
     }
-    // Build type string from tokens between typeStart and variable name token index-1
-    final List<String> parts = <String>[];
-    for (int i = typeStart; i < _position - 1; i++) {
-      final Token t = tokens[i];
-      if (t.type == TokenType.newline) continue;
-      parts.add(t.value);
-    }
-    typeStr = parts.join('');
+
+    final String typeStr = typeParts.join(' ').trim();
 
     Expression? initializer;
     // Optional initializer
     if (_check(TokenType.operator) && _peek().value == '=') {
       _advance();
-      initializer = _parseExpressionUntilEOL();
+      initializer = _parseExpression();
     }
     _consumeOptNewline();
     return StateVariable(
@@ -339,22 +343,17 @@ class ASTBuilder {
     // After => newline then widget block
     _consumeOptNewline();
     final WidgetNode root = _parseWidget();
-    return MethodNode(
-      nameTok.value,
-      <ParameterNode>[],
-      root,
-      widgetTok.span,
-    );
+    return MethodNode(nameTok.value, <ParameterNode>[], root, widgetTok.span);
   }
 
   // Expressions
-  Expression _parseExpressionUntilEOL() {
+  Expression _parseExpression() {
     // Closure: (params) => expr
     if (_check(TokenType.symbol) && _peek().value == '(') {
       final Token startTok = _advance();
       final List<String> params = <String>[];
-      while (
-          !_isAtEnd() && !(_check(TokenType.symbol) && _peek().value == ')')) {
+      while (!_isAtEnd() &&
+          !(_check(TokenType.symbol) && _peek().value == ')')) {
         if (_check(TokenType.identifier)) {
           params.add(_advance().value);
         } else if (_check(TokenType.symbol) && _peek().value == ',') {
@@ -366,27 +365,24 @@ class ASTBuilder {
       }
       _expectValue(')');
       _expectValue('=>');
-      final Expression body = _parseAssignmentOrSimpleExpression();
+      final Expression body = _parseAssignment();
       return ClosureExpression(params, body, startTok.span);
     }
 
-    return _parseAssignmentOrSimpleExpression();
+    return _parseAssignment();
   }
 
-  Expression _parseAssignmentOrSimpleExpression() {
-    // Try assignment: identifier '=' expr
-    if (_check(TokenType.identifier)) {
-      final Token id = _advance();
-      if (_check(TokenType.operator) && _peek().value == '=') {
+  Expression _parseAssignment() {
+    final Expression expr = _parseSimpleExpression();
+
+    if (_check(TokenType.operator) && _peek().value == '=') {
+      if (expr is IdentifierExpression) {
         _advance();
-        final Expression rhs = _parseSimpleExpression();
-        return AssignmentExpression(id.value, rhs, id.span);
-      } else {
-        // Put back by stepping back one position
-        _position -= 1;
+        final Expression rhs = _parseAssignment();
+        return AssignmentExpression(expr.name, rhs, expr.span);
       }
     }
-    return _parseSimpleExpression();
+    return expr;
   }
 
   Expression _parseSimpleExpression() {
@@ -394,8 +390,9 @@ class ASTBuilder {
       final Token t = _advance();
       final String raw = t.value;
       // Strip quotes if present
-      final String unquoted =
-          raw.length >= 2 ? raw.substring(1, raw.length - 1) : raw;
+      final String unquoted = raw.length >= 2
+          ? raw.substring(1, raw.length - 1)
+          : raw;
       return StringExpression(unquoted, t.span);
     }
     if (_check(TokenType.number)) {
@@ -461,7 +458,9 @@ class ASTBuilder {
   }
 
   Token _expectIdentifierLike() {
-    if (_check(TokenType.identifier) || _check(TokenType.keyword)) {
+    if (_check(TokenType.identifier) ||
+        _check(TokenType.keyword) ||
+        _check(TokenType.annotation)) {
       return _advance();
     }
     throw StateError('Expected identifier');
