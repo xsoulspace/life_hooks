@@ -9,15 +9,15 @@ import 'package:uni_links/uni_links.dart';
 mixin SupabaseDeepLinkingLifeMixin on LifeState {
   StreamSubscription? _sub;
 
-  void startDeeplinkObserver() {
+  Future<void> startDeeplinkObserver() async {
     Supabase.instance.log('***** SupabaseDeepLinkingMixin startAuthObserver');
     _handleIncomingLinks();
-    _handleInitialUri();
+    await _handleInitialUri();
   }
 
-  void stopDeeplinkObserver() {
+  Future<void> stopDeeplinkObserver() async {
     Supabase.instance.log('***** SupabaseDeepLinkingMixin stopAuthObserver');
-    if (_sub != null) _sub?.cancel();
+    if (_sub != null) await _sub?.cancel();
   }
 
   /// Handle incoming links - the ones that the app will recieve from the OS
