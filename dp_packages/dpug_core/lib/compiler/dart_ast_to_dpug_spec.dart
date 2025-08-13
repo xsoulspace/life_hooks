@@ -97,8 +97,7 @@ class DartAstToDpugSpec {
       final String name = expr.constructorName.type.name2.lexeme;
       final dp.DpugWidgetBuilder b = dp.DpugWidgetBuilder()..name(name);
       // Positional args
-      for (final ast.Expression arg
-          in expr.argumentList.arguments.whereType<ast.SimpleIdentifier>()) {
+      for (final ast.Expression _ in expr.argumentList.arguments.whereType<ast.SimpleIdentifier>()) {
         // Not typically used; skip
       }
       // Named args and common patterns

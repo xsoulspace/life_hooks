@@ -53,7 +53,7 @@ class AstToDart {
     }
 
     final String widgetExpr = _widgetToDartExpr(buildRoot);
-    final cb.Code buildBody = cb.Code('return $widgetExpr;');
+    
 
     final DpugClassSpec classSpec = DpugClassSpec(
       name: node.name,

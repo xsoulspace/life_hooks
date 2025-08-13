@@ -281,7 +281,7 @@ class DartToDpugSpecVisitor
     ParenthesizedExpression expression, [
     DpugSpec? context,
   ]) {
-    return expression.expression.accept(this);
+    return expression.expression.accept(this); // ignore: invalid_use_of_visible_for_overriding_member
   }
 
   @override

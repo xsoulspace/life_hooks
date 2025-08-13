@@ -1,9 +1,9 @@
-import 'package:code_builder/code_builder.dart';
+
 import 'package:dpug_code_builder/src/builders/dart_widget_code_generator.dart';
 import 'package:dpug_code_builder/src/specs/annotation_spec.dart';
 import 'package:dpug_code_builder/src/specs/class_spec.dart';
 import 'package:dpug_code_builder/src/specs/code_spec.dart';
-import 'package:dpug_code_builder/src/specs/expression_spec.dart';
+
 import 'package:dpug_code_builder/src/specs/method_spec.dart';
 import 'package:dpug_code_builder/src/specs/state_field_spec.dart';
 import 'package:test/test.dart';

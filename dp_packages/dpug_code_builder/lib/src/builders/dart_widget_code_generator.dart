@@ -2,7 +2,7 @@ import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:dpug_code_builder/src/specs/class_spec.dart';
 import 'package:dpug_code_builder/src/specs/state_field_spec.dart';
-import 'package:dpug_code_builder/src/specs/method_spec.dart';
+
 import 'package:dpug_code_builder/src/visitors/dpug_emitter.dart';
 
 class DartWidgetCodeGenerator {

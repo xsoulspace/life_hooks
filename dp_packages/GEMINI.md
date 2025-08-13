@@ -16,6 +16,12 @@ The project is structured as a monorepo with the following packages:
 
 The primary goal of the DPug project is to offer a more concise and readable syntax for Flutter widget development, while ensuring full interoperability with the existing Dart ecosystem. The project aims to provide a seamless developer experience through robust tooling, including IDE integration for on-the-fly code conversion and formatting.
 
+## Current Status
+
+The project has undergone a significant refactoring and cleanup process. The initial phase focused on resolving inconsistencies, duplication, and errors across the `dpug_code_builder`, `dpug_core`, and `dpug_server` packages. All packages have had their dependencies updated and code analyzed to fix critical issues and warnings.
+
+The codebase is now in a more stable state, but further testing is required to ensure the correctness of the conversion logic.
+
 ## How to Interact
 
 The main entry point for using the DPug conversion functionality is the `dpug_server`. To start the server, run the following command from the `dpug_server` directory:
@@ -52,5 +58,20 @@ span: "1:1..1:1"
 
 ### Conversion pipeline (high level)
 
-- DPug → Dart: Lexer → AST → `AstToDart` → `DartWidgetCodeGenerator` → formatted Dart.
-- Dart → DPug: Analyzer AST → minimal transformer → DPug text.
+- DPug → Dart: Lexer → AST → `AstToDart` → `DpugClassSpec` → `DartWidgetCodeGenerator` → formatted Dart.
+- Dart → DPug: Analyzer AST → `DartAstToDpugSpec` → `DpugClassSpec` → `DpugEmitter` → DPug text.
+
+## Testing
+
+To run the tests for each package, navigate to the package directory and run the following command:
+
+```bash
+dart test
+```
+
+For example, to run the tests for `dpug_core`:
+
+```bash
+cd dpug_core
+dart test
+```

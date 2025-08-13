@@ -4,6 +4,7 @@ import 'package:source_span/source_span.dart';
 
 import '../specs/specs.dart';
 
+// ignore: must_be_immutable
 class DpugClassBuilder implements DpugSpec {
   String? _name;
   final ListBuilder<DpugAnnotationSpec> _annotations =

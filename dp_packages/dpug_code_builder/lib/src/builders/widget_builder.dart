@@ -1,6 +1,7 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:dpug_code_builder/dpug_code_builder.dart';
 
+// ignore: must_be_immutable
 class DpugWidgetBuilder extends DpugClassBuilder implements DpugSpec {
   String _name = '';
   final ListBuilder<DpugWidgetSpec> _children = ListBuilder<DpugWidgetSpec>();
