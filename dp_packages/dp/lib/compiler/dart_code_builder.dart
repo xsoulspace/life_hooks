@@ -17,8 +17,8 @@ class DpugCodeBuilder {
       ..name = className
       ..extend = refer('StatefulWidget')
       ..fields.addAll(_buildWidgetFields(stateFields))
-      ..constructors.add(_buildConstructor(className, stateFields))
-      ..methods.add(_buildCreateState(stateClassName)));
+      ..constructors.add(_buildConstructor(stateFields))
+      ..methods.add(_buildCreateState(className, stateClassName)));
 
     // Build state class
     final stateClass = Class((b) => b
@@ -50,11 +50,9 @@ class DpugCodeBuilder {
         .toList();
   }
 
-  Constructor _buildConstructor(
-      String className, List<StateField> stateFields) {
+  Constructor _buildConstructor(List<StateField> stateFields) {
     return Constructor((b) => b
-      ..name = className
-      ..constant = true
+      ..constant = false
       ..optionalParameters.addAll([
         ...stateFields.map((f) => Parameter((b) => b
           ..name = f.name
@@ -68,11 +66,11 @@ class DpugCodeBuilder {
       ]));
   }
 
-  Method _buildCreateState(String stateClassName) {
+  Method _buildCreateState(String className, String stateClassName) {
     return Method((b) => b
       ..name = 'createState'
       ..annotations.add(refer('override'))
-      ..returns = refer('State<StatefulWidget>')
+      ..returns = refer('State<$className>')
       ..lambda = true
       ..body = Code('$stateClassName()'));
   }

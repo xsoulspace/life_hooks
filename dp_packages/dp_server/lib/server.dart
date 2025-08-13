@@ -1,0 +1,68 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:dpug/compiler/dpug_converter.dart';
+import 'package:shelf/shelf.dart' as shelf;
+import 'package:shelf/shelf_io.dart' as shelf_io;
+import 'package:shelf_router/shelf_router.dart';
+
+/// Simple HTTP server exposing DPug <-> Dart conversion endpoints.
+class DpServer {
+  final DpugConverter _converter = DpugConverter();
+
+  /// Build router with routes.
+  Router buildRouter() {
+    final Router router = Router();
+
+    router.post('/dpug/to-dart', (shelf.Request req) async {
+      final String body = await req.readAsString();
+      try {
+        final String out = _converter.dpugToDart(body);
+        return shelf.Response.ok(out, headers: {'content-type': 'text/plain'});
+      } on Object catch (e) {
+        return _error('DpugToDartError', e.toString());
+      }
+    });
+
+    router.post('/dart/to-dpug', (shelf.Request req) async {
+      final String body = await req.readAsString();
+      try {
+        final String out = _converter.dartToDpug(body);
+        return shelf.Response.ok(out, headers: {'content-type': 'text/plain'});
+      } on Object catch (e) {
+        return _error('DartToDpugError', e.toString());
+      }
+    });
+
+    return router;
+  }
+
+  shelf.Response _error(String type, String message) {
+    // Fallback span unknown
+    const String span = '1:1..1:1';
+    final String yaml =
+        'error: $type\nmessage: ${_escapeYaml(message)}\nspan: "$span"\n';
+    return shelf.Response(
+      400,
+      body: yaml,
+      headers: {'content-type': 'text/plain'},
+    );
+  }
+
+  String _escapeYaml(String v) =>
+      v.replaceAll('\n', ' ').replaceAll(':', '\\:');
+}
+
+/// Start the server on the given [port].
+Future<HttpServer> serve({int port = 8080}) async {
+  final DpServer app = DpServer();
+  final shelf.Handler handler = const shelf.Pipeline()
+      .addMiddleware(shelf.logRequests())
+      .addHandler(app.buildRouter());
+  final HttpServer server = await shelf_io.serve(
+    handler,
+    InternetAddress.anyIPv4,
+    port,
+  );
+  return server;
+}

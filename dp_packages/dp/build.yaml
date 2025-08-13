@@ -10,7 +10,7 @@ targets:
 
 builders:
   dpug_builder:
-    import: "package:dpug_compiler/builder.dart"
+    import: "package:dpug/compiler/builder.dart"
     builder_factories: ["dpugBuilder"]
     build_extensions: { ".dpug": [".dpug.dart"] }
     auto_apply: dependents
