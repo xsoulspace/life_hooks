@@ -105,7 +105,7 @@ class DpugEmitter extends BaseVisitor<String> {
   }
 
   String visitClasses(Iterable<DpugClassSpec> specs) =>
-      specs.map((s) => s.accept(this)).join('\n\n');
+      specs.map((s) => s.accept(this).trimRight()).join('\n\n');
 
   @override
   String visitWidget(DpugWidgetSpec spec, [String? context]) {
@@ -143,21 +143,38 @@ class DpugEmitter extends BaseVisitor<String> {
           // lines, align the first token after ':' and preserve child block
           // indentation relative to the current widget level.
           for (final entry in filteredEntries) {
-            final valueStr = entry.value.accept(this);
+            final raw = entry.value.accept(this);
+            final valueStr = raw.trimRight();
             if (valueStr.contains('\n')) {
               final lines = valueStr.split('\n');
-              String stripPrefix(String line) => line.startsWith(_indentation)
-                  ? line.substring(_indentation.length)
-                  : line;
-              buffer.writeln(
-                '$_indentation..${entry.key}: ${stripPrefix(lines.first)}',
-              );
+              // Trim excessive leading spaces relative to the smallest indent among non-empty lines
+              int minIndent = 1 << 30;
               for (var i = 1; i < lines.length; i++) {
-                final line = stripPrefix(lines[i]);
-                if (line.trim().isEmpty) {
+                final l = lines[i];
+                if (l.trim().isEmpty) continue;
+                final count = l.length - l.trimLeft().length;
+                if (count < minIndent) minIndent = count;
+              }
+              if (minIndent == (1 << 30)) minIndent = 0;
+
+              String normalize(String line) {
+                if (line.trim().isEmpty) return '';
+                final trimmed = line.length >= minIndent
+                    ? line.substring(minIndent)
+                    : line.trimLeft();
+                return trimmed;
+              }
+
+              // First line stays inline after ':'; only trim existing leading spaces
+              final firstInline = lines.first.trimLeft();
+              buffer.writeln('$_indentation..${entry.key}: $firstInline');
+              // Subsequent lines get aligned to the current indentation
+              for (var i = 1; i < lines.length; i++) {
+                final ln = normalize(lines[i]);
+                if (ln.isEmpty) {
                   buffer.writeln();
                 } else {
-                  buffer.writeln('$_indentation$line');
+                  buffer.writeln('$_indentation${config.indent}$ln');
                 }
               }
             } else {
@@ -175,7 +192,7 @@ class DpugEmitter extends BaseVisitor<String> {
           final allChildren = [...s.children, ...syntheticChildren];
           if (allChildren.isNotEmpty) {
             if (allChildren.length == 1) {
-              buffer.write(allChildren.first.accept(this));
+              buffer.write(allChildren.first.accept(this).trimRight());
             } else {
               for (final child in allChildren) {
                 buffer.write(child.accept(this));

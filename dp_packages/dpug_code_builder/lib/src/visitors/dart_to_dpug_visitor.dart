@@ -151,17 +151,39 @@ class DartToDpugSpecVisitor
   // CodeVisitor methods
   @override
   DpugSpec? visitBlock(Block code, [DpugSpec? context]) {
-    return DpugReferenceSpec(code.toString());
+    final text = code.toString();
+    final trimmed = text.trim();
+    final withoutReturn = trimmed.startsWith('return ')
+        ? trimmed.substring('return '.length)
+        : trimmed;
+    final withoutSemicolon = withoutReturn.endsWith(';')
+        ? withoutReturn.substring(0, withoutReturn.length - 1)
+        : withoutReturn;
+    return DpugReferenceExpressionSpec(withoutSemicolon.trim());
   }
 
   @override
   DpugSpec? visitScopedCode(ScopedCode code, [DpugSpec? context]) {
-    return DpugReferenceSpec(code.toString());
+    final text = code.toString().trim();
+    final withoutReturn = text.startsWith('return ')
+        ? text.substring('return '.length)
+        : text;
+    final withoutSemicolon = withoutReturn.endsWith(';')
+        ? withoutReturn.substring(0, withoutReturn.length - 1)
+        : withoutReturn;
+    return DpugReferenceExpressionSpec(withoutSemicolon.trim());
   }
 
   @override
   DpugSpec? visitStaticCode(StaticCode code, [DpugSpec? context]) {
-    return DpugReferenceSpec(code.toString());
+    final text = code.toString().trim();
+    final withoutReturn = text.startsWith('return ')
+        ? text.substring('return '.length)
+        : text;
+    final withoutSemicolon = withoutReturn.endsWith(';')
+        ? withoutReturn.substring(0, withoutReturn.length - 1)
+        : withoutReturn;
+    return DpugReferenceExpressionSpec(withoutSemicolon.trim());
   }
 
   // ExpressionVisitor methods
@@ -245,9 +267,9 @@ class DartToDpugSpecVisitor
 
       // Handle different literal types
       if (value is bool) {
-        values.add(DpugLiteralSpec(value));
+        values.add(DpugBoolLiteralSpec(value));
       } else if (value is num) {
-        values.add(DpugLiteralSpec(value));
+        values.add(DpugNumLiteralSpec(value));
       } else if (value is String) {
         values.add(DpugStringLiteralSpec(value));
       } else if (value is Expression) {
@@ -281,7 +303,7 @@ class DartToDpugSpecVisitor
     CodeExpression expression, [
     DpugSpec? context,
   ]) {
-    return DpugReferenceSpec(expression.code.toString());
+    return DpugReferenceExpressionSpec(expression.code.toString().trim());
   }
 
   @override

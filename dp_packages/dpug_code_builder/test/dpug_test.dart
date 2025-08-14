@@ -10,6 +10,7 @@ class TodoList extends StatefulWidget {
   });
 
   final List<Todo> todos;
+
   final String newTodo;
 
   @override
@@ -233,7 +234,8 @@ Container
 Container
   ..decoration: BoxDecoration
     ..color: Colors.blue
-    ..borderRadius: BorderRadius.circular(8)'''),
+    ..borderRadius: BorderRadius.circular(8)
+'''),
         );
       });
 

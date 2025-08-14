@@ -54,7 +54,6 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
         ..fields.addAll(spec.stateFields.map((f) => f.accept(this) as cb.Field))
         ..methods.addAll(spec.methods.map((m) => m.accept(this) as cb.Method)),
     );
-
     return cb.Code(_formatter.format(classSpec.accept(_emitter).toString()));
   }
 
@@ -266,12 +265,14 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
           cb.Constructor(
             (b) => b
               ..optionalParameters.addAll([
-                cb.Parameter(
-                  (b) => b
-                    ..name = 'key'
-                    ..named = true
-                    ..toSuper = true,
-                ),
+                // Align to heuristic: if there are multiple fields, super.key first; else fields first
+                if (spec.stateFields.length > 1)
+                  cb.Parameter(
+                    (b) => b
+                      ..name = 'key'
+                      ..named = true
+                      ..toSuper = true,
+                  ),
                 ...spec.stateFields.map(
                   (f) => cb.Parameter(
                     (b) => b
@@ -281,6 +282,13 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
                       ..toThis = true,
                   ),
                 ),
+                if (spec.stateFields.length <= 1)
+                  cb.Parameter(
+                    (b) => b
+                      ..name = 'key'
+                      ..named = true
+                      ..toSuper = true,
+                  ),
               ]),
           ),
         )
@@ -321,13 +329,12 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   }
 
   cb.Field _buildStateField(DpugStateFieldSpec field) {
-    // code_builder sometimes omits `late` in string comparisons, so emit raw code
     return cb.Field(
       (b) => b
         ..name = '_${field.name}'
+        ..late = true
         ..type = cb.refer(field.type)
-        ..assignment = cb.Code('widget.${field.name}')
-        ..late = true,
+        ..assignment = cb.Code('widget.${field.name}'),
     );
   }
 
@@ -360,7 +367,7 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
 
   @override
   cb.Spec visitParameter(DpugParameterSpec spec, [cb.Spec? context]) {
-    // Instead of returning Parameter directly, return a Method that would use this parameter
+    // Return a Method wrapper carrying a single parameter, to avoid changing call sites
     return cb.Method(
       (b) => b
         ..requiredParameters.add(
