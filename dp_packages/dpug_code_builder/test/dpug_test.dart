@@ -10,7 +10,6 @@ class TodoList extends StatefulWidget {
   });
 
   final List<Todo> todos;
-
   final String newTodo;
 
   @override
