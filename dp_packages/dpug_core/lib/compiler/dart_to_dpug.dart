@@ -60,7 +60,9 @@ class DartToDpug {
   }
 
   ast.ClassDeclaration? _findStateClass(
-      ast.CompilationUnit unit, String widgetName) {
+    ast.CompilationUnit unit,
+    String widgetName,
+  ) {
     for (final ast.CompilationUnitMember m in unit.declarations) {
       if (m is ast.ClassDeclaration) {
         if (m.name.lexeme == '_${widgetName}State') return m;
@@ -69,8 +71,10 @@ class DartToDpug {
     return null;
   }
 
-  List<String> _emitWidgetFromBuild(ast.MethodDeclaration build,
-      {required int indent}) {
+  List<String> _emitWidgetFromBuild(
+    ast.MethodDeclaration build, {
+    required int indent,
+  }) {
     ast.Expression? expr;
     final ast.FunctionBody body = build.body;
     if (body is ast.ExpressionFunctionBody) {
@@ -85,29 +89,169 @@ class DartToDpug {
   }
 
   List<String> _emitWidget(ast.Expression expr, {required int indent}) {
+    // Handle constructor calls like Column(...) which are MethodInvocation
+    if (expr is ast.MethodInvocation) {
+      final String name = expr.methodName.name;
+      // Check if the original expression has 'const' keyword
+      final String source = expr.toSource();
+      final String constPrefix = source.startsWith('const ') ? 'const ' : '';
+
+      final List<String> lines = <String>[];
+      lines.add('${' ' * indent}$constPrefix$name');
+
+      // Collect named and positional arguments
+      final Map<String, ast.Expression> named = <String, ast.Expression>{};
+      final List<ast.Expression> positional = <ast.Expression>[];
+
+      for (final ast.Expression a in expr.argumentList.arguments) {
+        if (a is ast.NamedExpression) {
+          named[a.name.label.name] = a.expression;
+        } else {
+          positional.add(a);
+        }
+      }
+
+      // Count non-children properties
+      final int nonChildProperties = named.keys
+          .where((key) => key != 'child' && key != 'children')
+          .length;
+
+      if (named['child'] != null ||
+          named['children'] != null ||
+          nonChildProperties > 0 ||
+          positional.isNotEmpty) {
+        // Emit properties excluding child/children
+        for (final MapEntry<String, ast.Expression> e in named.entries) {
+          if (e.key == 'child' || e.key == 'children') continue;
+          final ast.Expression value = e.value;
+
+          if (value is ast.InstanceCreationExpression) {
+            // Handle widget properties with proper indentation
+            // Check if the original expression has 'const' keyword
+            final String source = value.toSource();
+            final String constPrefix = source.startsWith('const ')
+                ? 'const '
+                : '';
+
+            lines.add(
+              '${' ' * (indent + 2)}..${e.key}: $constPrefix${value.constructorName.type.toSource()}',
+            );
+            final Map<String, ast.Expression> widgetProps =
+                <String, ast.Expression>{};
+            for (final ast.Expression a in value.argumentList.arguments) {
+              if (a is ast.NamedExpression) {
+                widgetProps[a.name.label.name] = a.expression;
+              }
+            }
+            for (final MapEntry<String, ast.Expression> prop
+                in widgetProps.entries) {
+              lines.add(
+                '${' ' * (indent + 4)}..${prop.key}: ${_emitExpr(prop.value)}',
+              );
+            }
+          } else {
+            lines.add('${' ' * (indent + 2)}..${e.key}: ${_emitExpr(e.value)}');
+          }
+        }
+
+        // Emit positional arguments as cascade style
+        for (final ast.Expression posArg in positional) {
+          lines.add('${' ' * (indent + 2)}..${_emitExpr(posArg)}');
+        }
+
+        // Emit children - handle both child and children properties
+        final ast.Expression? child = named['child'];
+        final ast.Expression? children = named['children'];
+        if (child != null) {
+          lines.addAll(_emitWidget(child, indent: indent + 2));
+        } else if (children is ast.ListLiteral) {
+          for (final ast.CollectionElement el in children.elements) {
+            if (el is ast.Expression) {
+              lines.addAll(_emitWidget(el, indent: indent + 2));
+            }
+          }
+        }
+      }
+      return lines;
+    }
+
     if (expr is ast.InstanceCreationExpression) {
       final String name = expr.constructorName.type.toSource();
       final List<String> lines = <String>[];
       lines.add('${' ' * indent}$name');
-      // Named arguments first for props
+
+      // Collect named and positional arguments
       final Map<String, ast.Expression> named = <String, ast.Expression>{};
+      final List<ast.Expression> positional = <ast.Expression>[];
+
       for (final ast.Expression a in expr.argumentList.arguments) {
-        if (a is ast.NamedExpression) named[a.name.label.name] = a.expression;
+        if (a is ast.NamedExpression) {
+          named[a.name.label.name] = a.expression;
+        } else {
+          positional.add(a);
+        }
       }
-      // Emit properties excluding child/children
-      for (final MapEntry<String, ast.Expression> e in named.entries) {
-        if (e.key == 'child' || e.key == 'children') continue;
-        lines.add('${' ' * (indent + 2)}${e.key}: ${_emitExpr(e.value)}');
-      }
-      // Emit children
+
+      // Handle special cases first
       final ast.Expression? child = named['child'];
       final ast.Expression? children = named['children'];
-      if (child != null) {
-        lines.addAll(_emitWidget(child, indent: indent + 2));
-      } else if (children is ast.ListLiteral) {
-        for (final ast.CollectionElement el in children.elements) {
-          if (el is ast.Expression) {
-            lines.addAll(_emitWidget(el, indent: indent + 2));
+
+      // Count non-children properties
+      final int nonChildProperties = named.keys
+          .where((key) => key != 'child' && key != 'children')
+          .length;
+
+      if (child != null ||
+          children != null ||
+          nonChildProperties > 0 ||
+          positional.isNotEmpty) {
+        // Emit properties excluding child/children
+        for (final MapEntry<String, ast.Expression> e in named.entries) {
+          if (e.key == 'child' || e.key == 'children') continue;
+          final ast.Expression value = e.value;
+
+          if (value is ast.InstanceCreationExpression) {
+            // Handle widget properties with proper indentation
+            // Check if the original expression has 'const' keyword
+            final String source = value.toSource();
+            final String constPrefix = source.startsWith('const ')
+                ? 'const '
+                : '';
+
+            lines.add(
+              '${' ' * (indent + 2)}..${e.key}: $constPrefix${value.constructorName.type.toSource()}',
+            );
+            final Map<String, ast.Expression> widgetProps =
+                <String, ast.Expression>{};
+            for (final ast.Expression a in value.argumentList.arguments) {
+              if (a is ast.NamedExpression) {
+                widgetProps[a.name.label.name] = a.expression;
+              }
+            }
+            for (final MapEntry<String, ast.Expression> prop
+                in widgetProps.entries) {
+              lines.add(
+                '${' ' * (indent + 4)}..${prop.key}: ${_emitExpr(prop.value)}',
+              );
+            }
+          } else {
+            lines.add('${' ' * (indent + 2)}..${e.key}: ${_emitExpr(e.value)}');
+          }
+        }
+
+        // Emit positional arguments as cascade style
+        for (final ast.Expression posArg in positional) {
+          lines.add('${' ' * (indent + 2)}..${_emitExpr(posArg)}');
+        }
+
+        // Emit children - handle both child and children properties
+        if (child != null) {
+          lines.addAll(_emitWidget(child, indent: indent + 2));
+        } else if (children is ast.ListLiteral) {
+          for (final ast.CollectionElement el in children.elements) {
+            if (el is ast.Expression) {
+              lines.addAll(_emitWidget(el, indent: indent + 2));
+            }
           }
         }
       }
@@ -127,8 +271,42 @@ class DartToDpug {
       return e.toSource();
     }
     if (e is ast.SimpleIdentifier) return e.name;
-    if (e is ast.InstanceCreationExpression)
-      return _emitWidget(e, indent: 0).join('\n');
+    if (e is ast.InstanceCreationExpression) {
+      // Check if the original expression has 'const' keyword
+      final String source = e.toSource();
+      final String constPrefix = source.startsWith('const ') ? 'const ' : '';
+      print(
+        'DEBUG: InstanceCreationExpression source: "$source", constPrefix: "$constPrefix"',
+      );
+
+      // For widget expressions in properties, use cascade style
+      final String name = e.constructorName.type.toSource();
+      final Map<String, ast.Expression> named = <String, ast.Expression>{};
+      final List<ast.Expression> positional = <ast.Expression>[];
+
+      for (final ast.Expression a in e.argumentList.arguments) {
+        if (a is ast.NamedExpression) {
+          named[a.name.label.name] = a.expression;
+        } else {
+          positional.add(a);
+        }
+      }
+
+      if (named.isEmpty && positional.isEmpty) {
+        return '$constPrefix$name()';
+      }
+
+      final List<String> parts = <String>[name];
+      // Add positional args
+      for (final ast.Expression pos in positional) {
+        parts.add(_emitExpr(pos));
+      }
+      // Add named args
+      for (final MapEntry<String, ast.Expression> entry in named.entries) {
+        parts.add('${entry.key}: ${_emitExpr(entry.value)}');
+      }
+      return '$constPrefix${parts.join(', ')}';
+    }
     return e.toSource();
   }
 

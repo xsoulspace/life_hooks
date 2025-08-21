@@ -203,6 +203,11 @@ class ASTBuilder {
   }
 
   WidgetNode _parseWidget() {
+    // Skip indentation if present
+    if (_check(TokenType.indent)) {
+      _advance();
+    }
+
     // Widget name
     final Token nameTok = _expectIdentifierLike();
     final String widgetName = nameTok.value;
@@ -238,6 +243,11 @@ class ASTBuilder {
       _advance();
       while (!_check(TokenType.dedent) && !_isAtEnd()) {
         // Skip blank lines
+        if (_check(TokenType.newline)) {
+          _advance();
+          continue;
+        }
+
         // Property: identifier ':' expr
         if (_check(TokenType.identifier)) {
           final Token possibleName = _peek();
@@ -271,10 +281,23 @@ class ASTBuilder {
           continue;
         }
 
-        // Child widget
-        final WidgetNode child = _parseWidget();
-        children.add(child);
-        _consumeOptNewline();
+        // Child widget - but only if it's an identifier and not followed by dedent
+        if ((_check(TokenType.identifier) || _check(TokenType.keyword)) &&
+            !_check(TokenType.dedent, 1)) {
+          print(
+            'DEBUG: About to parse child widget, current token: ${_peek()}',
+          );
+          final WidgetNode child = _parseWidget();
+          children.add(child);
+          _consumeOptNewline();
+          continue;
+        }
+
+        // If we get here, we have an unexpected token
+        print(
+          'DEBUG: Unexpected token in indentation block: ${_peek()}, breaking',
+        );
+        break;
       }
       if (_check(TokenType.dedent)) _advance();
     }
@@ -458,11 +481,17 @@ class ASTBuilder {
   }
 
   Token _expectIdentifierLike() {
+    final String caller = StackTrace.current.toString().split('\n')[1];
+    print('DEBUG: _expectIdentifierLike called from $caller');
+    print(
+      'DEBUG: _expectIdentifierLike - current token: ${_peek()}, position: $_position',
+    );
     if (_check(TokenType.identifier) ||
         _check(TokenType.keyword) ||
         _check(TokenType.annotation)) {
       return _advance();
     }
+    print('DEBUG: Expected identifier but got: ${_peek()}');
     throw StateError('Expected identifier');
   }
 }

@@ -308,8 +308,13 @@ class Lexer {
   bool _isDigit(String ch) => RegExp(r'[0-9]').hasMatch(ch);
 
   Token _makeToken(TokenType type, String value, int start, int end) {
-    final int startColumn = start - _lastNewlineIndex;
-    final int endColumn = end - _lastNewlineIndex;
+    // Calculate columns safely to avoid negative values
+    final int startColumn = start >= _lastNewlineIndex
+        ? start - _lastNewlineIndex
+        : 0;
+    final int endColumn = end >= _lastNewlineIndex
+        ? end - _lastNewlineIndex
+        : startColumn + (end - start);
 
     final SourceLocation startLoc = SourceLocation(
       start,
