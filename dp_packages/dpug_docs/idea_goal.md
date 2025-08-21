@@ -5,8 +5,8 @@ I need to create:
 1. dpug -> dart codegen
 2. dart -> dpug codegen
    2.1 special syntax for flutter and different libraries for dpug
-3. dpug format tool
-4. vscode plugin to support formatting for dpug, and other features (goto code, see reference, see dart code, etc..)
+3. dpug format tool (cli)
+4. vscode plugin to support formatting for dpug, and other features (goto code, see reference, see dart code, syntax highlight etc..)
 
 the api:
 
@@ -65,5 +65,3 @@ class _TodoListState extends State<TodoList> {
   }
 }
 ```
-
-what simpliest options do we have?
