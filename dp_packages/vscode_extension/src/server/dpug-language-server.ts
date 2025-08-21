@@ -2,6 +2,7 @@ import {
   CompletionItem,
   CompletionItemKind,
   createConnection,
+  DiagnosticSeverity,
   DidChangeConfigurationNotification,
   InitializeParams,
   InitializeResult,
@@ -13,6 +14,7 @@ import {
 } from "vscode-languageserver/node";
 
 import { TextDocument } from "vscode-languageserver-textdocument";
+import { DocumentSymbol, SymbolKind } from "vscode-languageserver-types";
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -23,7 +25,6 @@ const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
-let hasDiagnosticRelatedInformationCapability = false;
 
 connection.onInitialize((params: InitializeParams) => {
   const capabilities = params.capabilities;
@@ -35,11 +36,6 @@ connection.onInitialize((params: InitializeParams) => {
   );
   hasWorkspaceFolderCapability = !!(
     capabilities.workspace && !!capabilities.workspace.workspaceFolders
-  );
-  hasDiagnosticRelatedInformationCapability = !!(
-    capabilities.textDocument &&
-    capabilities.textDocument.publishDiagnostics &&
-    capabilities.textDocument.publishDiagnostics.relatedInformation
   );
 
   const result: InitializeResult = {
@@ -149,7 +145,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
     problems++;
     const diagnostic = {
-      severity: 2, // Warning
+      severity: DiagnosticSeverity.Warning,
       range: {
         start: textDocument.positionAt(m.index),
         end: textDocument.positionAt(m.index + m[0].length),
@@ -199,14 +195,14 @@ connection.onCompletion((_textDocumentPosition) => {
     },
     {
       label: "@stateful",
-      kind: CompletionItemKind.Annotation,
+      kind: CompletionItemKind.Property,
       data: 4,
       detail: "DPug stateful annotation",
       documentation: "Marks a class as stateful with reactive state management",
     },
     {
       label: "@listen",
-      kind: CompletionItemKind.Annotation,
+      kind: CompletionItemKind.Property,
       data: 5,
       detail: "DPug listen annotation",
       documentation: "Creates a reactive state field with getter/setter",
@@ -369,7 +365,7 @@ connection.onDocumentSymbol((params) => {
   }
 
   const text = document.getText();
-  const symbols = [];
+  const symbols: DocumentSymbol[] = [];
 
   // Find class definitions
   const classRegex = /class\s+(\w+)/g;
@@ -377,7 +373,7 @@ connection.onDocumentSymbol((params) => {
   while ((match = classRegex.exec(text)) !== null) {
     symbols.push({
       name: match[1],
-      kind: 5, // Class
+      kind: SymbolKind.Class,
       range: {
         start: document.positionAt(match.index),
         end: document.positionAt(match.index + match[0].length),
@@ -386,6 +382,7 @@ connection.onDocumentSymbol((params) => {
         start: document.positionAt(match.index + 6), // Skip "class "
         end: document.positionAt(match.index + match[0].length),
       },
+      children: [],
     });
   }
 

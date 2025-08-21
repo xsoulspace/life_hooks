@@ -1,14 +1,7 @@
 import 'package:petitparser/petitparser.dart';
-import 'package:source_span/source_span.dart';
 
 /// PetitParser-based grammar for DPug syntax
 class DPugGrammar extends GrammarDefinition {
-  // Helper to create proper FileSpans from source
-  FileSpan _createSpan(final String source, final int start, final int end) {
-    final file = SourceFile.fromString(source);
-    return file.span(start, end);
-  }
-
   @override
   Parser start() => ref(document).end();
 
@@ -146,11 +139,9 @@ class DPugGrammar extends GrammarDefinition {
   Parser<List<T>> separatedBy<T>(
     final Parser<T> element,
     final Parser separator,
-  ) => (element & (separator & element).star()).map(
-    (final values) {
-      final first = values[0] as T;
-      final rest = values[1] as List<List<T>>;
-      return [first, ...rest.map((final pair) => pair[1])];
-    },
-  );
+  ) => (element & (separator & element).star()).map((final values) {
+    final first = values[0] as T;
+    final rest = values[1] as List<List<T>>;
+    return [first, ...rest.map((final pair) => pair[1])];
+  });
 }

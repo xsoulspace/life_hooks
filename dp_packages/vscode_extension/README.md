@@ -22,7 +22,7 @@ A VS Code extension that provides comprehensive support for DPug - a concise, in
 
 1. Clone the repository
 2. Open the `vscode_extension` directory in VS Code
-3. Run `npm install` to install dependencies
+3. Run `bun install` to install dependencies
 4. Press F5 to launch extension development host
 
 ## Configuration
@@ -144,7 +144,7 @@ class Counter
 ### Prerequisites
 
 - Node.js 18+
-- npm
+- bun
 - TypeScript
 - VS Code
 
@@ -152,14 +152,14 @@ class Counter
 
 ```bash
 cd vscode_extension
-npm install
-npm run compile
+bun install
+bun run compile
 ```
 
 ### Testing
 
 ```bash
-npm run test
+bun run test
 ```
 
 ### Debugging
