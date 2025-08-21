@@ -133,7 +133,7 @@ class AstToDart {
 
   // Expressions to Dart source
   String _exprToDart(final Expression e) {
-    if (e is StringExpression) return "'${_escapeString(e.value)}'";
+    if (e is StringExpression) return '"${_escapeString(e.value)}"';
     if (e is NumberExpression) return e.value.toString();
     if (e is BooleanExpression) return e.value ? 'true' : 'false';
     if (e is IdentifierExpression) return e.name;

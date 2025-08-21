@@ -14,7 +14,7 @@ class A
 ''';
 
       final out = DpugConverter().dpugToDart(input);
-      expect(out, contains("Text('Hello')"));
+      expect(out, contains('Text("Hello")'));
     });
 
     test("supports function-style positional: Text('World')", () {
@@ -23,11 +23,11 @@ class A
 class A
   Widget get build =>
     Column
-      Text('World')
+      Text("World")
 ''';
 
       final out = DpugConverter().dpugToDart(input);
-      expect(out, contains("Text('World')"));
+      expect(out, contains('Text("World")'));
     });
 
     test('mix of cascade and function-style in children', () {
@@ -38,12 +38,12 @@ class A
     Column
       Text
         ..'Hello'
-      Text('World')
+      Text("World")
 ''';
 
       final out = DpugConverter().dpugToDart(input);
-      expect(out, contains("Text('Hello')"));
-      expect(out, contains("Text('World')"));
+      expect(out, contains('Text("Hello")'));
+      expect(out, contains('Text("World")'));
     });
   });
 }

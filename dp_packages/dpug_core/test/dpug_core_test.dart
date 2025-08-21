@@ -26,7 +26,7 @@ class Counter
         contains('set count(int value) => setState(() => _count = value)'),
       );
       expect(dartCode, contains('Text('));
-      expect(dartCode, contains(r"'Count: $count'"));
+      expect(dartCode, contains(r'"Count: $count"'));
     });
 
     test('Basic Dart to DPug conversion', () {
