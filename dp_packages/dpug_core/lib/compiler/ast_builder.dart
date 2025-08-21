@@ -209,8 +209,10 @@ class ASTBuilder {
     }
 
     // Widget name
+    print('DEBUG: About to parse widget name, current token: ${_peek()}');
     final Token nameTok = _expectIdentifierLike();
     final String widgetName = nameTok.value;
+    print('DEBUG: Successfully parsed widget name: $widgetName');
     final Map<String, Expression> properties = <String, Expression>{};
     final List<ASTNode> children = <ASTNode>[];
     final List<Expression> positionalArgs = <Expression>[];
@@ -241,7 +243,13 @@ class ASTBuilder {
     // Optional INDENT block for props/children
     if (_check(TokenType.indent)) {
       _advance();
+      print(
+        'DEBUG: Entering indentation block for widget $widgetName, current token: ${_peek()}',
+      );
       while (!_check(TokenType.dedent) && !_isAtEnd()) {
+        print(
+          'DEBUG: Indentation block iteration for $widgetName, current token: ${_peek()}',
+        );
         // Skip blank lines
         if (_check(TokenType.newline)) {
           _advance();
@@ -264,6 +272,9 @@ class ASTBuilder {
 
         // Cascade style: ..prop: expr OR ..'positional'
         if (_check(TokenType.operator) && _peek().value == '..') {
+          print(
+            'DEBUG: Processing cascade operator, next token after ..: ${_peek()}',
+          );
           _advance(); // consume '..'
           if (_check(TokenType.identifier) && _lookaheadIsColon()) {
             // Property after cascade
@@ -283,7 +294,7 @@ class ASTBuilder {
 
         // Child widget - but only if it's an identifier and not followed by dedent
         if ((_check(TokenType.identifier) || _check(TokenType.keyword)) &&
-            !_check(TokenType.dedent, 1)) {
+            !_lookaheadIsDedent()) {
           print(
             'DEBUG: About to parse child widget, current token: ${_peek()}',
           );
@@ -297,7 +308,12 @@ class ASTBuilder {
         print(
           'DEBUG: Unexpected token in indentation block: ${_peek()}, breaking',
         );
-        break;
+        // If it's a dedent token, we're done with this indentation level
+        if (_check(TokenType.dedent)) {
+          break;
+        }
+        // Otherwise, skip this token and continue
+        _advance();
       }
       if (_check(TokenType.dedent)) _advance();
     }
@@ -462,6 +478,12 @@ class ASTBuilder {
     if (_position + 1 >= tokens.length) return false;
     final Token next = tokens[_position + 1];
     return next.type == TokenType.operator && next.value == ':';
+  }
+
+  bool _lookaheadIsDedent() {
+    if (_position + 1 >= tokens.length) return false;
+    final Token next = tokens[_position + 1];
+    return next.type == TokenType.dedent;
   }
 
   void _expectValue(String value) {

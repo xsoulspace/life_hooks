@@ -313,10 +313,10 @@ packages:
     dependency: transitive
     description:
       name: meta
-      sha256: bdb68674043280c3428e9ec998512fb681678676b3c54e773629ffe74419f8c7
+      sha256: "23f08335362185a5ea2ad3a4e597f1375e78bce8a040df5c600c8d3552ef2394"
       url: "https://pub.dev"
     source: hosted
-    version: "1.15.0"
+    version: "1.17.0"
   mime:
     dependency: transitive
     description:
@@ -349,6 +349,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.0"
+  petitparser:
+    dependency: "direct main"
+    description:
+      name: petitparser
+      sha256: "1a97266a94f7350d30ae522c0af07890c70b8e62c71e8e3920d1db4d23c057d1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.0.1"
   pool:
     dependency: transitive
     description:

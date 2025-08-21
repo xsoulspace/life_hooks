@@ -9,6 +9,7 @@ dependencies:
   dart_style: ^2.3.4
   source_span: ^1.10.0
   build: ^2.4.1
+  petitparser: ^7.0.1
   dpug_code_builder:
     path: ../dpug_code_builder
 
