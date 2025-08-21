@@ -1,7 +1,7 @@
 import 'package:dpug_code_builder/dpug_code_builder.dart';
 import 'package:test/test.dart';
 
-final _dartCode = '''
+const _dartCode = '''
 class TodoList extends StatefulWidget {
   TodoList({
     super.key,
@@ -40,7 +40,7 @@ class _TodoListState extends State<TodoList> {
   }
 }''';
 
-final _dpugCode = '''
+const _dpugCode = '''
 @stateful
 class TodoList
   @listen List<Todo> todos = []
@@ -158,7 +158,7 @@ void main() {
 
       final dpugCode = widget.accept(DpugEmitter());
 
-      final expectedDpugCode = '''
+      const expectedDpugCode = '''
 Scaffold
   ..appBar: AppBar
     ..title: Text
@@ -374,7 +374,8 @@ Padding
                   ..name('ElevatedButton')
                   ..property(
                     'onPressed',
-                    DpugExpressionSpec.reference('''() {
+                    DpugExpressionSpec.reference('''
+() {
                   setState(() {
                     count++;
                     updateUI();
@@ -412,7 +413,8 @@ ElevatedButton
                   ..name('GestureDetector')
                   ..property(
                     'onTap',
-                    DpugExpressionSpec.reference('''() {
+                    DpugExpressionSpec.reference('''
+() {
                   if (isEnabled) {
                     setState(() {
                       count++;
@@ -423,7 +425,8 @@ ElevatedButton
                   )
                   ..property(
                     'onLongPress',
-                    DpugExpressionSpec.reference('''() {
+                    DpugExpressionSpec.reference('''
+() {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -505,7 +508,8 @@ GestureDetector
                   ..name('FloatingActionButton')
                   ..property(
                     'onPressed',
-                    DpugExpressionSpec.reference('''() async {
+                    DpugExpressionSpec.reference('''
+() async {
                   try {
                     setState(() {
                       isLoading = true;
@@ -630,7 +634,7 @@ FloatingActionButton
                   ))
                 .build();
 
-        final dpugCode = '''
+        const dpugCode = '''
 @stateful
 class Counter
   @listen int count = 0
@@ -654,7 +658,7 @@ class Display
       Text
         ..text''';
 
-        final dartCode = '''
+        const dartCode = '''
 class Counter extends StatefulWidget {
   Counter({
     required this.count,

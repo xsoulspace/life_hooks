@@ -3,12 +3,6 @@ import 'expression_spec.dart';
 import 'reference_spec.dart';
 
 class DpugInvokeSpec extends DpugExpressionSpec {
-  final DpugExpressionSpec target;
-  final List<DpugExpressionSpec> positionedArguments;
-  final Map<String, DpugExpressionSpec> namedArguments;
-  final List<DpugReferenceSpec> typeArguments;
-  final String? name;
-  final bool isConst;
   const DpugInvokeSpec({
     required this.target,
     this.positionedArguments = const [],
@@ -17,8 +11,14 @@ class DpugInvokeSpec extends DpugExpressionSpec {
     this.isConst = false,
     this.name,
   });
+  final DpugExpressionSpec target;
+  final List<DpugExpressionSpec> positionedArguments;
+  final Map<String, DpugExpressionSpec> namedArguments;
+  final List<DpugReferenceSpec> typeArguments;
+  final String? name;
+  final bool isConst;
 
   @override
-  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+  R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitInvoke(this, context);
 }

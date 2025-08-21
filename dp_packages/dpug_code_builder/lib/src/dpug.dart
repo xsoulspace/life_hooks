@@ -4,35 +4,35 @@ import 'builders/builders.dart';
 import 'specs/specs.dart';
 import 'visitors/visitors.dart';
 
+// ignore: avoid_classes_with_only_static_members
 class Dpug {
   static DpugClassBuilder classBuilder() => DpugClassBuilder();
   static DpugWidgetBuilder widgetBuilder() => DpugWidgetBuilder();
 
-  static String emitDpug(DpugSpec spec) {
+  static String emitDpug(final DpugSpec spec) {
     final emitter = DpugEmitter();
     return spec.accept(emitter);
   }
 
-  static DpugSpec? fromDart(cb.Spec dartSpec) {
-    final visitor = const DartToDpugSpecVisitor();
+  static DpugSpec? fromDart(final cb.Spec dartSpec) {
+    const visitor = DartToDpugSpecVisitor();
     return dartSpec.accept(visitor);
   }
 
-  static cb.Spec toDart(DpugSpec dpugSpec) {
+  static cb.Spec toDart(final DpugSpec dpugSpec) {
     final visitor = DpugToDartSpecVisitor();
     return dpugSpec.accept(visitor);
   }
 
-  static String dartToDpugString(cb.Spec dartSpec) {
+  static String dartToDpugString(final cb.Spec dartSpec) {
     final dpugSpec = fromDart(dartSpec);
     return dpugSpec != null ? emitDpug(dpugSpec) : '';
   }
 
-  static String toIterableDartString(Iterable<DpugSpec> dpugSpecs) {
-    return dpugSpecs.map((s) => toDartString(s)).join('\n\n');
-  }
+  static String toIterableDartString(final Iterable<DpugSpec> dpugSpecs) =>
+      dpugSpecs.map(toDartString).join('\n\n');
 
-  static String toDartString(DpugSpec dpugSpec) {
+  static String toDartString(final DpugSpec dpugSpec) {
     final dartSpec = toDart(dpugSpec);
     final emitter = cb.DartEmitter();
     return dartSpec.accept(emitter).toString();

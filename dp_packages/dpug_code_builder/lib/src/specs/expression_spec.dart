@@ -17,43 +17,44 @@ import 'widget_expression_spec.dart';
 class DpugExpressionSpec implements DpugSpec {
   const DpugExpressionSpec();
 
-  factory DpugExpressionSpec.reference(String name) =
+  factory DpugExpressionSpec.reference(final String name) =
       DpugReferenceExpressionSpec;
-  factory DpugExpressionSpec.widget(DpugWidgetBuilder builder) =
+  factory DpugExpressionSpec.widget(final DpugWidgetBuilder builder) =
       DpugWidgetExpressionSpec;
-  factory DpugExpressionSpec.boolLiteral(bool value) = DpugBoolLiteralSpec;
-  factory DpugExpressionSpec.numLiteral(num value) = DpugNumLiteralSpec;
-  factory DpugExpressionSpec.string(String value) = DpugStringLiteralSpec;
-  factory DpugExpressionSpec.list(List<DpugExpressionSpec> values) =
+  factory DpugExpressionSpec.boolLiteral(final bool value) =
+      DpugBoolLiteralSpec;
+  factory DpugExpressionSpec.numLiteral(final num value) = DpugNumLiteralSpec;
+  factory DpugExpressionSpec.string(final String value) = DpugStringLiteralSpec;
+  factory DpugExpressionSpec.list(final List<DpugExpressionSpec> values) =
       DpugListLiteralSpec;
   // Primary convenience factory used across tests: closure(params, body)
   factory DpugExpressionSpec.closure(
-    List<String> params,
-    DpugExpressionSpec body,
+    final List<String> params,
+    final DpugExpressionSpec body,
   ) = DpugClosureExpressionSpec.fromParams;
 
   // Secondary factory if a prebuilt method is available
-  factory DpugExpressionSpec.closureFromMethod(DpugMethodSpec method) =
+  factory DpugExpressionSpec.closureFromMethod(final DpugMethodSpec method) =
       DpugClosureExpressionSpec;
   factory DpugExpressionSpec.assignment(
-    String target,
-    DpugExpressionSpec value,
+    final String target,
+    final DpugExpressionSpec value,
   ) = DpugAssignmentSpec;
   factory DpugExpressionSpec.binary(
-    String operator,
-    DpugExpressionSpec left,
-    DpugExpressionSpec right,
+    final String operator,
+    final DpugExpressionSpec left,
+    final DpugExpressionSpec right,
   ) = DpugBinarySpec;
   factory DpugExpressionSpec.invoke({
-    required DpugExpressionSpec target,
-    List<DpugExpressionSpec> positionedArguments,
-    Map<String, DpugExpressionSpec> namedArguments,
-    List<DpugReferenceSpec> typeArguments,
-    String? name,
-    bool isConst,
+    required final DpugExpressionSpec target,
+    final List<DpugExpressionSpec> positionedArguments,
+    final Map<String, DpugExpressionSpec> namedArguments,
+    final List<DpugReferenceSpec> typeArguments,
+    final String? name,
+    final bool isConst,
   }) = DpugInvokeSpec;
 
   @override
-  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+  R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitExpression(this, context);
 }

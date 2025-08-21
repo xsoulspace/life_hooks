@@ -1,8 +1,8 @@
 import 'package:built_collection/built_collection.dart';
-import 'package:dpug_code_builder/src/visitors/visitor.dart';
 import 'package:source_span/source_span.dart';
 
 import '../specs/specs.dart';
+import '../visitors/visitor.dart';
 
 class DpugClassBuilder implements DpugSpec {
   String? _name;
@@ -13,30 +13,30 @@ class DpugClassBuilder implements DpugSpec {
   final ListBuilder<DpugMethodSpec> _methods = ListBuilder<DpugMethodSpec>();
   FileSpan? span;
 
-  DpugClassBuilder name(String name) {
+  DpugClassBuilder name(final String name) {
     _name = name;
     return this;
   }
 
-  DpugClassBuilder annotation(DpugAnnotationSpec annotation) {
+  DpugClassBuilder annotation(final DpugAnnotationSpec annotation) {
     _annotations.add(annotation);
     return this;
   }
 
-  DpugClassBuilder stateField(DpugStateFieldSpec field) {
+  DpugClassBuilder stateField(final DpugStateFieldSpec field) {
     _stateFields.add(field);
     return this;
   }
 
-  DpugClassBuilder method(DpugMethodSpec method) {
+  DpugClassBuilder method(final DpugMethodSpec method) {
     _methods.add(method);
     return this;
   }
 
   DpugClassBuilder buildGetter({
-    required String name,
-    required String returnType,
-    required DpugSpec body,
+    required final String name,
+    required final String returnType,
+    required final DpugSpec body,
   }) {
     method(
       DpugMethodSpec.getter(name: name, returnType: returnType, body: body),
@@ -45,9 +45,9 @@ class DpugClassBuilder implements DpugSpec {
   }
 
   DpugClassBuilder listenField({
-    required String name,
-    required String type,
-    DpugExpressionSpec? initializer,
+    required final String name,
+    required final String type,
+    final DpugExpressionSpec? initializer,
   }) {
     stateField(
       DpugStateFieldSpec(
@@ -60,7 +60,7 @@ class DpugClassBuilder implements DpugSpec {
     return this;
   }
 
-  DpugClassBuilder buildMethod({required DpugSpec body}) {
+  DpugClassBuilder buildMethod({required final DpugSpec body}) {
     method(
       DpugMethodSpec.getter(name: 'build', returnType: 'Widget', body: body),
     );
@@ -82,6 +82,6 @@ class DpugClassBuilder implements DpugSpec {
   }
 
   @override
-  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+  R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitClass(build());
 }

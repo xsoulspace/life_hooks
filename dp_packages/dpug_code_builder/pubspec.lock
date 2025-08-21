@@ -191,13 +191,13 @@ packages:
     source: hosted
     version: "1.0.2"
   dart_style:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: dart_style
-      sha256: "7856d364b589d1f08986e140938578ed36ed948581fbc3bc9aef1805039ac5ab"
+      sha256: "7306ab8a2359a48d22310ad823521d723acfed60ee1f7e37388e8986853b6820"
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.7"
+    version: "2.3.8"
   file:
     dependency: transitive
     description:
@@ -286,6 +286,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.9.0"
+  lints:
+    dependency: "direct dev"
+    description:
+      name: lints
+      sha256: a5e2b223cb7c9c8efdc663ef484fdd95bb243bff242ef5b13e26883547fce9a0
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.0"
   logging:
     dependency: transitive
     description:
@@ -566,6 +574,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.1"
+  xsoulspace_lints:
+    dependency: "direct dev"
+    description:
+      name: xsoulspace_lints
+      sha256: fc56073d7a17b4b0e8ef9efbc5e1948b2b4eb8e0fabdbfe702e9887151250c34
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.2"
   yaml:
     dependency: transitive
     description:

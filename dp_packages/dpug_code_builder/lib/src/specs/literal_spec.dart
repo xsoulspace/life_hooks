@@ -2,11 +2,10 @@ import '../visitors/visitor.dart';
 import 'expression_spec.dart';
 
 class DpugLiteralSpec extends DpugExpressionSpec {
+  const DpugLiteralSpec(this.value);
   final Object value;
 
-  const DpugLiteralSpec(this.value);
-
   @override
-  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+  R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitLiteral(this, context);
 }

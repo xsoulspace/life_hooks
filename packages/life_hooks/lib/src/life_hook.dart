@@ -70,10 +70,7 @@ abstract class LifeState {
 /// methods are overridden as needed.
 class LifeHook<T extends LifeState> extends Hook<T> {
   /// Creates a [LifeHook].
-  const LifeHook({
-    required this.debugLabel,
-    required this.state,
-  });
+  const LifeHook({required this.debugLabel, required this.state});
 
   /// A label for debugging purposes.
   final String debugLabel;

@@ -44,18 +44,16 @@ abstract class SupabaseAuthLifeState extends SupabaseLifeState
   @override
   void initState() {
     final supabaseClient = Supabase.instance.client.auth;
-    _authStateListener =
-        SupabaseAuth.instance.onAuthChange.listen((final event) {
+    _authStateListener = SupabaseAuth.instance.onAuthChange.listen((
+      final event,
+    ) {
       switch (event) {
         case AuthChangeEvent.signedOut:
           onUnauthenticated();
-          break;
         case AuthChangeEvent.signedIn:
           onAuthenticated(supabaseClient.currentSession!);
-          break;
         case AuthChangeEvent.passwordRecovery:
           onPasswordRecovery(supabaseClient.currentSession!);
-          break;
         case AuthChangeEvent.userUpdated:
         case AuthChangeEvent.tokenRefreshed:
           debugPrint(event.toString());
@@ -105,8 +103,9 @@ abstract class SupabaseAuthLifeState extends SupabaseLifeState
       return false;
     }
 
-    final response =
-        await Supabase.instance.client.auth.recoverSession(jsonStr);
+    final response = await Supabase.instance.client.auth.recoverSession(
+      jsonStr,
+    );
     if (response.error != null) {
       await SupabaseAuth.instance.localStorage.removePersistedSession();
       onUnauthenticated();

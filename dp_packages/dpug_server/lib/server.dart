@@ -13,11 +13,13 @@ class DpServer {
   /// Build router with routes.
   Router buildRouter() {
     final Router router = Router();
-    router.get('/health', (shelf.Request req) async {
-      return shelf.Response.ok('ok', headers: {'content-type': 'text/plain'});
-    });
+    router.get(
+      '/health',
+      (final shelf.Request req) =>
+          shelf.Response.ok('ok', headers: {'content-type': 'text/plain'}),
+    );
 
-    router.post('/dpug/to-dart', (shelf.Request req) async {
+    router.post('/dpug/to-dart', (final shelf.Request req) async {
       final String body = await req.readAsString();
       try {
         final String out = _converter.dpugToDart(body);
@@ -27,7 +29,7 @@ class DpServer {
       }
     });
 
-    router.post('/dart/to-dpug', (shelf.Request req) async {
+    router.post('/dart/to-dpug', (final shelf.Request req) async {
       final String body = await req.readAsString();
       try {
         final String out = _converter.dartToDpug(body);
@@ -40,7 +42,7 @@ class DpServer {
     return router;
   }
 
-  shelf.Response _error(String type, String message) {
+  shelf.Response _error(final String type, final String message) {
     // Fallback span unknown
     const String span = '1:1..1:1';
     final String yaml =
@@ -52,17 +54,17 @@ class DpServer {
     );
   }
 
-  String _escapeYaml(String v) =>
-      v.replaceAll('\n', ' ').replaceAll(':', '\\:');
+  String _escapeYaml(final String v) =>
+      v.replaceAll('\n', ' ').replaceAll(':', r'\:');
 }
 
 /// Start the server on the given [port].
-Future<HttpServer> serve({int port = 8080}) async {
+Future<HttpServer> serve({final int port = 8080}) async {
   final DpServer app = DpServer();
   final shelf.Handler handler = const shelf.Pipeline()
       .addMiddleware(shelf.logRequests())
       .addMiddleware(_corsMiddleware())
-      .addHandler(app.buildRouter());
+      .addHandler(app.buildRouter().call);
   final HttpServer server = await shelf_io.serve(
     handler,
     InternetAddress.anyIPv4,
@@ -71,17 +73,14 @@ Future<HttpServer> serve({int port = 8080}) async {
   return server;
 }
 
-shelf.Middleware _corsMiddleware() {
-  return (innerHandler) {
-    return (request) async {
+shelf.Middleware _corsMiddleware() =>
+    (final innerHandler) => (final request) async {
       if (request.method == 'OPTIONS') {
         return shelf.Response.ok('', headers: _corsHeaders());
       }
       final response = await innerHandler(request);
       return response.change(headers: _corsHeaders());
     };
-  };
-}
 
 Map<String, String> _corsHeaders() => {
   'Access-Control-Allow-Origin': '*',

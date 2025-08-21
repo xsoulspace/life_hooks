@@ -6,14 +6,14 @@ void main() {
     final converter = DpugConverter();
 
     test('Basic DPug to Dart conversion', () {
-      const dpugCode = '''
+      const dpugCode = r'''
 @stateful
 class Counter
   @listen int count = 0
 
   Widget get build =>
     Text
-      ..text: 'Count: \$count'
+      ..text: 'Count: $count'
 ''';
 
       final dartCode = converter.dpugToDart(dpugCode);
@@ -23,14 +23,14 @@ class Counter
       expect(dartCode, contains('int get count => _count'));
       expect(
         dartCode,
-        contains("set count(int value) => setState(() => _count = value)"),
+        contains('set count(int value) => setState(() => _count = value)'),
       );
       expect(dartCode, contains('Text('));
-      expect(dartCode, contains("'Count: \$count'"));
+      expect(dartCode, contains(r"'Count: $count'"));
     });
 
     test('Basic Dart to DPug conversion', () {
-      const dartCode = '''
+      const dartCode = r'''
 class Counter extends StatefulWidget {
   const Counter({required this.count, super.key});
   final int count;
@@ -46,7 +46,7 @@ class _CounterState extends State<Counter> {
 
   @override
   Widget build(BuildContext context) {
-    return Text('Count: \$count');
+    return Text('Count: $count');
   }
 }
 ''';
@@ -58,7 +58,7 @@ class _CounterState extends State<Counter> {
       expect(dpugCode, contains('@listen int count = 0'));
       expect(dpugCode, contains('Widget get build'));
       expect(dpugCode, contains('Text'));
-      expect(dpugCode, contains('..text: \'Count: \$count\''));
+      expect(dpugCode, contains(r"..text: 'Count: $count'"));
     });
 
     test('Round-trip conversion preserves semantics', () {

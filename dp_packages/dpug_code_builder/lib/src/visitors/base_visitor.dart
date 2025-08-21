@@ -2,14 +2,13 @@ import '../specs/specs.dart';
 import 'visitor.dart';
 
 abstract class BaseVisitor<T> implements DpugSpecVisitor<T> {
+  BaseVisitor({this.throwOnError = false});
   final List<String> _errors = [];
   final bool throwOnError;
 
-  BaseVisitor({this.throwOnError = false});
-
   List<String> get errors => List.unmodifiable(_errors);
 
-  T visitSafely<S extends DpugSpec>(S spec, T Function(S) visit) {
+  T visitSafely<S extends DpugSpec>(final S spec, final T Function(S) visit) {
     try {
       return visit(spec);
     } catch (e, stack) {

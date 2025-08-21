@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   test('Debug Column conversion', () {
     final converter = DpugConverter();
-    final simpleDart = '''
+    const simpleDart = '''
 class TestWidget extends StatefulWidget {
   _TestWidgetState createState() => _TestWidgetState();
 }

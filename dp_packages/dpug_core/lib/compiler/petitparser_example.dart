@@ -5,7 +5,7 @@ void main() {
   final parser = DPugParser();
 
   // Example DPug code
-  const dpugCode = '''
+  const dpugCode = r'''
 @stateful
 class Counter
   @listen int count = 0
@@ -13,7 +13,7 @@ class Counter
   Widget get build =>
     Column
       Text
-        ..text: 'Count: \$count'
+        ..text: 'Count: $count'
       ElevatedButton
         ..onPressed: () => count++
         ..child:
@@ -24,7 +24,7 @@ class Counter
   print('=== PetitParser DPug Demo ===\n');
   print('Input DPug code:');
   print(dpugCode);
-  print('\n' + '=' * 50 + '\n');
+  print('\n${'=' * 50}\n');
 
   // Parse the code
   final result = parser.parse(dpugCode);
@@ -39,7 +39,7 @@ class Counter
     print('Error: $e');
   }
 
-  print('\n' + '=' * 50 + '\n');
+  print('\n${'=' * 50}\n');
 
   // Grammar validation
   print('Grammar Linting Results:');
@@ -53,17 +53,17 @@ class Counter
     }
   }
 
-  print('\n' + '=' * 50 + '\n');
+  print('\n${'=' * 50}\n');
 
   // Show examples
   print('Available Examples:');
   final examples = parser.getExamples();
-  examples.forEach((name, code) {
+  examples.forEach((final name, final code) {
     print('\n📝 $name:');
     print(code);
   });
 
-  print('\n' + '=' * 50 + '\n');
+  print('\n${'=' * 50}\n');
   print('Grammar Info:');
   print(parser.getGrammarInfo());
 }

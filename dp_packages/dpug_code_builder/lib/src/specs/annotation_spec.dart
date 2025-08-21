@@ -3,13 +3,7 @@ import 'expression_spec.dart';
 import 'spec.dart';
 
 class DpugAnnotationSpec extends DpugExpressionSpec implements DpugSpec {
-  final String name;
-  final List<DpugExpressionSpec> arguments;
-
-  const DpugAnnotationSpec({
-    required this.name,
-    this.arguments = const [],
-  });
+  const DpugAnnotationSpec({required this.name, this.arguments = const []});
 
   factory DpugAnnotationSpec.listen() =>
       const DpugAnnotationSpec(name: 'listen');
@@ -21,8 +15,10 @@ class DpugAnnotationSpec extends DpugExpressionSpec implements DpugSpec {
       const DpugAnnotationSpec(name: 'stateless');
 
   factory DpugAnnotationSpec.state() => const DpugAnnotationSpec(name: 'state');
+  final String name;
+  final List<DpugExpressionSpec> arguments;
 
   @override
-  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+  R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitAnnotation(this);
 }

@@ -99,15 +99,15 @@ ElevatedButton
     group('Dart -> DPUG Conversion', () {
       test('Convert Dart class to DPUG', () {
         final dartClass = cb.Class(
-          (b) => b
+          (final b) => b
             ..name = 'MyWidget'
             ..extend = cb.refer('StatefulWidget')
             ..methods.add(
               cb.Method(
-                (b) => b
+                (final b) => b
                   ..name = 'build'
                   ..returns = cb.refer('Widget')
-                  ..body = cb.Code('''
+                  ..body = const cb.Code('''
               return Column(
                 children: [
                   Text('Hello'),
@@ -149,10 +149,10 @@ class MyWidget
 
       test('Convert Dart method to DPUG', () {
         final dartMethod = cb.Method(
-          (b) => b
+          (final b) => b
             ..name = 'build'
             ..returns = cb.refer('Widget')
-            ..body = cb.Code('''
+            ..body = const cb.Code('''
             return Container(
               padding: EdgeInsets.all(16),
               child: Text('Hello'),

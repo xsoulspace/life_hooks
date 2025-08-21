@@ -55,8 +55,8 @@ class StateLoader extends HookWidget {
   /// Whether the background is transparent during loading.
   final bool backgroundIsTransparent;
 
-  static const Duration _transitionDuration = Duration(milliseconds: 450);
-  static const double _minScale = 0.98;
+  static const _transitionDuration = Duration(milliseconds: 450);
+  static const _minScale = 0.98;
   static const double _maxScale = 1;
   static const double _scaleDiff = _maxScale - _minScale;
 
@@ -76,17 +76,14 @@ class StateLoader extends HookWidget {
     );
     final double animation = useAnimation(animationController);
 
-    useEffect(
-      () {
-        final double progressPercent = (animation - _minScale) / _scaleDiff;
-        homeOpacity.value = progressPercent;
-        loaderOpacity.value = 1 - progressPercent;
-        loaderScale.value = animation + 0.1;
+    useEffect(() {
+      final double progressPercent = (animation - _minScale) / _scaleDiff;
+      homeOpacity.value = progressPercent;
+      loaderOpacity.value = 1 - progressPercent;
+      loaderScale.value = animation + 0.1;
 
-        return null;
-      },
-      [animation],
-    );
+      return null;
+    }, [animation]);
 
     return Directionality(
       textDirection: TextDirection.ltr,
@@ -96,15 +93,10 @@ class StateLoader extends HookWidget {
           if (backgroundIsTransparent && loaderOpacity.value > 0.0)
             Opacity(
               opacity: loaderOpacity.value,
-              child: Container(
-                color: background,
-              ),
+              child: Container(color: background),
             ),
           if (renderAllowed.value)
-            Transform.scale(
-              scale: animationController.value,
-              child: child,
-            ),
+            Transform.scale(scale: animationController.value, child: child),
           if (loaderOpacity.value > 0.0)
             Opacity(
               opacity: loaderOpacity.value,

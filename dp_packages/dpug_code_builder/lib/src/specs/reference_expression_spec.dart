@@ -3,11 +3,10 @@ import 'expression_spec.dart';
 
 // For reference expressions in code
 class DpugReferenceExpressionSpec extends DpugExpressionSpec {
+  const DpugReferenceExpressionSpec(this.name);
   final String name;
 
-  const DpugReferenceExpressionSpec(this.name);
-
   @override
-  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+  R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitReferenceExpression(this, context);
 }

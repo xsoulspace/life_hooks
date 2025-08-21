@@ -6,11 +6,11 @@ import 'package:source_span/source_span.dart';
 
 /// Minimal analyzer -> DPug IR transformer supporting a subset needed by tests.
 class DartAstToDpugSpec {
-  final SourceFile file;
   DartAstToDpugSpec(this.file);
+  final SourceFile file;
 
   /// Parse source and transform the first supported class to a `DpugSpec`.
-  dp.DpugSpec transformFromSource(String source) {
+  dp.DpugSpec transformFromSource(final String source) {
     final ParseStringResult result = az.parseString(content: source);
     final ast.CompilationUnit unit = result.unit;
 
@@ -23,7 +23,7 @@ class DartAstToDpugSpec {
     throw StateError('No supported class found');
   }
 
-  dp.DpugClassSpec? _classToSpec(ast.ClassDeclaration c) {
+  dp.DpugClassSpec? _classToSpec(final ast.ClassDeclaration c) {
     // Look for StatefulWidget pattern and its State class
     final bool isStateful =
         c.extendsClause?.superclass.name2.lexeme == 'StatefulWidget';
@@ -54,13 +54,13 @@ class DartAstToDpugSpec {
 
     // Locate the State class with build method
     final ast.ClassDeclaration? stateClass = _findStateClass(
-      unit: c.parent as ast.CompilationUnit,
+      unit: c.parent! as ast.CompilationUnit,
       widgetName: name,
     );
     if (stateClass != null) {
       final buildMethods = stateClass.members
           .whereType<ast.MethodDeclaration>()
-          .where((m) => m.name.lexeme == 'build');
+          .where((final m) => m.name.lexeme == 'build');
       if (buildMethods.isNotEmpty) {
         final ast.MethodDeclaration build = buildMethods.first;
         final dp.DpugWidgetBuilder wb = _extractBuildBody(build);
@@ -72,8 +72,8 @@ class DartAstToDpugSpec {
   }
 
   ast.ClassDeclaration? _findStateClass({
-    required ast.CompilationUnit unit,
-    required String widgetName,
+    required final ast.CompilationUnit unit,
+    required final String widgetName,
   }) {
     for (final ast.CompilationUnitMember m in unit.declarations) {
       if (m is ast.ClassDeclaration) {
@@ -84,7 +84,7 @@ class DartAstToDpugSpec {
     return null;
   }
 
-  dp.DpugWidgetBuilder _extractBuildBody(ast.MethodDeclaration build) {
+  dp.DpugWidgetBuilder _extractBuildBody(final ast.MethodDeclaration build) {
     // Expect a return statement with a constructor invocation.
     final ast.FunctionBody body = build.body;
     ast.Expression? expr;
@@ -99,7 +99,7 @@ class DartAstToDpugSpec {
     return _exprToWidget(expr);
   }
 
-  dp.DpugWidgetBuilder _exprToWidget(ast.Expression expr) {
+  dp.DpugWidgetBuilder _exprToWidget(final ast.Expression expr) {
     if (expr is ast.InstanceCreationExpression) {
       final String name = expr.constructorName.type.name2.lexeme;
       final dp.DpugWidgetBuilder b = dp.DpugWidgetBuilder()..name(name);
@@ -112,7 +112,7 @@ class DartAstToDpugSpec {
       for (final ast.Expression e in expr.argumentList.arguments) {
         if (e is ast.NamedExpression) {
           final String key = e.name.label.name;
-          if ((key == 'child' || key == 'children')) {
+          if (key == 'child' || key == 'children') {
             final ast.Expression childExpr = e.expression;
             if (childExpr is ast.InstanceCreationExpression) {
               b.child(_exprToWidget(childExpr));
@@ -133,7 +133,7 @@ class DartAstToDpugSpec {
     throw StateError('Unsupported widget expression: ${expr.runtimeType}');
   }
 
-  dp.DpugExpressionSpec _anyExprToDpug(ast.Expression e) {
+  dp.DpugExpressionSpec _anyExprToDpug(final ast.Expression e) {
     if (e is ast.SimpleStringLiteral) {
       return dp.DpugExpressionSpec.string(e.value);
     }

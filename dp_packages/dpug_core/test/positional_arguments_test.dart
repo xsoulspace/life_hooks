@@ -3,8 +3,8 @@ import 'package:test/test.dart';
 
 void main() {
   group('DPug positional and cascade arguments', () {
-    test('supports cascade positional argument ..\'Hello\'', () {
-      final input = '''
+    test("supports cascade positional argument ..'Hello'", () {
+      const input = '''
 @stateful
 class A
   Widget get build =>
@@ -17,8 +17,8 @@ class A
       expect(out, contains("Text('Hello')"));
     });
 
-    test('supports function-style positional: Text(\'World\')', () {
-      final input = '''
+    test("supports function-style positional: Text('World')", () {
+      const input = '''
 @stateful
 class A
   Widget get build =>
@@ -31,7 +31,7 @@ class A
     });
 
     test('mix of cascade and function-style in children', () {
-      final input = '''
+      const input = '''
 @stateful
 class A
   Widget get build =>

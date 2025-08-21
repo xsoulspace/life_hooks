@@ -1,4 +1,4 @@
-import '../lib/dpug_code_builder.dart';
+import 'package:dpug_code_builder/dpug_code_builder.dart';
 
 void main() {
   final todoList = (

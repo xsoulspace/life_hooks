@@ -1,19 +1,18 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:dpug_code_builder/src/formatters/dpug_config.dart';
+import 'package:dpug_code_builder/dpug_code_builder.dart';
 
 import 'dpug_parser.dart';
 
 /// DPug code formatter with configurable options
 class DpugFormatter {
+  DpugFormatter({final DpugConfig? config})
+    : config = config ?? DpugConfig.readable();
   final DpugConfig config;
 
-  DpugFormatter({DpugConfig? config})
-    : config = config ?? DpugConfig.readable();
-
   /// Format DPug source code
-  String format(String source) {
+  String format(final String source) {
     try {
       // Parse the source
       final parser = DPugParser();
@@ -37,9 +36,9 @@ class DpugFormatter {
   }
 
   /// Format a file in-place
-  Future<void> formatFile(String path) async {
+  Future<void> formatFile(final String path) async {
     final file = File(path);
-    if (!await file.exists()) {
+    if (!file.existsSync()) {
       throw FileSystemException('File not found', path);
     }
 
@@ -55,7 +54,7 @@ class DpugFormatter {
   }
 
   /// Format multiple files
-  Future<void> formatFiles(List<String> paths) async {
+  Future<void> formatFiles(final List<String> paths) async {
     for (final path in paths) {
       try {
         await formatFile(path);
@@ -87,7 +86,7 @@ class DpugFormatCommand {
       help: 'Check if files are formatted without modifying',
     );
 
-  Future<void> run(List<String> args) async {
+  Future<void> run(final List<String> args) async {
     try {
       final results = parser.parse(args);
 
@@ -136,8 +135,8 @@ class DpugFormatCommand {
   }
 
   Future<void> _checkFormatting(
-    DpugFormatter formatter,
-    List<String> files,
+    final DpugFormatter formatter,
+    final List<String> files,
   ) async {
     bool hasUnformatted = false;
 
@@ -180,7 +179,7 @@ class DpugFormatCommand {
 }
 
 /// Main entry point for CLI
-Future<void> main(List<String> args) async {
+Future<void> main(final List<String> args) async {
   final command = DpugFormatCommand();
   await command.run(args);
 }

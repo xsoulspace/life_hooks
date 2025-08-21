@@ -14,7 +14,7 @@ class DpugBuilder implements Builder {
   };
 
   @override
-  Future<void> build(BuildStep buildStep) async {
+  Future<void> build(final BuildStep buildStep) async {
     final String input = await buildStep.readAsString(buildStep.inputId);
     final String out;
     try {
@@ -29,4 +29,4 @@ class DpugBuilder implements Builder {
 }
 
 /// Factory for build.yaml wiring.
-Builder dpugBuilder(BuilderOptions options) => DpugBuilder();
+Builder dpugBuilder(final BuilderOptions options) => DpugBuilder();

@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   group('DPug Converter Golden Tests', () {
     test('converts Dart to DPug', () {
-      final dartCode = '''
+      const dartCode = '''
 class TodoList extends StatefulWidget {
   const TodoList({
     super.key,
@@ -47,7 +47,7 @@ class _TodoListState extends State<TodoList> {
 }
 ''';
 
-      final expectedDpug = '''
+      const expectedDpug = '''
 @stateful
 class TodoList
   @listen List<Todo> todos = []

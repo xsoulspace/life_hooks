@@ -7,11 +7,11 @@ import 'ast_builder.dart';
 ///
 /// Only minimal subset is supported per tests/README.
 class AstToDpugSpec {
-  final SourceFile file;
   AstToDpugSpec(this.file);
+  final SourceFile file;
 
   /// Entry point: transform any top-level AST node into a `DpugSpec`.
-  dp.DpugSpec transform(ASTNode node) {
+  dp.DpugSpec transform(final ASTNode node) {
     if (node is ClassNode) return _classToSpec(node);
     if (node is WidgetNode) {
       final dp.DpugWidgetBuilder wb = _widgetToBuilder(node);
@@ -20,16 +20,14 @@ class AstToDpugSpec {
     throw StateError('Unsupported AST node: ${node.runtimeType}');
   }
 
-  dp.DpugClassSpec _classToSpec(ClassNode node) {
+  dp.DpugClassSpec _classToSpec(final ClassNode node) {
     final dp.DpugClassBuilder builder = dp.Dpug.classBuilder()..name(node.name);
     for (final String a in node.annotations) {
       switch (a) {
         case 'stateful':
           builder.annotation(const dp.DpugAnnotationSpec(name: 'stateful'));
-          break;
         case 'stateless':
           builder.annotation(const dp.DpugAnnotationSpec(name: 'stateless'));
-          break;
         default:
           // ignore unknown annotations for now
           break;
@@ -55,10 +53,10 @@ class AstToDpugSpec {
     return builder.build();
   }
 
-  dp.DpugWidgetBuilder _widgetToBuilder(WidgetNode node) {
+  dp.DpugWidgetBuilder _widgetToBuilder(final WidgetNode node) {
     final dp.DpugWidgetBuilder b = dp.DpugWidgetBuilder()..name(node.name);
     // Properties
-    node.properties.forEach((String key, Expression value) {
+    node.properties.forEach((final key, final value) {
       b.property(key, _exprToSpec(value));
     });
 
@@ -77,7 +75,7 @@ class AstToDpugSpec {
     return b;
   }
 
-  dp.DpugExpressionSpec _exprToSpec(Expression expr) {
+  dp.DpugExpressionSpec _exprToSpec(final Expression expr) {
     if (expr is StringExpression) {
       return dp.DpugExpressionSpec.string(expr.value);
     }

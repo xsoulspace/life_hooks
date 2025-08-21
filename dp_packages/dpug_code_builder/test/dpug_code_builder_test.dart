@@ -7,7 +7,7 @@ void main() {
       final fieldSpec = DpugStateFieldSpec(
         name: 'count',
         type: 'int',
-        annotation: DpugAnnotationSpec(name: 'listen'),
+        annotation: const DpugAnnotationSpec(name: 'listen'),
         initializer: DpugExpressionSpec.reference('0'),
       );
 
@@ -36,7 +36,7 @@ void main() {
           DpugStateFieldSpec(
             name: 'message',
             type: 'String',
-            annotation: DpugAnnotationSpec(name: 'listen'),
+            annotation: const DpugAnnotationSpec(name: 'listen'),
             initializer: DpugExpressionSpec.reference('"Hello"'),
           ),
         ],
@@ -61,7 +61,7 @@ void main() {
           DpugStateFieldSpec(
             name: 'count',
             type: 'int',
-            annotation: DpugAnnotationSpec(name: 'listen'),
+            annotation: const DpugAnnotationSpec(name: 'listen'),
             initializer: DpugExpressionSpec.reference('0'),
           ),
         ],
@@ -69,7 +69,7 @@ void main() {
           DpugMethodSpec.getter(
             name: 'build',
             returnType: 'Widget',
-            body: DpugCodeSpec('return Text("Count: \$count");'),
+            body: DpugCodeSpec(r'return Text("Count: $count");'),
           ),
         ],
       );
@@ -85,11 +85,11 @@ void main() {
         code,
         contains('set count(int value) => setState(() => _count = value)'),
       );
-      expect(code, contains('Text("Count: \$count")'));
+      expect(code, contains(r'Text("Count: $count")'));
     });
 
     test('Annotation specification', () {
-      final annotation = DpugAnnotationSpec(name: 'stateful');
+      const annotation = DpugAnnotationSpec(name: 'stateful');
       expect(annotation.name, equals('stateful'));
     });
 

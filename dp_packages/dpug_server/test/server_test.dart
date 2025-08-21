@@ -80,7 +80,7 @@ class _TestState extends State<Test> {
 
   test('Error handling for invalid DPug', () async {
     final port = server.port;
-    const invalidDpug = '''
+    const invalidDpug = r'''
 @invalid
 class Broken
   @broken syntax
@@ -125,13 +125,21 @@ class Broken extends NotAWidget {
     final response = await http.get(Uri.parse('http://localhost:$port/health'));
 
     expect(response.headers['access-control-allow-origin'], equals('*'));
-    expect(response.headers['access-control-allow-methods'], equals('GET, POST, OPTIONS'));
-    expect(response.headers['access-control-allow-headers'], equals('Content-Type'));
+    expect(
+      response.headers['access-control-allow-methods'],
+      equals('GET, POST, OPTIONS'),
+    );
+    expect(
+      response.headers['access-control-allow-headers'],
+      equals('Content-Type'),
+    );
   });
 
   test('OPTIONS request handling', () async {
     final port = server.port;
-    final response = await http.options(Uri.parse('http://localhost:$port/dpug/to-dart'));
+    final response = await http.options(
+      Uri.parse('http://localhost:$port/dpug/to-dart'),
+    );
 
     expect(response.statusCode, equals(200));
     expect(response.headers['access-control-allow-origin'], equals('*'));

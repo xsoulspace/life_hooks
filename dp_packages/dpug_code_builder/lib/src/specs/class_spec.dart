@@ -10,6 +10,22 @@ import 'spec.dart';
 import 'state_field_spec.dart';
 
 class DpugClassSpec implements DpugSpec {
+  DpugClassSpec({
+    required this.name,
+    final Iterable<DpugAnnotationSpec> annotations = const [],
+    final Iterable<DpugStateFieldSpec> stateFields = const [],
+    final Iterable<DpugMethodSpec> methods = const [],
+    final Iterable<DpugConstructorSpec> constructors = const [],
+    this.extend,
+    final Iterable<DpugReferenceSpec> implements = const [],
+    final Iterable<DpugReferenceSpec> mixins = const [],
+    this.span,
+  }) : annotations = BuiltList<DpugAnnotationSpec>.of(annotations),
+       stateFields = BuiltList<DpugStateFieldSpec>.of(stateFields),
+       methods = BuiltList<DpugMethodSpec>.of(methods),
+       constructors = BuiltList<DpugConstructorSpec>.of(constructors),
+       implements = BuiltList<DpugReferenceSpec>.of(implements),
+       mixins = BuiltList<DpugReferenceSpec>.of(mixins);
   final String name;
   final BuiltList<DpugAnnotationSpec> annotations;
   final BuiltList<DpugStateFieldSpec> stateFields;
@@ -20,24 +36,7 @@ class DpugClassSpec implements DpugSpec {
   final BuiltList<DpugReferenceSpec> mixins;
   final FileSpan? span;
 
-  DpugClassSpec({
-    required this.name,
-    Iterable<DpugAnnotationSpec> annotations = const [],
-    Iterable<DpugStateFieldSpec> stateFields = const [],
-    Iterable<DpugMethodSpec> methods = const [],
-    Iterable<DpugConstructorSpec> constructors = const [],
-    this.extend,
-    Iterable<DpugReferenceSpec> implements = const [],
-    Iterable<DpugReferenceSpec> mixins = const [],
-    this.span,
-  })  : annotations = BuiltList<DpugAnnotationSpec>.of(annotations),
-        stateFields = BuiltList<DpugStateFieldSpec>.of(stateFields),
-        methods = BuiltList<DpugMethodSpec>.of(methods),
-        constructors = BuiltList<DpugConstructorSpec>.of(constructors),
-        implements = BuiltList<DpugReferenceSpec>.of(implements),
-        mixins = BuiltList<DpugReferenceSpec>.of(mixins);
-
   @override
-  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+  R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitClass(this, context);
 }

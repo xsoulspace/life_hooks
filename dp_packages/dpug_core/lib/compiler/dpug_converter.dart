@@ -8,7 +8,7 @@ import 'lexer.dart';
 /// Provides conversion between DPug text and Dart code using DPug IR.
 class DpugConverter {
   /// Convert DPug source string to formatted Dart code.
-  String dpugToDart(String dpugCode) {
+  String dpugToDart(final String dpugCode) {
     final SourceFile file = SourceFile.fromString(dpugCode);
     try {
       final List<Token> tokens = Lexer(dpugCode).tokenize();
@@ -21,7 +21,7 @@ class DpugConverter {
   }
 
   /// Convert Dart source string to DPug string using analyzer -> IR -> emitter.
-  String dartToDpug(String dartCode) {
+  String dartToDpug(final String dartCode) {
     final SourceFile file = SourceFile.fromString(dartCode);
     try {
       final String dpug = DartToDpug(file).convert(dartCode);
@@ -34,13 +34,17 @@ class DpugConverter {
 
 /// Internal typed exception that carries a span description.
 class _ConversionException implements Exception {
+  _ConversionException(
+    this.type,
+    this.message,
+    final SourceFile file,
+    final int start,
+    final int end,
+  ) : span =
+          '${file.getLine(start) + 1}:${file.getColumn(start) + 1}..${file.getLine(end) + 1}:${file.getColumn(end) + 1}';
   final String type;
   final String message;
   final String span;
-  _ConversionException(
-      this.type, this.message, SourceFile file, int start, int end)
-      : span =
-            '${file.getLine(start) + 1}:${file.getColumn(start) + 1}..${file.getLine(end) + 1}:${file.getColumn(end) + 1}';
 
   @override
   String toString() => '$type: $message ($span)';

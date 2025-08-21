@@ -13,12 +13,11 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 /// widget.
 TNotifier useStateBuilder<TState, TNotifier extends ValueNotifier<TState>>(
   final _StateHookBuilder<TState, TNotifier> builder,
-) =>
-    use(_StateHook<TState, TNotifier>(builder: builder));
+) => use(_StateHook<TState, TNotifier>(builder: builder));
 
 /// A typedef for the state notifier builder function.
-typedef _StateHookBuilder<TState, TNotifier extends ValueNotifier<TState>>
-    = TNotifier Function();
+typedef _StateHookBuilder<TState, TNotifier extends ValueNotifier<TState>> =
+    TNotifier Function();
 
 /// A custom hook for creating and managing state notifiers.
 ///

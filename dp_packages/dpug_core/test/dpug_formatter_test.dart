@@ -87,15 +87,15 @@ class Broken
       await formatter.formatFiles([file1.path, file2.path]);
 
       // Verify both files were processed
-      expect(await file1.exists(), isTrue);
-      expect(await file2.exists(), isTrue);
+      expect(file1.existsSync(), isTrue);
+      expect(file2.existsSync(), isTrue);
 
       // Clean up
       await tempDir.delete(recursive: true);
     });
 
-    test('Handle non-existent file', () async {
-      final nonExistent = '/path/does/not/exist.dpug';
+    test('Handle non-existent file', () {
+      const nonExistent = '/path/does/not/exist.dpug';
 
       expect(
         () => formatter.formatFile(nonExistent),

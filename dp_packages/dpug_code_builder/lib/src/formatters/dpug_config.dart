@@ -1,4 +1,22 @@
 class DpugConfig {
+  const DpugConfig({
+    this.indent = '  ',
+    this.spaceBetweenMembers = true,
+    this.spaceBetweenProperties = false,
+    this.spaceAfterAnnotations = false,
+    this.spaceBetweenCascades = false,
+  });
+
+  /// Creates a compact configuration with minimal whitespace
+  factory DpugConfig.compact() => const DpugConfig(spaceBetweenMembers: false);
+
+  /// Creates a readable configuration with maximal whitespace
+  factory DpugConfig.readable() => const DpugConfig(
+    spaceBetweenProperties: true,
+    spaceAfterAnnotations: true,
+    spaceBetweenCascades: true,
+  );
+
   /// The indentation string (default: two spaces)
   final String indent;
 
@@ -13,28 +31,4 @@ class DpugConfig {
 
   /// Whether to add newlines between cascade operations
   final bool spaceBetweenCascades;
-
-  const DpugConfig({
-    this.indent = '  ',
-    this.spaceBetweenMembers = true,
-    this.spaceBetweenProperties = false,
-    this.spaceAfterAnnotations = false,
-    this.spaceBetweenCascades = false,
-  });
-
-  /// Creates a compact configuration with minimal whitespace
-  factory DpugConfig.compact() => const DpugConfig(
-    spaceBetweenMembers: false,
-    spaceBetweenProperties: false,
-    spaceAfterAnnotations: false,
-    spaceBetweenCascades: false,
-  );
-
-  /// Creates a readable configuration with maximal whitespace
-  factory DpugConfig.readable() => const DpugConfig(
-    spaceBetweenMembers: true,
-    spaceBetweenProperties: true,
-    spaceAfterAnnotations: true,
-    spaceBetweenCascades: true,
-  );
 }

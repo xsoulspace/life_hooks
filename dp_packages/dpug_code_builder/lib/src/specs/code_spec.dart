@@ -2,11 +2,10 @@ import '../visitors/visitors.dart';
 import 'spec.dart';
 
 class DpugCodeSpec extends DpugSpec {
+  DpugCodeSpec(this.value);
   final String value;
 
-  DpugCodeSpec(this.value);
-
   @override
-  R accept<R>(covariant DpugSpecVisitor<R> visitor, [R? context]) =>
+  R accept<R>(covariant final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitCode(this, context);
 }

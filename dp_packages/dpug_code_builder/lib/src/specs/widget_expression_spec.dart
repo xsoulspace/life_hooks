@@ -3,11 +3,10 @@ import '../visitors/visitors.dart';
 import 'expression_spec.dart';
 
 class DpugWidgetExpressionSpec extends DpugExpressionSpec {
+  const DpugWidgetExpressionSpec(this.builder);
   final DpugWidgetBuilder builder;
 
-  const DpugWidgetExpressionSpec(this.builder);
-
   @override
-  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+  R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       builder.accept(visitor, context);
 }

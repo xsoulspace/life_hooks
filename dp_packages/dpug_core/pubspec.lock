@@ -31,13 +31,13 @@ packages:
     source: hosted
     version: "0.11.3"
   args:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: args
-      sha256: bf9f5caeea8d8fe6721a9c358dd8a5c1947b27f1cfaa18b39c301273594919e6
+      sha256: d0481093c50b1da8910eb0bb301626d4d8eb7284aa739614d2b394ee09e3ea04
       url: "https://pub.dev"
     source: hosted
-    version: "2.6.0"
+    version: "2.7.0"
   async:
     dependency: transitive
     description:
@@ -285,6 +285,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.9.0"
+  lints:
+    dependency: "direct dev"
+    description:
+      name: lints
+      sha256: a5e2b223cb7c9c8efdc663ef484fdd95bb243bff242ef5b13e26883547fce9a0
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.0"
   logging:
     dependency: transitive
     description:
@@ -573,6 +581,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.1"
+  xsoulspace_lints:
+    dependency: "direct dev"
+    description:
+      name: xsoulspace_lints
+      sha256: fc56073d7a17b4b0e8ef9efbc5e1948b2b4eb8e0fabdbfe702e9887151250c34
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.2"
   yaml:
     dependency: transitive
     description:

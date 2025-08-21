@@ -37,7 +37,7 @@ Text
     });
 
     test('Parse complete DPug example', () {
-      const input = '''
+      const input = r'''
 @stateful
 class Counter
   @listen int count = 0
@@ -45,7 +45,7 @@ class Counter
   Widget get build =>
     Column
       Text
-        ..text: 'Count: \$count'
+        ..text: 'Count: $count'
       ElevatedButton
         ..onPressed: () => count++
         ..child:
@@ -78,12 +78,12 @@ class Counter
     });
 
     test('Invalid syntax handling', () {
-      const invalidInput = '''
+      const invalidInput = r'''
 @invalid
 class Broken
   @unknown annotation
   Widget get build =>
-    @#\$% invalid syntax
+    @#$% invalid syntax
 ''';
 
       final result = parser.parse(invalidInput);

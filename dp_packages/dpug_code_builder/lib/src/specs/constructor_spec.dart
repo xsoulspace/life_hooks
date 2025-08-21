@@ -7,19 +7,6 @@ import 'reference_spec.dart';
 import 'spec.dart';
 
 class DpugConstructorSpec extends DpugSpec {
-  final String? name;
-  final BuiltList<DpugParameterSpec> optionalParameters;
-  final BuiltList<DpugParameterSpec> requiredParameters;
-  final BuiltList<DpugReferenceSpec> initializers;
-  final BuiltList<DpugAnnotationSpec> annotations;
-  final DpugSpec? body;
-  final bool isConst;
-  final BuiltList<String> docs;
-  final bool factory;
-  final bool external;
-  final bool lambda;
-  final DpugReferenceSpec? redirect;
-
   DpugConstructorSpec({
     this.name,
     final Iterable<DpugParameterSpec> optionalParameters = const [],
@@ -33,13 +20,25 @@ class DpugConstructorSpec extends DpugSpec {
     this.lambda = false,
     this.redirect,
     final Iterable<String> docs = const [],
-  })  : optionalParameters = BuiltList<DpugParameterSpec>(optionalParameters),
-        requiredParameters = BuiltList<DpugParameterSpec>(requiredParameters),
-        initializers = BuiltList<DpugReferenceSpec>(initializers),
-        annotations = BuiltList<DpugAnnotationSpec>(annotations),
-        docs = BuiltList<String>(docs);
+  }) : optionalParameters = BuiltList<DpugParameterSpec>(optionalParameters),
+       requiredParameters = BuiltList<DpugParameterSpec>(requiredParameters),
+       initializers = BuiltList<DpugReferenceSpec>(initializers),
+       annotations = BuiltList<DpugAnnotationSpec>(annotations),
+       docs = BuiltList<String>(docs);
+  final String? name;
+  final BuiltList<DpugParameterSpec> optionalParameters;
+  final BuiltList<DpugParameterSpec> requiredParameters;
+  final BuiltList<DpugReferenceSpec> initializers;
+  final BuiltList<DpugAnnotationSpec> annotations;
+  final DpugSpec? body;
+  final bool isConst;
+  final BuiltList<String> docs;
+  final bool factory;
+  final bool external;
+  final bool lambda;
+  final DpugReferenceSpec? redirect;
 
   @override
-  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+  R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitConstructor(this, context);
 }

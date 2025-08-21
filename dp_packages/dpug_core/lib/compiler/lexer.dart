@@ -17,11 +17,10 @@ enum TokenType {
 
 /// Represents a lexical token with source span.
 class Token {
+  Token(this.type, this.value, this.span);
   final TokenType type;
   final String value;
   final FileSpan span;
-
-  Token(this.type, this.value, this.span);
 
   @override
   String toString() => '$type($value)';
@@ -36,6 +35,7 @@ class Token {
 /// - Numbers, strings, operators, symbols
 /// - Newlines with INDENT/DEDENT tokens
 class Lexer {
+  Lexer(this.source) : _file = SourceFile.fromString(source);
   final String source;
 
   final SourceFile _file;
@@ -45,8 +45,6 @@ class Lexer {
   int _lastNewlineIndex = 0;
   bool _atLineStart = true;
   final List<int> _indentStack = <int>[0];
-
-  Lexer(this.source) : _file = SourceFile.fromString(source);
 
   /// Tokenize the entire source into a flat list.
   List<Token> tokenize() {
@@ -124,7 +122,7 @@ class Lexer {
   }
 
   // Indentation handling
-  void _emitIndentDedent(List<Token> out) {
+  void _emitIndentDedent(final List<Token> out) {
     // Measure leading indentation (spaces/tabs) from current index
     int i = _index;
     int width = 0;
@@ -145,7 +143,7 @@ class Lexer {
     }
 
     // Update index/column to skip indentation chars
-    _column += (i - _index);
+    _column += i - _index;
     _index = i;
 
     final int current = _indentStack.last;
@@ -219,7 +217,7 @@ class Lexer {
       buf.write(ch);
       _advance();
       if (ch == quote) break;
-      if (ch == '\\' && !_isEOF) {
+      if (ch == r'\' && !_isEOF) {
         // escape next
         buf.write(_peekChar());
         _advance();
@@ -251,7 +249,6 @@ class Lexer {
       case '*':
       case '/':
         type = TokenType.operator;
-        break;
       case '(':
       case ')':
       case '{':
@@ -262,7 +259,6 @@ class Lexer {
       case '<':
       case '>':
         type = TokenType.symbol;
-        break;
       default:
         // Treat unknown as symbol to avoid crashes
         type = TokenType.symbol;
@@ -293,7 +289,7 @@ class Lexer {
     }
   }
 
-  bool _match(String s) {
+  bool _match(final String s) {
     if (_index + s.length > source.length) return false;
     if (source.substring(_index, _index + s.length) == s) {
       _index += s.length;
@@ -303,11 +299,17 @@ class Lexer {
     return false;
   }
 
-  bool _isIdentifierStart(String ch) => RegExp(r'[A-Za-z_]').hasMatch(ch);
-  bool _isIdentifierPart(String ch) => RegExp(r'[A-Za-z0-9_]').hasMatch(ch);
-  bool _isDigit(String ch) => RegExp(r'[0-9]').hasMatch(ch);
+  bool _isIdentifierStart(final String ch) => RegExp('[A-Za-z_]').hasMatch(ch);
+  bool _isIdentifierPart(final String ch) =>
+      RegExp('[A-Za-z0-9_]').hasMatch(ch);
+  bool _isDigit(final String ch) => RegExp('[0-9]').hasMatch(ch);
 
-  Token _makeToken(TokenType type, String value, int start, int end) {
+  Token _makeToken(
+    final TokenType type,
+    final String value,
+    final int start,
+    final int end,
+  ) {
     // Calculate columns safely to avoid negative values
     final int startColumn = start >= _lastNewlineIndex
         ? start - _lastNewlineIndex

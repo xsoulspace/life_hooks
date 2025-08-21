@@ -4,28 +4,25 @@ import 'method_spec.dart';
 import 'parameter_spec.dart';
 
 class DpugClosureExpressionSpec extends DpugExpressionSpec {
-  final DpugMethodSpec method;
-
   const DpugClosureExpressionSpec(this.method);
 
   factory DpugClosureExpressionSpec.fromParams(
-    List<String> params,
-    DpugExpressionSpec body,
-  ) {
-    return DpugClosureExpressionSpec(
-      DpugMethodSpec(
-        name: '',
-        returnType: 'dynamic',
-        parameters:
-            params.map((p) => DpugParameterSpec(name: p, type: null)).toList(),
-        body: body,
-        isGetter: false,
-      ),
-    );
-  }
+    final List<String> params,
+    final DpugExpressionSpec body,
+  ) => DpugClosureExpressionSpec(
+    DpugMethodSpec(
+      name: '',
+      returnType: 'dynamic',
+      parameters: params
+          .map((final p) => DpugParameterSpec(name: p, type: null))
+          .toList(),
+      body: body,
+    ),
+  );
+  final DpugMethodSpec method;
 
   @override
-  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+  R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitClosureExpression(this, context);
 }
 

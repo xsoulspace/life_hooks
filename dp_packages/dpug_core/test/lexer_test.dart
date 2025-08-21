@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   group('DartPug Lexer', () {
     test('tokenizes basic widget declaration', () {
-      final input = '''
+      const input = '''
 Column
   TextField
     value: newTodo
@@ -17,19 +17,19 @@ Column
         tokens,
         containsAllInOrder([
           isA<Token>()
-              .having((t) => t.type, 'type', TokenType.identifier)
-              .having((t) => t.value, 'value', 'Column'),
-          isA<Token>().having((t) => t.type, 'type', TokenType.indent),
+              .having((final t) => t.type, 'type', TokenType.identifier)
+              .having((final t) => t.value, 'value', 'Column'),
+          isA<Token>().having((final t) => t.type, 'type', TokenType.indent),
           isA<Token>()
-              .having((t) => t.type, 'type', TokenType.identifier)
-              .having((t) => t.value, 'value', 'TextField'),
+              .having((final t) => t.type, 'type', TokenType.identifier)
+              .having((final t) => t.value, 'value', 'TextField'),
           // ... continue with other expected tokens
         ]),
       );
     });
 
     test('handles state annotations', () {
-      final input = '''
+      const input = '''
 @stateful
 class TodoList {
   @listen List<Todo> todos = [];
@@ -41,11 +41,11 @@ class TodoList {
         tokens,
         containsAllInOrder([
           isA<Token>()
-              .having((t) => t.type, 'type', TokenType.annotation)
-              .having((t) => t.value, 'value', '@stateful'),
+              .having((final t) => t.type, 'type', TokenType.annotation)
+              .having((final t) => t.value, 'value', '@stateful'),
           isA<Token>()
-              .having((t) => t.type, 'type', TokenType.keyword)
-              .having((t) => t.value, 'value', 'class'),
+              .having((final t) => t.type, 'type', TokenType.keyword)
+              .having((final t) => t.value, 'value', 'class'),
           // ... continue with other expected tokens
         ]),
       );

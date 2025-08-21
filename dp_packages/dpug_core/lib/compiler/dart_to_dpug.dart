@@ -4,10 +4,10 @@ import 'package:source_span/source_span.dart';
 
 /// Converts a subset of Dart (StatefulWidget) into DPug text directly.
 class DartToDpug {
-  final SourceFile file;
   DartToDpug(this.file);
+  final SourceFile file;
 
-  String convert(String source) {
+  String convert(final String source) {
     final result = az.parseString(content: source);
     final ast.CompilationUnit unit = result.unit;
     for (final ast.CompilationUnitMember m in unit.declarations) {
@@ -19,7 +19,10 @@ class DartToDpug {
     throw StateError('No supported class found');
   }
 
-  String? _classToDpug(ast.CompilationUnit unit, ast.ClassDeclaration c) {
+  String? _classToDpug(
+    final ast.CompilationUnit unit,
+    final ast.ClassDeclaration c,
+  ) {
     final String extendsStr = c.extendsClause?.superclass.toSource() ?? '';
     final bool isStateful = extendsStr.contains('StatefulWidget');
     if (!isStateful) return null;
@@ -60,8 +63,8 @@ class DartToDpug {
   }
 
   ast.ClassDeclaration? _findStateClass(
-    ast.CompilationUnit unit,
-    String widgetName,
+    final ast.CompilationUnit unit,
+    final String widgetName,
   ) {
     for (final ast.CompilationUnitMember m in unit.declarations) {
       if (m is ast.ClassDeclaration) {
@@ -72,8 +75,8 @@ class DartToDpug {
   }
 
   List<String> _emitWidgetFromBuild(
-    ast.MethodDeclaration build, {
-    required int indent,
+    final ast.MethodDeclaration build, {
+    required final int indent,
   }) {
     ast.Expression? expr;
     final ast.FunctionBody body = build.body;
@@ -88,7 +91,10 @@ class DartToDpug {
     return _emitWidget(expr, indent: indent);
   }
 
-  List<String> _emitWidget(ast.Expression expr, {required int indent}) {
+  List<String> _emitWidget(
+    final ast.Expression expr, {
+    required final int indent,
+  }) {
     // Handle constructor calls like Column(...) which are MethodInvocation
     if (expr is ast.MethodInvocation) {
       final String name = expr.methodName.name;
@@ -113,7 +119,7 @@ class DartToDpug {
 
       // Count non-children properties
       final int nonChildProperties = named.keys
-          .where((key) => key != 'child' && key != 'children')
+          .where((final key) => key != 'child' && key != 'children')
           .length;
 
       if (named['child'] != null ||
@@ -198,7 +204,7 @@ class DartToDpug {
 
       // Count non-children properties
       final int nonChildProperties = named.keys
-          .where((key) => key != 'child' && key != 'children')
+          .where((final key) => key != 'child' && key != 'children')
           .length;
 
       if (child != null ||
@@ -261,7 +267,7 @@ class DartToDpug {
     return <String>['${' ' * indent}${expr.toSource()}'];
   }
 
-  String _emitExpr(ast.Expression e) {
+  String _emitExpr(final ast.Expression e) {
     if (e is ast.SimpleStringLiteral) return "'${_escape(e.value)}'";
     if (e is ast.IntegerLiteral) return (e.value ?? 0).toString();
     if (e is ast.BooleanLiteral) return e.value ? 'true' : 'false';
@@ -310,7 +316,7 @@ class DartToDpug {
     return e.toSource();
   }
 
-  String _defaultForType(String type) {
+  String _defaultForType(final String type) {
     final String t = type.trim();
     if (t.startsWith('List<')) return '[]';
     if (t == 'String') return "''";
@@ -319,5 +325,6 @@ class DartToDpug {
     return 'null';
   }
 
-  String _escape(String s) => s.replaceAll('\\', r'\\').replaceAll("'", r"\'");
+  String _escape(final String s) =>
+      s.replaceAll(r'\', r'\\').replaceAll("'", r"\'");
 }

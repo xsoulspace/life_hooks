@@ -4,7 +4,7 @@ import 'package:source_span/source_span.dart';
 /// PetitParser-based grammar for DPug syntax
 class DPugGrammar extends GrammarDefinition {
   // Helper to create proper FileSpans from source
-  FileSpan _createSpan(String source, int start, int end) {
+  FileSpan _createSpan(final String source, final int start, final int end) {
     final file = SourceFile.fromString(source);
     return file.span(start, end);
   }
@@ -16,7 +16,7 @@ class DPugGrammar extends GrammarDefinition {
   Parser document() => ref(classDefinition).or(ref(widgetTree));
 
   // Annotations
-  Parser annotations() => ref(annotation).star().map((values) => values);
+  Parser annotations() => ref(annotation).star().map((final values) => values);
 
   // Class definitions
   Parser classDefinition() =>
@@ -25,10 +25,10 @@ class DPugGrammar extends GrammarDefinition {
               ref(identifier) &
               ref(colon) &
               ref(classBody).optional())
-          .map((values) => values);
+          .map((final values) => values);
 
   Parser classBody() => (ref(indent) & ref(classMember).star() & ref(dedent))
-      .map((values) => values[1]);
+      .map((final values) => values[1]);
 
   Parser classMember() => ref(stateField).or(ref(buildMethod));
 
@@ -38,7 +38,7 @@ class DPugGrammar extends GrammarDefinition {
               ref(typeAnnotation).optional() &
               ref(equals).optional() &
               ref(expression).optional())
-          .map((values) => values);
+          .map((final values) => values);
 
   Parser buildMethod() =>
       (ref(keyword, 'Widget') &
@@ -46,38 +46,38 @@ class DPugGrammar extends GrammarDefinition {
               ref(identifier) & // Should be 'build'
               ref(operator, '=>') &
               ref(widgetTree))
-          .map((values) => values);
+          .map((final values) => values);
 
   // Widget trees
   Parser widgetTree() =>
       (ref(widgetNode) &
               (ref(indent) & ref(widgetChildren).star() & ref(dedent))
                   .optional())
-          .map((values) => values);
+          .map((final values) => values);
 
   Parser widgetChildren() =>
       ref(widgetNode).or(ref(property)).or(ref(positionalArg));
 
   Parser widgetNode() =>
       (ref(identifier) & ref(positionalArgs).optional() & ref(newline)).map(
-        (values) => values,
+        (final values) => values,
       );
 
   // Properties and arguments
   Parser property() =>
       (ref(identifier) & ref(colon) & ref(expression) & ref(newline)).map(
-        (values) => MapEntry(values[0], values[2]),
+        (final values) => MapEntry(values[0], values[2]),
       );
 
   Parser positionalArgs() =>
       (ref(lparen) & ref(expression).starSeparated(ref(comma)) & ref(rparen))
-          .map((values) => values[1]);
+          .map((final values) => values[1]);
 
   Parser positionalArg() =>
       (ref(operator, '..') &
               ref(stringLiteral).or(ref(expression)) &
               ref(newline))
-          .map((values) => values[1]);
+          .map((final values) => values[1]);
 
   // Expressions
   Parser expression() => ref(stringLiteral).or(
@@ -88,27 +88,28 @@ class DPugGrammar extends GrammarDefinition {
     ),
   );
 
-  Parser assignment() =>
-      (ref(identifier) & ref(equals) & ref(expression)).map((values) => values);
+  Parser assignment() => (ref(identifier) & ref(equals) & ref(expression)).map(
+    (final values) => values,
+  );
 
   Parser closure() =>
       (ref(lparen) & ref(rparen) & ref(operator, '=>') & ref(expression)).map(
-        (values) => values,
+        (final values) => values,
       );
 
   // Literals
   Parser stringLiteral() =>
       (ref(quote) & any().starLazy(ref(quote)) & ref(quote)).flatten().map(
-        (value) => value,
+        (final value) => value,
       );
 
   Parser numberLiteral() =>
       (digit().plus() & (char('.') & digit().plus()).optional()).flatten().map(
-        (value) => value,
+        (final value) => value,
       );
 
   Parser booleanLiteral() =>
-      (string('true') | string('false')).map((value) => value);
+      (string('true') | string('false')).map((final value) => value);
 
   // Basic tokens
   Parser identifier() =>
@@ -118,11 +119,11 @@ class DPugGrammar extends GrammarDefinition {
   Parser annotation() => (char('@') & ref(identifier)).flatten();
 
   Parser typeAnnotation() =>
-      (ref(colon) & ref(identifier)).map((values) => values[1]);
+      (ref(colon) & ref(identifier)).map((final values) => values[1]);
 
   // Keywords and operators
-  Parser keyword(String value) => string(value).trim();
-  Parser operator(String value) => string(value).trim();
+  Parser keyword(final String value) => string(value).trim();
+  Parser operator(final String value) => string(value).trim();
 
   // Symbols
   Parser colon() => char(':').trim();
@@ -141,8 +142,10 @@ class DPugGrammar extends GrammarDefinition {
   Parser whitespace() => char(' ') | char('\t');
 
   // Utility
-  Parser<List<T>> separatedBy<T>(Parser<T> element, Parser separator) =>
-      (element & (separator & element).star()).map(
-        (values) => [values[0], ...values[1].map((pair) => pair[1])],
-      );
+  Parser<List<T>> separatedBy<T>(
+    final Parser<T> element,
+    final Parser separator,
+  ) => (element & (separator & element).star()).map(
+    (final values) => [values[0], ...values[1].map((final pair) => pair[1])],
+  );
 }

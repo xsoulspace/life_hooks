@@ -1,21 +1,15 @@
-import 'package:dpug_code_builder/src/builders/dart_widget_code_generator.dart';
-import 'package:dpug_code_builder/src/specs/annotation_spec.dart';
-import 'package:dpug_code_builder/src/specs/class_spec.dart';
-import 'package:dpug_code_builder/src/specs/code_spec.dart';
-import 'package:dpug_code_builder/src/specs/expression_spec.dart';
-import 'package:dpug_code_builder/src/specs/method_spec.dart';
-import 'package:dpug_code_builder/src/specs/state_field_spec.dart';
+import 'package:dpug_code_builder/dpug_code_builder.dart';
 import 'package:source_span/source_span.dart';
 
 import 'ast_builder.dart';
 
 /// Transforms parsed AST into Dart source using [DpugCodeBuilder].
 class AstToDart {
-  final SourceFile file;
   AstToDart(this.file);
+  final SourceFile file;
 
   /// Generate formatted Dart code from a top-level AST node.
-  String generate(ASTNode node) {
+  String generate(final ASTNode node) {
     if (node is ClassNode) return _classToDart(node);
     if (node is WidgetNode) {
       final String expr = _widgetToDartExpr(node);
@@ -24,7 +18,7 @@ class AstToDart {
     throw StateError('Unsupported AST node: ${node.runtimeType}');
   }
 
-  String _classToDart(ClassNode node) {
+  String _classToDart(final ClassNode node) {
     final List<DpugStateFieldSpec> fields = <DpugStateFieldSpec>[];
     for (final StateVariable f in node.stateVariables) {
       fields.add(
@@ -70,9 +64,9 @@ class AstToDart {
   }
 
   // Widget emission
-  String _widgetToDartExpr(WidgetNode node) {
+  String _widgetToDartExpr(final WidgetNode node) {
     final Map<String, String> props = <String, String>{};
-    node.properties.forEach((String key, Expression value) {
+    node.properties.forEach((final key, final value) {
       props[key] = _exprToDart(value);
     });
 
@@ -92,17 +86,19 @@ class AstToDart {
           items.add(_widgetToDartExpr(c as WidgetNode));
         }
         props['children'] =
-            '[\n${items.map((e) => '        $e,').join('\n')}\n      ]';
+            '[\n${items.map((final e) => '        $e,').join('\n')}\n      ]';
       }
     }
 
     final String named = props.isEmpty
         ? ''
-        : props.entries.map((e) => '${e.key}: ${e.value}').join(',\n      ');
+        : props.entries
+              .map((final e) => '${e.key}: ${e.value}')
+              .join(',\n      ');
 
     final String positional = posArgs.isEmpty
         ? ''
-        : posArgs.map((e) => e).join(', ');
+        : posArgs.map((final e) => e).join(', ');
 
     final String combined;
     if (named.isEmpty && positional.isEmpty) {
@@ -119,7 +115,7 @@ class AstToDart {
   }
 
   // Expressions to Dart source
-  String _exprToDart(Expression e) {
+  String _exprToDart(final Expression e) {
     if (e is StringExpression) return "'${_escapeString(e.value)}'";
     if (e is NumberExpression) return e.value.toString();
     if (e is BooleanExpression) return e.value ? 'true' : 'false';
@@ -134,6 +130,6 @@ class AstToDart {
     return '';
   }
 
-  String _escapeString(String input) =>
-      input.replaceAll('\\', r'\\').replaceAll("'", r"\'");
+  String _escapeString(final String input) =>
+      input.replaceAll(r'\', r'\\').replaceAll("'", r"\'");
 }

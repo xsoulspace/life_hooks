@@ -3,111 +3,106 @@ import 'package:source_span/source_span.dart';
 import 'lexer.dart';
 
 abstract class ASTNode {
-  final FileSpan span;
   ASTNode(this.span);
+  final FileSpan span;
 }
 
 class WidgetNode extends ASTNode {
-  final String name;
-  final List<ASTNode> children;
-  final Map<String, Expression> properties;
-  final List<Expression> positionalArgs;
-
   WidgetNode(
     this.name,
     this.children,
     this.properties,
     this.positionalArgs,
-    FileSpan span,
+    final FileSpan span,
   ) : super(span);
+  final String name;
+  final List<ASTNode> children;
+  final Map<String, Expression> properties;
+  final List<Expression> positionalArgs;
 }
 
 class ClassNode extends ASTNode {
-  final String name;
-  final List<String> annotations;
-  final List<StateVariable> stateVariables;
-  final List<MethodNode> methods;
-
   ClassNode({
     required this.name,
     required this.annotations,
     required this.stateVariables,
     required this.methods,
-    required FileSpan span,
+    required final FileSpan span,
   }) : super(span);
+  final String name;
+  final List<String> annotations;
+  final List<StateVariable> stateVariables;
+  final List<MethodNode> methods;
 }
 
 class StateVariable {
-  final String name;
-  final String type;
-  final String annotation;
-  final Expression? initializer;
-
   StateVariable({
     required this.name,
     required this.type,
     required this.annotation,
     this.initializer,
   });
+  final String name;
+  final String type;
+  final String annotation;
+  final Expression? initializer;
 }
 
 class Expression extends ASTNode {
-  Expression(FileSpan span) : super(span);
+  Expression(super.span);
 }
 
 class IdentifierExpression extends Expression {
+  IdentifierExpression(this.name, final FileSpan span) : super(span);
   final String name;
-  IdentifierExpression(this.name, FileSpan span) : super(span);
 }
 
 class StringExpression extends Expression {
+  StringExpression(this.value, final FileSpan span) : super(span);
   final String value;
-  StringExpression(this.value, FileSpan span) : super(span);
 }
 
 class NumberExpression extends Expression {
+  NumberExpression(this.value, final FileSpan span) : super(span);
   final num value;
-  NumberExpression(this.value, FileSpan span) : super(span);
 }
 
 class BooleanExpression extends Expression {
+  BooleanExpression(this.value, final FileSpan span) : super(span);
   final bool value;
-  BooleanExpression(this.value, FileSpan span) : super(span);
 }
 
 class AssignmentExpression extends Expression {
+  AssignmentExpression(this.target, this.value, final FileSpan span)
+    : super(span);
   final String target;
   final Expression value;
-  AssignmentExpression(this.target, this.value, FileSpan span) : super(span);
 }
 
 class ClosureExpression extends Expression {
+  ClosureExpression(this.params, this.body, final FileSpan span) : super(span);
   final List<String> params;
   final Expression body;
-  ClosureExpression(this.params, this.body, FileSpan span) : super(span);
 }
 
 class MethodNode extends ASTNode {
+  MethodNode(this.name, this.parameters, this.body, final FileSpan span)
+    : super(span);
   final String name;
   final List<ParameterNode> parameters;
   final ASTNode body;
-
-  MethodNode(this.name, this.parameters, this.body, FileSpan span)
-    : super(span);
 }
 
 class ParameterNode extends ASTNode {
+  ParameterNode(this.name, this.type, final FileSpan span) : super(span);
   final String name;
   final String type;
-
-  ParameterNode(this.name, this.type, FileSpan span) : super(span);
 }
 
 class ASTBuilder {
+  ASTBuilder(this.tokens);
   final List<Token> tokens;
   int _position = 0;
-
-  ASTBuilder(this.tokens);
 
   ASTNode build() {
     final nodes = <ASTNode>[];
@@ -127,7 +122,7 @@ class ASTBuilder {
 
   Token _advance() => tokens[_position++];
 
-  bool _check(TokenType type) => !_isAtEnd() && _peek().type == type;
+  bool _check(final TokenType type) => !_isAtEnd() && _peek().type == type;
 
   ASTNode _parseTopLevel() {
     // Skip leading newlines
@@ -327,7 +322,7 @@ class ASTBuilder {
     );
   }
 
-  StateVariable _parseStateField(String annotationName) {
+  StateVariable _parseStateField(final String annotationName) {
     // Parse type tokens until variable name encountered
     final List<String> typeParts = <String>[];
     String nameStr = '';
@@ -456,7 +451,7 @@ class ASTBuilder {
   }
 
   // Helpers
-  Token _expect(TokenType type, {required String name}) {
+  Token _expect(final TokenType type, {required final String name}) {
     if (!_check(type)) {
       throw StateError('Expected $name');
     }
@@ -486,7 +481,7 @@ class ASTBuilder {
     return next.type == TokenType.dedent;
   }
 
-  void _expectValue(String value) {
+  void _expectValue(final String value) {
     if (_check(TokenType.operator) && _peek().value == value) {
       _advance();
       return;

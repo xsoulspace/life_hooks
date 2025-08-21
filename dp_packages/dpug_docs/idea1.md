@@ -1,9 +1,3 @@
-Of course. Let's break down the simplest, most effective path to build your `dpug` toolchain. The key is to leverage existing tools in the Dart ecosystem to avoid reinventing the wheel.
-
-Here are the simplest robust options for each requirement.
-
----
-
 ### 1. `dpug` to Dart Codegen ⚙️
 
 This is the core of your project. The standard, most maintainable way to handle code generation in Dart is with the `build_runner` ecosystem.

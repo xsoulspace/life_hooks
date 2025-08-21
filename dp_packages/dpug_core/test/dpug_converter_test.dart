@@ -1,7 +1,7 @@
 import 'package:dpug_core/compiler/dpug_converter.dart';
 import 'package:test/test.dart';
 
-final _dartCode = '''
+const _dartCode = '''
 class TodoList extends StatefulWidget {
   TodoList({
     required this.todos,
@@ -33,7 +33,7 @@ class _TodoListState extends State<TodoList> {
     );
   }
 }''';
-final _dpug = '''
+const _dpug = '''
 @stateful
 class TodoList
   @listen List<Todo> todos = []

@@ -1,5 +1,6 @@
 import 'package:built_collection/built_collection.dart';
-import 'package:dpug_code_builder/dpug_code_builder.dart';
+
+import '../../dpug_code_builder.dart';
 
 // ignore: must_be_immutable
 class DpugWidgetBuilder implements DpugSpec {
@@ -14,27 +15,30 @@ class DpugWidgetBuilder implements DpugSpec {
 
   /// Sets the widget name (e.g. `Text`, `Column`, `GridView.builder`).
   /// Returns this builder for chaining.
-  DpugWidgetBuilder name(String name) {
+  DpugWidgetBuilder name(final String name) {
     _name = name;
     return this;
   }
 
-  DpugWidgetBuilder child(DpugWidgetBuilder child) {
+  DpugWidgetBuilder child(final DpugWidgetBuilder child) {
     _children.add(child.build());
     return this;
   }
 
-  DpugWidgetBuilder property(String name, DpugExpressionSpec value) {
+  DpugWidgetBuilder property(
+    final String name,
+    final DpugExpressionSpec value,
+  ) {
     _properties[name] = value;
     return this;
   }
 
-  DpugWidgetBuilder positionalArgument(DpugExpressionSpec value) {
+  DpugWidgetBuilder positionalArgument(final DpugExpressionSpec value) {
     _positionalArgs.add(value);
     return this;
   }
 
-  DpugWidgetBuilder positionalCascadeArgument(DpugExpressionSpec value) {
+  DpugWidgetBuilder positionalCascadeArgument(final DpugExpressionSpec value) {
     _positionalCascadeArgs.add(value);
     return this;
   }
@@ -54,6 +58,6 @@ class DpugWidgetBuilder implements DpugSpec {
   }
 
   @override
-  R accept<R>(DpugSpecVisitor<R> visitor, [R? context]) =>
+  R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       build().accept(visitor, context);
 }

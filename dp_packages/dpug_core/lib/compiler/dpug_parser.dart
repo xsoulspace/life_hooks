@@ -5,26 +5,25 @@ import 'dpug_grammar.dart';
 
 /// PetitParser-based DPug parser with enhanced error handling
 class DPugParser {
-  late final DPugGrammar _grammar;
-  late final Parser _parser;
-
   DPugParser() {
     _grammar = DPugGrammar();
     _parser = _grammar.build();
   }
+  late final DPugGrammar _grammar;
+  late final Parser _parser;
 
   /// Parse DPug source code and return the AST
-  Result parse(String source) {
+  Result parse(final String source) {
     final result = _parser.parse(source);
     return result;
   }
 
   /// Check if the source is valid DPug syntax
-  bool isValid(String source) => _parser.accept(source);
+  bool isValid(final String source) => _parser.accept(source);
 
   /// Get parser diagnostics and linting information
   List<String> lint() =>
-      linter(_parser).map((issue) => issue.toString()).toList();
+      linter(_parser).map((final issue) => issue.toString()).toList();
 
   /// Get a human-readable grammar description
   String getGrammarInfo() {
@@ -39,13 +38,12 @@ class DPugParser {
   }
 
   /// Example usage patterns
-  Map<String, String> getExamples() {
-    return {
-      'Simple Widget': '''
+  Map<String, String> getExamples() => {
+    'Simple Widget': '''
 Text
   ..text: 'Hello World'
 ''',
-      'Class Definition': '''
+    'Class Definition': r'''
 @stateful
 class Counter
   @listen int count = 0
@@ -53,14 +51,14 @@ class Counter
   Widget get build =>
     Column
       Text
-        ..text: 'Count: \$count'
+        ..text: 'Count: $count'
       ElevatedButton
         ..onPressed: () => count++
         ..child:
           Text
             ..text: 'Increment'
 ''',
-      'Widget with Children': '''
+    'Widget with Children': '''
 Column
   Text
     ..text: 'Header'
@@ -70,6 +68,5 @@ Column
     Text
       ..text: 'Item 2'
 ''',
-    };
-  }
+  };
 }
