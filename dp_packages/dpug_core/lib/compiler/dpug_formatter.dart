@@ -3,7 +3,8 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:dpug_code_builder/dpug_code_builder.dart';
 
-import 'dpug_parser.dart';
+import 'ast_builder.dart';
+import 'lexer.dart';
 
 /// DPug code formatter with configurable options
 class DpugFormatter {
@@ -14,21 +15,13 @@ class DpugFormatter {
   /// Format DPug source code
   String format(final String source) {
     try {
-      // Parse the source
-      final parser = DPugParser();
-      final result = parser.parse(source);
+      // Parse the source using the AST builder
+      final tokens = Lexer(source).tokenize();
+      final ast = ASTBuilder(tokens).build();
 
-      // Check if parsing was successful
-      try {
-        result.value; // This will throw if parsing failed
-        // For now, return the source as-is
-        // TODO: Implement proper formatting logic
-        return source;
-      } catch (e) {
-        throw FormatException(
-          'Parse error: ${result.message} at position ${result.position}',
-        );
-      }
+      // Format the AST back to DPug code
+      final formatter = _DpugAstFormatter(config);
+      return formatter.format(ast).trim();
     } catch (e) {
       if (e is FormatException) rethrow;
       throw FormatException('Formatting failed: $e');
@@ -62,6 +55,124 @@ class DpugFormatter {
         print('Error formatting $path: $e');
       }
     }
+  }
+}
+
+/// AST-based formatter that converts parsed AST back to formatted DPug code
+class _DpugAstFormatter {
+  _DpugAstFormatter(this.config);
+  final DpugConfig config;
+
+  String format(final ASTNode node) {
+    if (node is ClassNode) {
+      return _formatClass(node);
+    } else if (node is WidgetNode) {
+      return _formatWidget(node);
+    }
+    return '';
+  }
+
+  String _formatClass(final ClassNode node) {
+    final buffer = StringBuffer();
+
+    // Annotations
+    for (final annotation in node.annotations) {
+      buffer.writeln('@$annotation');
+    }
+
+    // Class declaration
+    buffer.write('class ${node.name}');
+
+    if (node.stateVariables.isNotEmpty) {
+      buffer.writeln();
+      buffer.writeln(_indent(''));
+      for (final field in node.stateVariables) {
+        buffer.writeln(
+          _indent('@${field.annotation} ${field.type} ${field.name}'),
+        );
+      }
+    }
+
+    if (node.methods.isNotEmpty) {
+      buffer.writeln();
+      for (final method in node.methods) {
+        buffer.writeln(_indent(_formatMethod(method)));
+      }
+    }
+
+    return buffer.toString();
+  }
+
+  String _formatMethod(final MethodNode node) {
+    final buffer = StringBuffer();
+    buffer.write('Widget get ${node.name} =>');
+    buffer.write('\n');
+    if (node.body is WidgetNode) {
+      buffer.write(_indent(_formatWidget(node.body as WidgetNode)));
+    } else {
+      buffer.write(_indent('widget'));
+    }
+    return buffer.toString();
+  }
+
+  String _formatWidget(final WidgetNode node) {
+    final buffer = StringBuffer();
+    buffer.write(node.name);
+
+    // Add positional arguments
+    if (node.positionalArgs.isNotEmpty) {
+      buffer.write('(');
+      for (var i = 0; i < node.positionalArgs.length; i++) {
+        if (i > 0) buffer.write(', ');
+        buffer.write(_formatExpression(node.positionalArgs[i]));
+      }
+      buffer.write(')');
+    }
+
+    // Add properties
+    if (node.properties.isNotEmpty) {
+      buffer.writeln();
+      for (final entry in node.properties.entries) {
+        buffer.writeln(
+          _indent('..${entry.key}: ${_formatExpression(entry.value)}'),
+        );
+      }
+    }
+
+    // Add children
+    if (node.children.isNotEmpty) {
+      buffer.writeln();
+      for (final child in node.children) {
+        if (child is WidgetNode) {
+          buffer.writeln(_indent(_formatWidget(child)));
+        } else {
+          buffer.writeln(_indent('widget'));
+        }
+      }
+    }
+
+    return buffer.toString();
+  }
+
+  String _formatExpression(final Expression node) {
+    if (node is StringExpression) {
+      return '"${node.value}"';
+    } else if (node is NumberExpression) {
+      return node.value.toString();
+    } else if (node is BooleanExpression) {
+      return node.value.toString();
+    } else if (node is IdentifierExpression) {
+      return node.name;
+    }
+    return 'expression';
+  }
+
+  String _indent(final String text) {
+    if (text.isEmpty) return '';
+    return text
+        .split('\n')
+        .map((final line) => '${config.indent}$line')
+        .join('\n');
   }
 }
 

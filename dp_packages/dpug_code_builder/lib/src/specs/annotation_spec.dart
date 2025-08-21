@@ -21,4 +21,7 @@ class DpugAnnotationSpec extends DpugExpressionSpec implements DpugSpec {
   @override
   R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitAnnotation(this);
+
+  @override
+  String get code => '@$name';
 }

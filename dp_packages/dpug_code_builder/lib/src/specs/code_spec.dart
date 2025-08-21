@@ -8,4 +8,7 @@ class DpugCodeSpec extends DpugSpec {
   @override
   R accept<R>(covariant final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitCode(this, context);
+
+  @override
+  String get code => value;
 }

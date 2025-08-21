@@ -105,12 +105,30 @@ class ASTBuilder {
   int _position = 0;
 
   ASTNode build() {
+    print('DEBUG: Starting build, total tokens: ${tokens.length}');
+    for (int i = 0; i < tokens.length; i++) {
+      print('DEBUG: Token $i: ${tokens[i]}');
+    }
     final nodes = <ASTNode>[];
 
     while (!_isAtEnd()) {
+      print(
+        'DEBUG: build loop - position: $_position, current token: ${_peek()}',
+      );
+      final Token currentToken = _peek();
+
+      // Skip structural tokens that shouldn't be parsed as top-level elements
+      if (currentToken.type == TokenType.dedent ||
+          currentToken.type == TokenType.newline ||
+          currentToken.type == TokenType.eof) {
+        _advance();
+        continue;
+      }
+
       nodes.add(_parseTopLevel());
     }
 
+    print('DEBUG: Built ${nodes.length} nodes');
     // For now, return the first node
     return nodes.first;
   }
@@ -129,10 +147,13 @@ class ASTBuilder {
     while (_check(TokenType.newline)) {
       _advance();
     }
+    print('DEBUG: _parseTopLevel - current token: ${_peek()}');
     if (_check(TokenType.annotation) ||
         (_check(TokenType.keyword) && _peek().value == 'class')) {
+      print('DEBUG: _parseTopLevel - parsing as class');
       return _parseClass();
     }
+    print('DEBUG: _parseTopLevel - parsing as widget');
     return _parseWidget();
   }
 
@@ -160,13 +181,22 @@ class ASTBuilder {
     final List<StateVariable> fields = <StateVariable>[];
     final List<MethodNode> methods = <MethodNode>[];
 
-    // Optional indent for class body
-    if (_check(TokenType.indent)) {
-      _advance();
-      while (!_check(TokenType.dedent) && !_isAtEnd()) {
+    // Parse class body - may contain multiple indented blocks
+    while (_check(TokenType.indent) && !_isAtEnd()) {
+      _advance(); // consume indent
+      while (!_isAtEnd()) {
         // Skip blank lines
-        while (_check(TokenType.newline)) _advance();
-        if (_check(TokenType.dedent) || _isAtEnd()) break;
+        while (_check(TokenType.newline)) {
+          _advance();
+        }
+
+        // If we hit a dedent, we've finished this indentation level
+        if (_check(TokenType.dedent)) {
+          _advance();
+          break;
+        }
+
+        if (_isAtEnd()) break;
 
         if (_check(TokenType.annotation)) {
           final Token ann = _advance();
@@ -185,7 +215,10 @@ class ASTBuilder {
         }
         _consumeOptNewline();
       }
-      if (_check(TokenType.dedent)) _advance();
+      // Skip any newlines between indented blocks
+      while (_check(TokenType.newline)) {
+        _advance();
+      }
     }
 
     return ClassNode(
@@ -367,10 +400,11 @@ class ASTBuilder {
 
   MethodNode _parseBuildGetter() {
     final Token widgetTok = _advance(); // 'Widget'
-    final Token getTok = _expect(TokenType.keyword, name: 'get');
-    if (getTok.value != 'get') {
+    // Expect 'get' keyword
+    if (!(_check(TokenType.keyword) && _peek().value == 'get')) {
       throw StateError('Expected get after Widget');
     }
+    final Token getTok = _advance(); // consume 'get'
     final Token nameTok = _expect(TokenType.identifier, name: 'getter name');
     // Expect =>
     _expect(TokenType.operator, name: '=>');

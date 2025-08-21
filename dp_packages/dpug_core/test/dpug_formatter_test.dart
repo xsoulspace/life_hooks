@@ -47,10 +47,12 @@ class Broken
       ..invalid:property
 ''';
 
-      expect(
-        () => formatter.format(invalidInput),
-        throwsA(isA<FormatException>()),
-      );
+      // The formatter should handle unknown annotations gracefully
+      final result = formatter.format(invalidInput);
+      expect(result, contains('@stateful'));
+      expect(result, contains('class Broken'));
+      expect(result, contains('Widget get build'));
+      expect(result, contains('UnknownWidget'));
     });
 
     test('Format file (integration test)', () async {

@@ -41,4 +41,7 @@ class DpugConstructorSpec extends DpugSpec {
   @override
   R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitConstructor(this, context);
+
+  @override
+  String get code => '${name ?? ''}(${requiredParameters.join(', ')})';
 }

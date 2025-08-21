@@ -57,4 +57,7 @@ class DpugExpressionSpec implements DpugSpec {
   @override
   R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitExpression(this, context);
+
+  @override
+  String get code => 'expression';
 }

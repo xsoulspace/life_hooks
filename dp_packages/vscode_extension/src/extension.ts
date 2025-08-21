@@ -4,8 +4,7 @@ import * as vscode from "vscode";
 let outputChannel: vscode.OutputChannel;
 
 export function activate(context: vscode.ExtensionContext) {
-  outputChannel = vscode.OutputChannel =
-    vscode.window.createOutputChannel("DPug");
+  outputChannel = vscode.window.createOutputChannel("DPug");
 
   // Register format command
   const formatCommand = vscode.commands.registerCommand(

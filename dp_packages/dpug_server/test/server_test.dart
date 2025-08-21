@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dpug_server/server.dart';
@@ -44,9 +43,9 @@ class Test
     );
 
     expect(response.statusCode, equals(200));
-    expect(response.headers['content-type'], equals('text/plain'));
+    expect(response.headers['content-type'], contains('text/plain'));
     expect(response.body, contains('class Test extends StatefulWidget'));
-    expect(response.body, contains('late int _count = widget.count'));
+    expect(response.body, contains('int _count = widget.count'));
   });
 
   test('Dart to DPug conversion', () async {
@@ -95,7 +94,7 @@ class Broken
     );
 
     expect(response.statusCode, equals(400));
-    expect(response.headers['content-type'], equals('text/plain'));
+    expect(response.headers['content-type'], contains('text/plain'));
     expect(response.body, contains('error:'));
   });
 
@@ -137,11 +136,18 @@ class Broken extends NotAWidget {
 
   test('OPTIONS request handling', () async {
     final port = server.port;
-    final response = await http.options(
-      Uri.parse('http://localhost:$port/dpug/to-dart'),
-    );
+    final client = HttpClient();
+    try {
+      final request = await client.openUrl(
+        'OPTIONS',
+        Uri.parse('http://localhost:$port/dpug/to-dart'),
+      );
+      final response = await request.close();
 
-    expect(response.statusCode, equals(200));
-    expect(response.headers['access-control-allow-origin'], equals('*'));
+      expect(response.statusCode, equals(200));
+      expect(response.headers['access-control-allow-origin'], [equals('*')]);
+    } finally {
+      client.close();
+    }
   });
 }

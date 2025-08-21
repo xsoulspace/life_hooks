@@ -1,4 +1,4 @@
-import 'dpug_parser.dart';
+import 'package:dpug_core/compiler/dpug_parser.dart';
 
 /// Example demonstrating PetitParser-based DPug parsing
 void main() {

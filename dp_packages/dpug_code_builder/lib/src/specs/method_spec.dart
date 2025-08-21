@@ -32,4 +32,8 @@ class DpugMethodSpec extends DpugSpec {
   @override
   R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitMethod(this, context);
+
+  @override
+  String get code =>
+      '$returnType $name(${parameters.join(', ')}) { ${body.code} }';
 }

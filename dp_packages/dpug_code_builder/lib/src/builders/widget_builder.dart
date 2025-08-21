@@ -60,4 +60,7 @@ class DpugWidgetBuilder implements DpugSpec {
   @override
   R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       build().accept(visitor, context);
+
+  @override
+  String get code => _name.isEmpty ? 'UnknownWidget' : _name;
 }

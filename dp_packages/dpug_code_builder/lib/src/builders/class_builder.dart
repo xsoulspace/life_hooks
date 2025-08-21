@@ -84,4 +84,7 @@ class DpugClassBuilder implements DpugSpec {
   @override
   R accept<R>(final DpugSpecVisitor<R> visitor, [final R? context]) =>
       visitor.visitClass(build());
+
+  @override
+  String get code => 'class ${_name ?? 'Unknown'}';
 }

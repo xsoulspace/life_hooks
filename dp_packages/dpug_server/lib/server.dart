@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dpug_core/compiler/dpug_formatter.dart';
 import 'package:dpug_core/dpug_core.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
@@ -36,6 +37,17 @@ class DpServer {
         return shelf.Response.ok(out, headers: {'content-type': 'text/plain'});
       } on Object catch (e) {
         return _error('DartToDpugError', e.toString());
+      }
+    });
+
+    router.post('/format/dpug', (final shelf.Request req) async {
+      final String body = await req.readAsString();
+      try {
+        final DpugFormatter formatter = DpugFormatter();
+        final String out = formatter.format(body);
+        return shelf.Response.ok(out, headers: {'content-type': 'text/plain'});
+      } on Object catch (e) {
+        return _error('FormatError', e.toString());
       }
     });
 
