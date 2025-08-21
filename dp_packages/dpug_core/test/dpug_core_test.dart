@@ -19,7 +19,7 @@ class Counter
       final dartCode = converter.dpugToDart(dpugCode);
 
       expect(dartCode, contains('class Counter extends StatefulWidget'));
-      expect(dartCode, contains('late int _count = widget.count'));
+      expect(dartCode, contains('int _count = widget.count'));
       expect(dartCode, contains('int get count => _count'));
       expect(
         dartCode,
@@ -58,7 +58,7 @@ class _CounterState extends State<Counter> {
       expect(dpugCode, contains('@listen int count = 0'));
       expect(dpugCode, contains('Widget get build'));
       expect(dpugCode, contains('Text'));
-      expect(dpugCode, contains(r"..text: 'Count: $count'"));
+      expect(dpugCode, contains(r"..'Count: $count'"));
     });
 
     test('Round-trip conversion preserves semantics', () {

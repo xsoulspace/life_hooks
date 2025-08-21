@@ -1,0 +1,21 @@
+---
+alwaysApply: true
+---
+
+# DPug Architecture & Protocol (Quick Guide)
+
+- Packages: `dpug_core` (compiler), `dpug_code_builder` (IR/builders/visitors), `dpug_server` (HTTP service).
+- HTTP API (dpug_server):
+  - POST /dpug/to-dart (text/plain DPug -> Dart)
+  - POST /dart/to-dpug (text/plain Dart -> DPug)
+  - POST /format/dpug (format DPug text)
+  - GET /health ("ok")
+  - Errors: application/yaml with keys: error, message, span (lineStart:colStart..lineEnd:colEnd)
+- Syntax (minimum):
+  - Widgets by indentation; child/children sugar
+  - Props via `..prop: value`; positional args via `..'Hello'` or `Text('Hello')`
+  - Basic expressions: strings, numbers, bools, identifiers, closures `() => expr`, assignments `a = b`
+  - State: `@stateful` + `@listen` fields -> State with getters/setters
+- VS Code is priority consumer; call the server for conversions/formatting.
+
+See extended context and plan: [dpug_docs/README.md](mdc:dp_packages/dpug_docs/README.md)

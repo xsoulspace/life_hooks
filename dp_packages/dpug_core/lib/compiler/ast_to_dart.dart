@@ -78,7 +78,24 @@ class AstToDart {
 
     // Children sugar
     if (node.children.isNotEmpty) {
-      if (node.children.length == 1) {
+      // Multi-child widgets should always use children parameter
+      final multiChildWidgets = <String>{
+        'Column',
+        'Row',
+        'Stack',
+        'ListView',
+        'GridView',
+        'GridView.builder',
+      };
+
+      if (multiChildWidgets.contains(node.name)) {
+        final List<String> items = <String>[];
+        for (final ASTNode c in node.children) {
+          items.add(_widgetToDartExpr(c as WidgetNode));
+        }
+        props['children'] =
+            '[\n${items.map((final e) => '        $e,').join('\n')}\n      ]';
+      } else if (node.children.length == 1) {
         props['child'] = _widgetToDartExpr(node.children.first as WidgetNode);
       } else {
         final List<String> items = <String>[];

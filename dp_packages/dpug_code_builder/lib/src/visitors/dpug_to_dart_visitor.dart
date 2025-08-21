@@ -182,7 +182,6 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
     }
 
     final expression = cb.refer(spec.name).call(positionalArgs, namedArgs);
-
     return cb.Code(expression.accept(_emitter).toString());
   }
 
@@ -342,7 +341,6 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   cb.Field _buildStateField(final DpugStateFieldSpec field) => cb.Field(
     (final b) => b
       ..name = '_${field.name}'
-      ..late = true
       ..type = cb.refer(field.type)
       ..assignment = cb.Code('widget.${field.name}'),
   );
