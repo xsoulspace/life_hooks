@@ -341,7 +341,8 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   cb.Field _buildStateField(final DpugStateFieldSpec field) => cb.Field(
     (final b) => b
       ..name = '_${field.name}'
-      ..type = cb.refer(field.type)
+      ..modifier = cb.FieldModifier.var$
+      ..type = cb.refer('late ${field.type}')
       ..assignment = cb.Code('widget.${field.name}'),
   );
 

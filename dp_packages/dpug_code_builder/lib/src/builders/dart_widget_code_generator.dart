@@ -129,9 +129,9 @@ class DartWidgetCodeGenerator {
           .map(
             (final f) => Field(
               (final b) => b
+                ..modifier = FieldModifier.var$
+                ..type = refer('late ${f.type}')
                 ..name = '_${f.name}'
-                ..late = true
-                ..type = refer(f.type)
                 ..assignment = Code('widget.${f.name}'),
             ),
           )

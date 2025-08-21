@@ -1,37 +1,43 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import * as vscode from "vscode";
+import {
+  activateLanguageServer,
+  deactivateLanguageServer,
+} from "./language-server";
 
 let outputChannel: vscode.OutputChannel;
 
-export function activate(context: vscode.ExtensionContext) {
+// Extension activation
+export function activate(context: vscode.ExtensionContext): void {
   outputChannel = vscode.window.createOutputChannel("DPug");
 
   // Register format command
   const formatCommand = vscode.commands.registerCommand(
     "dpug.formatDocument",
-    () => {
-      formatCurrentDocument();
-    }
+    formatCurrentDocument
   );
 
   // Register convert to Dart command
-  const toDartCommand = vscode.commands.registerCommand("dpug.toDart", () => {
-    convertToDart();
-  });
+  const toDartCommand = vscode.commands.registerCommand(
+    "dpug.toDart",
+    convertToDart
+  );
 
   // Register convert from Dart command
   const fromDartCommand = vscode.commands.registerCommand(
     "dpug.fromDart",
-    () => {
-      convertFromDart();
-    }
+    convertFromDart
   );
 
   // Register format on save
   const formatOnSave = vscode.workspace.onDidSaveTextDocument((document) => {
     if (document.languageId === "dpug") {
       const config = vscode.workspace.getConfiguration("dpug");
-      if (config.get("formatting.formatOnSave", true)) {
+      const shouldFormatOnSave = config.get<boolean>(
+        "formatting.formatOnSave",
+        true
+      );
+      if (shouldFormatOnSave) {
         formatDocument(document);
       }
     }
@@ -44,14 +50,24 @@ export function activate(context: vscode.ExtensionContext) {
     formatOnSave
   );
 
-  outputChannel.appendLine("DPug extension activated");
+  // Start the language server
+  activateLanguageServer(context);
+
+  outputChannel.appendLine(
+    "DPug extension activated with language server support"
+  );
 }
 
-export function deactivate() {
+// Extension deactivation
+export function deactivate(): void {
+  // Stop the language server
+  deactivateLanguageServer();
+
   outputChannel.dispose();
 }
 
-async function formatCurrentDocument() {
+// Format the currently active document
+async function formatCurrentDocument(): Promise<void> {
   const document = vscode.window.activeTextEditor?.document;
   if (document && document.languageId === "dpug") {
     await formatDocument(document);
@@ -60,17 +76,16 @@ async function formatCurrentDocument() {
   }
 }
 
-async function formatDocument(document: vscode.TextDocument) {
+// Format a specific document
+async function formatDocument(document: vscode.TextDocument): Promise<void> {
   try {
     const config = vscode.workspace.getConfiguration("dpug");
-    const serverHost = config.get("server.host", "localhost");
-    const serverPort = config.get("server.port", 8080);
+    const serverHost = config.get<string>("server.host", "localhost");
+    const serverPort = config.get<number>("server.port", 8080);
 
-    const response = await axios.post(
+    const response: AxiosResponse<string> = await axios.post(
       `http://${serverHost}:${serverPort}/format/dpug`,
-      {
-        source: document.getText(),
-      },
+      document.getText(),
       {
         headers: { "Content-Type": "text/plain" },
       }
@@ -85,14 +100,15 @@ async function formatDocument(document: vscode.TextDocument) {
     await vscode.workspace.applyEdit(edit);
 
     outputChannel.appendLine("Document formatted successfully");
-  } catch (error) {
-    const message = error.response?.data || error.message;
+  } catch (error: any) {
+    const message = error.response?.data || error.message || "Unknown error";
     vscode.window.showErrorMessage(`Formatting failed: ${message}`);
     outputChannel.appendLine(`Formatting error: ${message}`);
   }
 }
 
-async function convertToDart() {
+// Convert current DPug document to Dart
+async function convertToDart(): Promise<void> {
   const document = vscode.window.activeTextEditor?.document;
   if (!document || document.languageId !== "dpug") {
     vscode.window.showErrorMessage("No active DPug document to convert");
@@ -101,14 +117,12 @@ async function convertToDart() {
 
   try {
     const config = vscode.workspace.getConfiguration("dpug");
-    const serverHost = config.get("server.host", "localhost");
-    const serverPort = config.get("server.port", 8080);
+    const serverHost = config.get<string>("server.host", "localhost");
+    const serverPort = config.get<number>("server.port", 8080);
 
-    const response = await axios.post(
+    const response: AxiosResponse<string> = await axios.post(
       `http://${serverHost}:${serverPort}/dpug/to-dart`,
-      {
-        source: document.getText(),
-      },
+      document.getText(),
       {
         headers: { "Content-Type": "text/plain" },
       }
@@ -122,14 +136,15 @@ async function convertToDart() {
 
     await vscode.window.showTextDocument(dartDocument);
     outputChannel.appendLine("Converted DPug to Dart successfully");
-  } catch (error) {
-    const message = error.response?.data || error.message;
+  } catch (error: any) {
+    const message = error.response?.data || error.message || "Unknown error";
     vscode.window.showErrorMessage(`Conversion failed: ${message}`);
     outputChannel.appendLine(`Conversion error: ${message}`);
   }
 }
 
-async function convertFromDart() {
+// Convert current Dart document to DPug
+async function convertFromDart(): Promise<void> {
   const document = vscode.window.activeTextEditor?.document;
   if (!document || document.languageId !== "dart") {
     vscode.window.showErrorMessage("No active Dart document to convert");
@@ -138,14 +153,12 @@ async function convertFromDart() {
 
   try {
     const config = vscode.workspace.getConfiguration("dpug");
-    const serverHost = config.get("server.host", "localhost");
-    const serverPort = config.get("server.port", 8080);
+    const serverHost = config.get<string>("server.host", "localhost");
+    const serverPort = config.get<number>("server.port", 8080);
 
-    const response = await axios.post(
+    const response: AxiosResponse<string> = await axios.post(
       `http://${serverHost}:${serverPort}/dart/to-dpug`,
-      {
-        source: document.getText(),
-      },
+      document.getText(),
       {
         headers: { "Content-Type": "text/plain" },
       }
@@ -159,8 +172,8 @@ async function convertFromDart() {
 
     await vscode.window.showTextDocument(dpugDocument);
     outputChannel.appendLine("Converted Dart to DPug successfully");
-  } catch (error) {
-    const message = error.response?.data || error.message;
+  } catch (error: any) {
+    const message = error.response?.data || error.message || "Unknown error";
     vscode.window.showErrorMessage(`Conversion failed: ${message}`);
     outputChannel.appendLine(`Conversion error: ${message}`);
   }

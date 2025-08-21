@@ -167,7 +167,7 @@ class DartToDpugSpecVisitor
     final withoutSemicolon = withoutReturn.endsWith(';')
         ? withoutReturn.substring(0, withoutReturn.length - 1)
         : withoutReturn;
-    return DpugReferenceExpressionSpec(withoutSemicolon.trim());
+    return _parseCodeExpression(withoutSemicolon.trim());
   }
 
   @override
@@ -179,7 +179,7 @@ class DartToDpugSpecVisitor
     final withoutSemicolon = withoutReturn.endsWith(';')
         ? withoutReturn.substring(0, withoutReturn.length - 1)
         : withoutReturn;
-    return DpugReferenceExpressionSpec(withoutSemicolon.trim());
+    return _parseCodeExpression(withoutSemicolon.trim());
   }
 
   @override
@@ -191,7 +191,35 @@ class DartToDpugSpecVisitor
     final withoutSemicolon = withoutReturn.endsWith(';')
         ? withoutReturn.substring(0, withoutReturn.length - 1)
         : withoutReturn;
-    return DpugReferenceExpressionSpec(withoutSemicolon.trim());
+    return _parseCodeExpression(withoutSemicolon.trim());
+  }
+
+  /// Helper method to parse code expressions into appropriate specs
+  DpugSpec? _parseCodeExpression(final String code) {
+    // Handle widget constructors and complex expressions
+    if (code.contains('(') && !code.contains('=>')) {
+      // This might be a widget constructor or method call
+      final trimmed = code.trim();
+
+      // Check for common widget patterns
+      if (trimmed.startsWith('Container(') ||
+          trimmed.startsWith('Column(') ||
+          trimmed.startsWith('Row(') ||
+          trimmed.startsWith('Text(') ||
+          trimmed.startsWith('ElevatedButton(') ||
+          trimmed.startsWith('TextFormField(')) {
+        // Try to manually create a DpugWidgetSpec for known patterns
+        return _createWidgetFromString(trimmed);
+      }
+    }
+    return DpugReferenceExpressionSpec(code);
+  }
+
+  /// Helper method to create a widget spec from a string representation
+  DpugSpec? _createWidgetFromString(final String code) {
+    // For now, return as reference - we'll enhance this later
+    // The real fix needs proper parsing of the constructor arguments
+    return DpugReferenceExpressionSpec(code);
   }
 
   // ExpressionVisitor methods
@@ -236,6 +264,46 @@ class DartToDpugSpecVisitor
       } else {
         namedArgs[entry.key] = DpugReferenceExpressionSpec(
           entry.value.toString(),
+        );
+      }
+    }
+
+    // Check if this is a widget constructor
+    final target = expression.target.accept(this);
+    if (target is DpugReferenceExpressionSpec) {
+      final widgetName = target.name;
+      // Widget names typically start with capital letters
+      if (widgetName.isNotEmpty &&
+          widgetName[0].toUpperCase() == widgetName[0]) {
+        // Convert to DpugWidgetSpec for proper DPug formatting
+        final children = <DpugWidgetSpec>[];
+
+        // Handle special cases like 'child' and 'children'
+        if (namedArgs.containsKey('child')) {
+          final childExpr = namedArgs['child'];
+          if (childExpr != null) {
+            final childWidget = _expressionToWidget(childExpr);
+            if (childWidget != null) {
+              children.add(childWidget);
+            }
+          }
+          namedArgs.remove('child');
+        }
+
+        if (namedArgs.containsKey('children')) {
+          final childrenExpr = namedArgs['children'];
+          if (childrenExpr != null) {
+            final childList = _expressionToChildrenList(childrenExpr);
+            children.addAll(childList);
+          }
+          namedArgs.remove('children');
+        }
+
+        return DpugWidgetSpec(
+          name: widgetName,
+          children: children,
+          properties: namedArgs,
+          positionalArgs: args,
         );
       }
     }
@@ -348,5 +416,26 @@ class DartToDpugSpecVisitor
       return DpugAnnotationSpec(name: spec.code.toString());
     }
     return DpugAnnotationSpec(name: spec.toString());
+  }
+
+  /// Helper method to convert an expression to a widget spec
+  DpugWidgetSpec? _expressionToWidget(final DpugExpressionSpec expr) {
+    if (expr is DpugWidgetExpressionSpec) {
+      return expr.builder.build();
+    }
+    return null;
+  }
+
+  /// Helper method to convert a children list expression to widget specs
+  List<DpugWidgetSpec> _expressionToChildrenList(
+    final DpugExpressionSpec expr,
+  ) {
+    if (expr is DpugListLiteralSpec) {
+      return expr.values
+          .map(_expressionToWidget)
+          .whereType<DpugWidgetSpec>()
+          .toList();
+    }
+    return [];
   }
 }

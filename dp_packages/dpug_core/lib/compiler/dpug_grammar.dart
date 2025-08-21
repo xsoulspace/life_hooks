@@ -13,7 +13,7 @@ class DPugGrammar extends GrammarDefinition {
   Parser start() => ref(document).end();
 
   // Document structure
-  Parser document() => ref(classDefinition).or(ref(widgetTree));
+  Parser document() => ref(classDefinition).or(ref(widgetTree)).trim();
 
   // Annotations
   Parser annotations() => ref(annotation).star().map((final values) => values);
@@ -23,19 +23,20 @@ class DPugGrammar extends GrammarDefinition {
       (ref(annotations).optional() &
               ref(keyword, 'class') &
               ref(identifier) &
-              ref(colon) &
               ref(classBody).optional())
+          .trim()
           .map((final values) => values);
 
   Parser classBody() => (ref(indent) & ref(classMember).star() & ref(dedent))
-      .map((final values) => values[1]);
+      .optional()
+      .map((final values) => values != null ? values[1] : []);
 
   Parser classMember() => ref(stateField).or(ref(buildMethod));
 
   Parser stateField() =>
       (ref(annotation) &
-              ref(identifier) &
               ref(typeAnnotation).optional() &
+              ref(identifier) &
               ref(equals).optional() &
               ref(expression).optional())
           .map((final values) => values);
@@ -133,9 +134,9 @@ class DPugGrammar extends GrammarDefinition {
   Parser comma() => char(',').trim();
   Parser quote() => char('"') | char("'");
 
-  // Indentation (simplified)
-  Parser indent() => string('  ') | string('\t'); // 2 spaces or tab
-  Parser dedent() => ref(newline);
+  // Indentation (DPug standard: 2 spaces)
+  Parser indent() => string('  ').flatten();
+  Parser dedent() => ref(newline).star();
 
   // Whitespace and newlines
   Parser newline() => char('\n') | string('\r\n') | char('\r');
@@ -146,6 +147,10 @@ class DPugGrammar extends GrammarDefinition {
     final Parser<T> element,
     final Parser separator,
   ) => (element & (separator & element).star()).map(
-    (final values) => [values[0], ...values[1].map((final pair) => pair[1])],
+    (final values) {
+      final first = values[0] as T;
+      final rest = values[1] as List<List<T>>;
+      return [first, ...rest.map((final pair) => pair[1])];
+    },
   );
 }
