@@ -1,0 +1,127 @@
+{
+  "name": "dpug",
+  "displayName": "DPug Language Support",
+  "description": "Language support for DPug - A concise syntax for Flutter widgets",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Formatters"
+  ],
+  "activationEvents": [
+    "onLanguage:dpug"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "dpug",
+        "aliases": [
+          "DPug",
+          "dpug"
+        ],
+        "extensions": [
+          ".dpug"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "dpug",
+        "scopeName": "source.dpug",
+        "path": "./syntaxes/dpug.tmGrammar.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "dpug.formatDocument",
+        "title": "Format Document",
+        "category": "DPug"
+      },
+      {
+        "command": "dpug.toDart",
+        "title": "Convert to Dart",
+        "category": "DPug"
+      },
+      {
+        "command": "dpug.fromDart",
+        "title": "Convert from Dart",
+        "category": "DPug"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "dpug.formatDocument",
+          "when": "resourceExtname == .dpug"
+        },
+        {
+          "command": "dpug.toDart",
+          "when": "resourceExtname == .dpug"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "dpug.formatDocument",
+          "when": "resourceExtname == .dpug"
+        },
+        {
+          "command": "dpug.toDart",
+          "when": "resourceExtname == .dpug"
+        },
+        {
+          "command": "dpug.fromDart",
+          "when": "resourceExtname == .dart"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "DPug",
+      "properties": {
+        "dpug.server.host": {
+          "type": "string",
+          "default": "localhost",
+          "description": "DPug server host"
+        },
+        "dpug.server.port": {
+          "type": "number",
+          "default": 8080,
+          "description": "DPug server port"
+        },
+        "dpug.formatting.compact": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use compact formatting"
+        },
+        "dpug.formatting.indent": {
+          "type": "string",
+          "default": "  ",
+          "description": "Indentation string"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "18.x",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
+    "eslint": "^8.47.0",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "axios": "^1.5.0"
+  }
+}
