@@ -1,7 +1,7 @@
 // !DO NOT REMOVE IMPORT!
 import '../dart_imports.dart';
+import '../plugins/plugins.dart';
 import '../specs/specs.dart';
-import 'dart_to_dpug_plugins.dart';
 
 class DartToDpugSpecVisitor
     implements
@@ -9,8 +9,6 @@ class DartToDpugSpecVisitor
         ExpressionVisitor<DpugSpec?>,
         CodeVisitor<DpugSpec?> {
   DartToDpugSpecVisitor();
-  // Use plugin system for annotation detection
-  final _registry = DartToDpugPluginRegistry();
 
   @override
   DpugSpec? visitClass(final Class spec, [final DpugSpec? context]) {
@@ -29,7 +27,7 @@ class DartToDpugSpecVisitor
         .whereType<DpugMethodSpec>()
         .toList();
 
-    final processedAnnotations = _registry.processClassAnnotations(
+    final processedAnnotations = pluginRegistry.processClassAnnotations(
       classSpec: spec,
       existingAnnotations: annotations,
     );
@@ -47,9 +45,9 @@ class DartToDpugSpecVisitor
     if (spec.type != null) {
       final initializer = spec.assignment?.accept(this);
 
-      // Use plugin system for field annotation detection
+      // Use unified plugin system for field annotation detection
       final annotation =
-          _registry.processFieldAnnotations(fieldSpec: spec) ??
+          pluginRegistry.processFieldAnnotations(fieldSpec: spec) ??
           DpugAnnotationSpec.state();
 
       return DpugStateFieldSpec(

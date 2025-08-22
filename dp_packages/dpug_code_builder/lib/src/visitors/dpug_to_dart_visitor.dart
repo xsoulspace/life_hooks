@@ -2,8 +2,8 @@ import 'package:code_builder/code_builder.dart' as cb;
 import 'package:dart_style/dart_style.dart' as ds;
 
 import '../dart_imports.dart';
+import '../plugins/plugins.dart';
 import '../specs/specs.dart';
-import 'dpug_to_dart_plugins.dart';
 import 'visitor.dart';
 
 /// converts Dpug to Dart
@@ -41,11 +41,10 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
 
   @override
   cb.Spec visitClass(final DpugClassSpec spec, [final cb.Spec? context]) {
-    // Use plugin system for code generation
-    final registry = DpugToDartPluginRegistry();
+    // Use unified plugin system for code generation
     final context = <String, dynamic>{'visitor': this};
 
-    final generatedCode = registry.generateClassCode(
+    final generatedCode = pluginRegistry.generateClassCodeForConversion(
       classSpec: spec,
       context: context,
     );
@@ -107,14 +106,13 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
     final DpugStateFieldSpec spec, [
     final cb.Spec? context,
   ]) {
-    // Use plugin system for field code generation
-    final registry = DpugToDartPluginRegistry();
+    // Use unified plugin system for field code generation
     final fieldContext = <String, dynamic>{
       'visitor': this,
       'isStateClass': context != null,
     };
 
-    final generatedCode = registry.generateFieldCode(
+    final generatedCode = pluginRegistry.generateFieldCodeForConversion(
       fieldSpec: spec,
       context: fieldContext,
     );
