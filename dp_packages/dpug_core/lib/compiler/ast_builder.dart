@@ -164,12 +164,15 @@ class ASTBuilder {
         _advance(); // consume '<'
         // Skip generic type parameters
         int depth = 1;
-        while (!_isAtEnd() && depth > 0) {
+        int tokensConsumed = 0;
+        const int maxGenericTokens = 50; // Prevent infinite loops
+        while (!_isAtEnd() && depth > 0 && tokensConsumed < maxGenericTokens) {
           if (_check(TokenType.symbol)) {
             if (_peek().value == '<') depth++;
             if (_peek().value == '>') depth--;
           }
           _advance();
+          tokensConsumed++;
         }
       }
 
@@ -191,12 +194,16 @@ class ASTBuilder {
     // In a full implementation, this would create a proper type declaration node
     final StringBuffer buffer = StringBuffer();
     final Token firstToken = _peek(); // Save the first token for span
+    int tokensConsumed = 0;
+    const int maxTokens = 100; // Prevent infinite loops
 
-    // Parse until we hit a newline or dedent
+    // Parse until we hit a newline, dedent, or reach max tokens
     while (!_isAtEnd() &&
-           !_check(TokenType.newline) &&
-           !_check(TokenType.dedent)) {
+        !_check(TokenType.newline) &&
+        !_check(TokenType.dedent) &&
+        tokensConsumed < maxTokens) {
       buffer.write(_advance().value);
+      tokensConsumed++;
     }
 
     // Create a raw expression node for the type declaration
