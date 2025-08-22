@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:dpug_cli/commands/convert_command.dart';
 import 'package:dpug_cli/commands/format_command.dart';
+import 'package:dpug_cli/commands/plugins_command.dart';
 import 'package:dpug_cli/commands/server_command.dart';
 
 /// Main CLI entry point for DPug
@@ -16,7 +17,8 @@ Future<void> main(final List<String> args) async {
         )
         ..addCommand(ConvertCommand())
         ..addCommand(FormatCommand())
-        ..addCommand(ServerCommand());
+        ..addCommand(ServerCommand())
+        ..addCommand(PluginsCommand());
 
   try {
     await runner.run(args);

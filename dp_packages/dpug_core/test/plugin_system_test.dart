@@ -1,6 +1,7 @@
 import 'package:code_builder/code_builder.dart' as cb;
 import 'package:dpug_core/compiler/plugins/annotation_plugins.dart';
 import 'package:dpug_core/dpug_core.dart';
+import 'package:source_span/source_span.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -50,6 +51,69 @@ void main() {
       expect(plugin.annotationName, equals('test'));
       expect(plugin.canHandle('test'), isTrue);
       expect(plugin.canHandle('other'), isFalse);
+    });
+
+    test('Plugin registry processes class annotations', () {
+      final registry = AnnotationPluginRegistry();
+      final classNode = ClassNode(
+        name: 'TestClass',
+        annotations: ['stateful'],
+        stateVariables: [],
+        methods: [],
+        span: FileSpan('', 0, 0, 0, 0),
+      );
+
+      // This should not throw an error
+      registry.processClassAnnotation(
+        annotationName: 'stateful',
+        classNode: classNode,
+      );
+
+      expect(true, isTrue); // Just verify no exception was thrown
+    });
+
+    test('Plugin registry processes field annotations', () {
+      final registry = AnnotationPluginRegistry();
+      final field = StateVariable(
+        name: 'testField',
+        type: 'int',
+        annotation: 'listen',
+      );
+      final classNode = ClassNode(
+        name: 'TestClass',
+        annotations: [],
+        stateVariables: [field],
+        methods: [],
+        span: FileSpan('', 0, 0, 0, 0),
+      );
+
+      // This should not throw an error
+      registry.processFieldAnnotation(
+        annotationName: 'listen',
+        field: field,
+        classNode: classNode,
+      );
+
+      expect(true, isTrue); // Just verify no exception was thrown
+    });
+
+    test('Unknown annotations are handled gracefully', () {
+      final registry = AnnotationPluginRegistry();
+      final classNode = ClassNode(
+        name: 'TestClass',
+        annotations: ['unknown'],
+        stateVariables: [],
+        methods: [],
+        span: FileSpan('', 0, 0, 0, 0),
+      );
+
+      // This should not throw an error even for unknown annotations
+      registry.processClassAnnotation(
+        annotationName: 'unknown',
+        classNode: classNode,
+      );
+
+      expect(true, isTrue); // Just verify no exception was thrown
     });
   });
 }

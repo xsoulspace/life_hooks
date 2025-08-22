@@ -204,7 +204,13 @@ class ASTBuilder {
         if (_check(TokenType.annotation)) {
           final Token ann = _advance();
           final String annName = ann.value.substring(1);
-          if (annName == 'listen') {
+          _validateAnnotation(annName, ann);
+
+          // Use plugin registry to handle field annotation
+          final registry = AnnotationPluginRegistry();
+          final plugin = registry.getPlugin(annName);
+          if (plugin != null) {
+            // Let the plugin handle the field parsing
             fields.add(_parseStateField(annName));
           } else {
             throw StateError(
@@ -225,13 +231,33 @@ class ASTBuilder {
       }
     }
 
-    return ClassNode(
+    final classNode = ClassNode(
       name: nameTok.value,
       annotations: annotations,
       stateVariables: fields,
       methods: methods,
       span: classSpan,
     );
+
+    // Process class annotations using plugins
+    final registry = AnnotationPluginRegistry();
+    for (final annotation in annotations) {
+      registry.processClassAnnotation(
+        annotationName: annotation,
+        classNode: classNode,
+      );
+    }
+
+    // Process field annotations using plugins
+    for (final field in fields) {
+      registry.processFieldAnnotation(
+        annotationName: field.annotation,
+        field: field,
+        classNode: classNode,
+      );
+    }
+
+    return classNode;
   }
 
   WidgetNode _parseWidget() {

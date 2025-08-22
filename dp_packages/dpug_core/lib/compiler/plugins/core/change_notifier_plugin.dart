@@ -1,7 +1,7 @@
 import 'package:code_builder/code_builder.dart' as cb;
-import '../../ast_builder.dart';
-import '../annotation_plugins.dart';
+
 import '../../../dpug_core.dart';
+import '../annotation_plugins.dart';
 
 /// {@template change_notifier_plugin}
 /// Core plugin that handles @changeNotifier annotation for ChangeNotifier-based state management.
@@ -32,7 +32,7 @@ class ChangeNotifierPlugin implements AnnotationPlugin {
   void processClassAnnotation({
     required final String annotationName,
     required final ClassNode classNode,
-    required final DpugConverter converter,
+    final DpugConverter? converter,
   }) {
     throw StateError(
       '@changeNotifier can only be applied to fields, not classes',
@@ -44,7 +44,7 @@ class ChangeNotifierPlugin implements AnnotationPlugin {
     required final String annotationName,
     required final StateVariable field,
     required final ClassNode classNode,
-    required final DpugConverter converter,
+    final DpugConverter? converter,
   }) {
     print('Setting up ChangeNotifier field: ${field.name}');
     // Here you could set up change notification systems

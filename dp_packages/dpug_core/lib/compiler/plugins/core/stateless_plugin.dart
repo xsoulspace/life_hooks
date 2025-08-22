@@ -30,7 +30,7 @@ class StatelessPlugin implements AnnotationPlugin {
   void processClassAnnotation({
     required final String annotationName,
     required final ClassNode classNode,
-    required final DpugConverter converter,
+    final DpugConverter? converter,
   }) {
     print('Processing @stateless annotation for class ${classNode.name}');
 
@@ -47,7 +47,7 @@ class StatelessPlugin implements AnnotationPlugin {
     required final String annotationName,
     required final StateVariable field,
     required final ClassNode classNode,
-    required final DpugConverter converter,
+    final DpugConverter? converter,
   }) {
     throw StateError('@stateless can only be applied to classes, not fields');
   }

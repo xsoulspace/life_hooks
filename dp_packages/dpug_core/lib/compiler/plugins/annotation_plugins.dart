@@ -1,12 +1,11 @@
 import 'package:code_builder/code_builder.dart' as cb;
 
 import '../../dpug_core.dart';
-
+import 'core/change_notifier_plugin.dart';
+import 'core/listen_plugin.dart';
 // Core plugins
 import 'core/stateful_plugin.dart';
 import 'core/stateless_plugin.dart';
-import 'core/listen_plugin.dart';
-import 'core/change_notifier_plugin.dart';
 
 /// Interface for annotation plugins that can process specific annotations
 abstract class AnnotationPlugin {
@@ -21,7 +20,7 @@ abstract class AnnotationPlugin {
   void processClassAnnotation({
     required final String annotationName,
     required final ClassNode classNode,
-    required final DpugConverter converter,
+    final DpugConverter? converter,
   });
 
   /// Process a field annotation
@@ -29,7 +28,7 @@ abstract class AnnotationPlugin {
     required final String annotationName,
     required final StateVariable field,
     required final ClassNode classNode,
-    required final DpugConverter converter,
+    final DpugConverter? converter,
   });
 
   /// Generate code for a class annotation
@@ -86,7 +85,7 @@ class AnnotationPluginRegistry {
   void processClassAnnotation({
     required final String annotationName,
     required final ClassNode classNode,
-    required final DpugConverter converter,
+    final DpugConverter? converter,
   }) {
     final plugin = getPlugin(annotationName);
     if (plugin != null) {
@@ -103,7 +102,7 @@ class AnnotationPluginRegistry {
     required final String annotationName,
     required final StateVariable field,
     required final ClassNode classNode,
-    required final DpugConverter converter,
+    final DpugConverter? converter,
   }) {
     final plugin = getPlugin(annotationName);
     if (plugin != null) {

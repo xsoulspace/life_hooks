@@ -1,11 +1,6 @@
+import 'package:code_builder/code_builder.dart' as cb;
 import 'package:dpug_core/compiler/plugins/annotation_plugins.dart';
 import 'package:dpug_core/dpug_core.dart';
-
-// Import the actual core plugins (not examples)
-import 'package:dpug_core/compiler/plugins/core/stateful_plugin.dart';
-import 'package:dpug_core/compiler/plugins/core/stateless_plugin.dart';
-import 'package:dpug_core/compiler/plugins/core/listen_plugin.dart';
-import 'package:dpug_core/compiler/plugins/core/change_notifier_plugin.dart';
 
 /// Example: How to use custom plugins
 void main() {
@@ -68,7 +63,7 @@ class ValidationPlugin implements AnnotationPlugin {
   void processClassAnnotation({
     required final String annotationName,
     required final ClassNode classNode,
-    required final DpugConverter converter,
+    final DpugConverter? converter,
   }) {
     throw StateError('@validate can only be applied to fields, not classes');
   }
@@ -78,7 +73,7 @@ class ValidationPlugin implements AnnotationPlugin {
     required final String annotationName,
     required final StateVariable field,
     required final ClassNode classNode,
-    required final DpugConverter converter,
+    final DpugConverter? converter,
   }) {
     print('Setting up validation for field: ${field.name}');
   }

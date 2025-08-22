@@ -3,6 +3,7 @@ import 'package:dart_style/dart_style.dart' as ds;
 
 import '../dart_imports.dart';
 import '../specs/specs.dart';
+import 'dpug_to_dart_plugins.dart';
 import 'visitor.dart';
 
 /// converts Dpug to Dart
@@ -40,26 +41,57 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
 
   @override
   cb.Spec visitClass(final DpugClassSpec spec, [final cb.Spec? context]) {
-    if (spec.annotations.any((final a) => a.name == 'stateful')) {
-      // Generate classes directly instead of using a Library
-      final widgetClass = _buildWidgetClass(spec);
-      final stateClass = _buildStateClass(spec);
+    // Use plugin system for code generation
+    final registry = DpugToDartPluginRegistry();
+    final context = <String, dynamic>{'visitor': this};
 
-      // Format each class separately to avoid indentation issues
-      final widgetCode = _formatter.format(
-        widgetClass.accept(_emitter).toString(),
-      );
-      final stateCode = _formatter.format(
-        stateClass.accept(_emitter).toString(),
-      );
+    final generatedCode = registry.generateClassCode(
+      classSpec: spec,
+      context: context,
+    );
 
-      return cb.Code('$widgetCode\n\n$stateCode');
+    if (generatedCode != null) {
+      // Handle special markers from plugins
+      if (generatedCode is cb.Code &&
+          generatedCode.accept(_emitter).toString() == '__STATEFUL_WIDGET__') {
+        // Generate classes directly instead of using a Library
+        final widgetClass = _buildWidgetClass(spec);
+        final stateClass = _buildStateClass(spec);
+
+        // Format each class separately to avoid indentation issues
+        final widgetCode = _formatter.format(
+          widgetClass.accept(_emitter).toString(),
+        );
+        final stateCode = _formatter.format(
+          stateClass.accept(_emitter).toString(),
+        );
+
+        return cb.Code('$widgetCode\n\n$stateCode');
+      } else if (generatedCode is cb.Code &&
+          generatedCode.accept(_emitter).toString() == '__STATELESS_WIDGET__') {
+        // Generate stateless widget directly
+        final classSpec = cb.Class(
+          (final b) => b
+            ..name = spec.name
+            ..extend = cb.refer('StatelessWidget')
+            ..methods.addAll(
+              spec.methods.map((final m) => m.accept(this) as cb.Method),
+            ),
+        );
+        return cb.Code(
+          _formatter.format(classSpec.accept(_emitter).toString()),
+        );
+      } else {
+        // Use plugin-generated code directly
+        return generatedCode;
+      }
     }
 
+    // Default class generation if no plugin handles it
     final classSpec = cb.Class(
       (final b) => b
         ..name = spec.name
-        ..extend = cb.refer('StatefulWidget')
+        ..extend = cb.refer('StatelessWidget')
         ..fields.addAll(
           spec.stateFields.map((final f) => f.accept(this) as cb.Field),
         )
@@ -75,9 +107,23 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
     final DpugStateFieldSpec spec, [
     final cb.Spec? context,
   ]) {
-    // Context indicates if this is for widget class or state class
-    // If context is provided, this is for state class and should have initializer
-    // If no context, this is for widget class and should not have initializer
+    // Use plugin system for field code generation
+    final registry = DpugToDartPluginRegistry();
+    final fieldContext = <String, dynamic>{
+      'visitor': this,
+      'isStateClass': context != null,
+    };
+
+    final generatedCode = registry.generateFieldCode(
+      fieldSpec: spec,
+      context: fieldContext,
+    );
+
+    if (generatedCode != null) {
+      return generatedCode;
+    }
+
+    // Default field generation if no plugin handles it
     if (context != null) {
       // State class field - include initializer
       final initializer = spec.initializer?.accept(this);
@@ -352,12 +398,14 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
       ..name = '_${spec.name}State'
       ..extend = cb.refer('State<${spec.name}>')
       ..fields.addAll(
-        spec.stateFields.map(
-          (final f) => f.accept(this, const cb.Code('state')) as cb.Field,
-        ),
+        spec.stateFields
+            .map((final f) => f.accept(this, const cb.Code('state')))
+            .whereType<cb.Field>(),
       )
       ..methods.addAll([
         ...spec.stateFields.expand(_buildStateAccessors),
+        ...spec.stateFields.expand(_buildChangeNotifierMethods),
+        ..._buildDisposeMethods(spec.stateFields.toList()),
         ...spec.methods.map((final m) => m.accept(this) as cb.Method),
       ]),
   );
@@ -386,6 +434,54 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
         ..body = cb.Code('setState(() => _${field.name} = value)'),
     ),
   ];
+
+  Iterable<cb.Method> _buildChangeNotifierMethods(
+    final DpugStateFieldSpec field,
+  ) {
+    // For @changeNotifier fields, generate getter method
+    if (field.annotation.name == 'changeNotifier') {
+      return [
+        cb.Method(
+          (final b) => b
+            ..name = field.name
+            ..type = cb.MethodType.getter
+            ..returns = cb.refer(field.type)
+            ..lambda = true
+            ..body = cb.Code('_${field.name}Notifier'),
+        ),
+      ];
+    }
+    return [];
+  }
+
+  Iterable<cb.Method> _buildDisposeMethods(
+    final List<DpugStateFieldSpec> fields,
+  ) {
+    final changeNotifierFields = fields
+        .where((final field) => field.annotation.name == 'changeNotifier')
+        .toList();
+
+    if (changeNotifierFields.isEmpty) {
+      return [];
+    }
+
+    // Generate dispose method that disposes all ChangeNotifier fields
+    return [
+      cb.Method(
+        (final b) => b
+          ..name = 'dispose'
+          ..annotations.add(cb.refer('override'))
+          ..body = cb.Code(
+            [
+              // Dispose all ChangeNotifier fields
+              for (final field in changeNotifierFields)
+                '_${field.name}Notifier.dispose();',
+              'super.dispose();',
+            ].join('\n'),
+          ),
+      ),
+    ];
+  }
 
   @override
   cb.Spec visitParameter(

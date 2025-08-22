@@ -31,13 +31,19 @@ class ConvertCommand extends Command {
         abbr: 'v',
         help: 'Show detailed output',
         negatable: false,
+      )
+      ..addFlag(
+        'show-plugins',
+        help: 'Show information about available plugins after conversion',
+        negatable: false,
       );
   }
   @override
   String get name => 'convert';
 
   @override
-  String get description => 'Convert between DPug and Dart syntax';
+  String get description =>
+      'Convert between DPug and Dart syntax (supports @stateful, @stateless, @listen, @changeNotifier plugins)';
 
   @override
   String get invocation => 'dpug convert [options]';
@@ -51,6 +57,7 @@ class ConvertCommand extends Command {
     final outputPath = args['to'] as String?;
     final format = args['format'] as String;
     final verbose = args['verbose'] as bool;
+    final showPlugins = args['show-plugins'] as bool;
 
     if (!File(inputPath).existsSync()) {
       DpugCliUtils.printError('Input file not found: $inputPath');
@@ -68,6 +75,23 @@ class ConvertCommand extends Command {
         }
       } else {
         print(converted);
+      }
+
+      if (showPlugins) {
+        print('\n${'=' * 50}');
+        print('🎯 Available DPug Plugins');
+        print('=' * 50);
+        print('• @stateful    - Creates StatefulWidget with reactive state');
+        print(
+          '• @stateless   - Creates StatelessWidget for display-only widgets',
+        );
+        print(
+          '• @listen      - Creates reactive getter/setter with setState()',
+        );
+        print(
+          '• @changeNotifier - Creates ChangeNotifier field with auto-dispose',
+        );
+        print('\nUse "dpug plugins --list" for more information');
       }
     } catch (e) {
       DpugCliUtils.printError('Failed to convert $inputPath: $e');

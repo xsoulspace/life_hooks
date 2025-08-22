@@ -1,13 +1,16 @@
 // !DO NOT REMOVE IMPORT!
 import '../dart_imports.dart';
 import '../specs/specs.dart';
+import 'dart_to_dpug_plugins.dart';
 
 class DartToDpugSpecVisitor
     implements
         SpecVisitor<DpugSpec?>,
         ExpressionVisitor<DpugSpec?>,
         CodeVisitor<DpugSpec?> {
-  const DartToDpugSpecVisitor();
+  DartToDpugSpecVisitor();
+  // Use plugin system for annotation detection
+  final _registry = DartToDpugPluginRegistry();
 
   @override
   DpugSpec? visitClass(final Class spec, [final DpugSpec? context]) {
@@ -26,15 +29,14 @@ class DartToDpugSpecVisitor
         .whereType<DpugMethodSpec>()
         .toList();
 
-    // Heuristic: treat any class with a 'build' method returning Widget as stateful
-    final hasBuild = spec.methods.any((final m) => (m.name ?? '') == 'build');
-    if (hasBuild) {
-      annotations.insert(0, DpugAnnotationSpec.stateful());
-    }
+    final processedAnnotations = _registry.processClassAnnotations(
+      classSpec: spec,
+      existingAnnotations: annotations,
+    );
 
     return DpugClassSpec(
       name: spec.name,
-      annotations: annotations,
+      annotations: processedAnnotations,
       stateFields: fields,
       methods: methods,
     );
@@ -44,10 +46,16 @@ class DartToDpugSpecVisitor
   DpugSpec? visitField(final Field spec, [final DpugSpec? context]) {
     if (spec.type != null) {
       final initializer = spec.assignment?.accept(this);
+
+      // Use plugin system for field annotation detection
+      final annotation =
+          _registry.processFieldAnnotations(fieldSpec: spec) ??
+          DpugAnnotationSpec.state();
+
       return DpugStateFieldSpec(
         name: spec.name,
         type: spec.type.toString(),
-        annotation: DpugAnnotationSpec.state(),
+        annotation: annotation,
         initializer: initializer is DpugExpressionSpec ? initializer : null,
       );
     }

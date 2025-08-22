@@ -1,7 +1,7 @@
 import 'package:code_builder/code_builder.dart' as cb;
-import '../../ast_builder.dart';
-import '../annotation_plugins.dart';
+
 import '../../../dpug_core.dart';
+import '../annotation_plugins.dart';
 
 /// {@template stateful_plugin}
 /// Core plugin that handles @stateful annotation for generating StatefulWidget classes.
@@ -30,7 +30,7 @@ class StatefulPlugin implements AnnotationPlugin {
   void processClassAnnotation({
     required final String annotationName,
     required final ClassNode classNode,
-    required final DpugConverter converter,
+    final DpugConverter? converter,
   }) {
     // Validate that this class can be stateful
     // Additional validation logic can be added here
@@ -42,7 +42,7 @@ class StatefulPlugin implements AnnotationPlugin {
     required final String annotationName,
     required final StateVariable field,
     required final ClassNode classNode,
-    required final DpugConverter converter,
+    final DpugConverter? converter,
   }) {
     throw StateError('@stateful can only be applied to classes, not fields');
   }

@@ -1,6 +1,5 @@
 import 'package:code_builder/code_builder.dart' as cb;
 import 'package:dpug_core/compiler/plugins/annotation_plugins.dart';
-import 'package:dpug_core/compiler/ast_builder.dart';
 import 'package:dpug_core/dpug_core.dart';
 
 /// {@template computed_plugin}
@@ -29,7 +28,7 @@ class ComputedPlugin implements AnnotationPlugin {
   void processClassAnnotation({
     required final String annotationName,
     required final ClassNode classNode,
-    required final DpugConverter converter,
+    final DpugConverter? converter,
   }) {
     throw StateError('@computed can only be applied to fields, not classes');
   }
@@ -39,7 +38,7 @@ class ComputedPlugin implements AnnotationPlugin {
     required final String annotationName,
     required final StateVariable field,
     required final ClassNode classNode,
-    required final DpugConverter converter,
+    final DpugConverter? converter,
   }) {
     print('Setting up computed property: ${field.name}');
     // Here you could validate that the field has a proper computation function
@@ -90,79 +89,6 @@ class ComputedPlugin implements AnnotationPlugin {
   }
 }
 
-/// {@template observable_plugin}
-/// Another example plugin showing reactive state management.
-///
-/// This demonstrates how to create plugins that integrate with
-/// different state management patterns.
-/// {@endtemplate}
-class ObservablePlugin implements AnnotationPlugin {
-  /// {@macro observable_plugin}
-  const ObservablePlugin();
-
-  @override
-  String get annotationName => 'observable';
-
-  @override
-  bool canHandle(final String annotationName) =>
-      annotationName == this.annotationName;
-
-  @override
-  void processClassAnnotation({
-    required final String annotationName,
-    required final ClassNode classNode,
-    required final DpugConverter converter,
-  }) {
-    throw StateError('@observable can only be applied to fields, not classes');
-  }
-
-  @override
-  void processFieldAnnotation({
-    required final String annotationName,
-    required final StateVariable field,
-    required final ClassNode classNode,
-    required final DpugConverter converter,
-  }) {
-    print('Creating observable field: ${field.name}');
-  }
-
-  @override
-  cb.Spec? generateClassCode({
-    required final String annotationName,
-    required final ClassNode classNode,
-    required final Map<String, dynamic> context,
-  }) {
-    // @observable doesn't generate class-level code
-    return null;
-  }
-
-  @override
-  cb.Spec? generateFieldCode({
-    required final String annotationName,
-    required final StateVariable field,
-    required final ClassNode classNode,
-    required final Map<String, dynamic> context,
-  }) {
-    // Generate observable property with stream support
-    return cb.Code('''
-      // Observable field with Stream support
-      final StreamController<${field.type}> _${field.name}Controller =
-          StreamController<${field.type}>.broadcast();
-
-      Stream<${field.type}> get ${field.name}Stream => _${field.name}Controller.stream;
-
-      ${field.type} _${field.name} = ${field.initializer ?? 'null'};
-
-      ${field.type} get ${field.name} => _${field.name};
-
-      set ${field.name}(${field.type} value) {
-        _${field.name} = value;
-        _${field.name}Controller.add(value);
-      }
-    ''');
-  }
-}
-
 /// Example of how to register and use custom plugins
 void main() {
   // Get the plugin registry
@@ -170,7 +96,6 @@ void main() {
 
   // Register your custom plugins
   registry.registerPlugin(const ComputedPlugin());
-  registry.registerPlugin(const ObservablePlugin());
 
   // Now you can use these annotations in DPUG code:
   const dpugCode = '''

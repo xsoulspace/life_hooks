@@ -15,7 +15,7 @@ class Dpug {
   }
 
   static DpugSpec? fromDart(final cb.Spec dartSpec) {
-    const visitor = DartToDpugSpecVisitor();
+    final visitor = DartToDpugSpecVisitor();
     return dartSpec.accept(visitor);
   }
 
