@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:dpug_server/server.dart' as dpug_server;
 import 'package:http/http.dart' as http;
 
 import '../dpug_cli.dart';
@@ -68,27 +69,18 @@ class ServerStartCommand extends Command {
         DpugCliUtils.printInfo('Starting DPug server on http://$host:$port');
       }
 
-      // Use the existing server tool
-      final result = await Process.run(
-        'dart',
-        [
-          'run',
-          '/Users/antonio/xs/life_hooks/dp_packages/dpug_server/bin/server.dart',
-        ],
-        workingDirectory:
-            '/Users/antonio/xs/life_hooks/dp_packages/dpug_server',
-        environment: {
-          'PORT': port.toString(),
-          // Note: The server tool doesn't support custom host binding
-        },
-      );
+      // Start the dpug_server
+      try {
+        final server = await dpug_server.serve(port: port);
+        DpugCliUtils.printSuccess(
+          'Server started on http://${server.address.host}:${server.port}',
+        );
 
-      if (result.exitCode != 0) {
-        throw Exception('Server failed to start: ${result.stderr}');
+        // Keep the server running - in CLI context this would block
+        // For now, just return after starting
+      } catch (e) {
+        throw Exception('Server start failed: $e');
       }
-
-      // Server started successfully
-      DpugCliUtils.printSuccess('Server started on http://$host:$port');
     } catch (e) {
       DpugCliUtils.printError('Failed to start server: $e');
       exit(1);

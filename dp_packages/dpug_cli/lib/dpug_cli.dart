@@ -1,8 +1,9 @@
 /// Unified CLI framework for DPug
-library dpug_cli;
+library;
 
 import 'dart:io';
 
+// ignore: avoid_classes_with_only_static_members
 /// Utility functions for CLI commands
 class DpugCliUtils {
   /// Print success message

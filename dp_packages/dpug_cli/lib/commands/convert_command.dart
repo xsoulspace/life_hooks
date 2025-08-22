@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:dpug_core/dpug_core.dart';
 
 import '../dpug_cli.dart';
 
@@ -75,61 +76,18 @@ class ConvertCommand extends Command {
   }
 
   Future<String> _convert(final String input, final String format) async {
-    // Use the dpug_core converter
-    final tempDir = Directory.systemTemp;
-    final tempFile = File(
-      '${tempDir.path}/temp_convert_${DateTime.now().millisecondsSinceEpoch}.dpug',
-    );
-
     try {
-      // Write input to temp file
-      await tempFile.writeAsString(input);
+      final converter = DpugConverter();
 
-      // Determine output file extension based on format
-      final outputExt = format == 'dpug-to-dart' ? 'dart' : 'dpug';
-      final outputFile = File(
-        '${tempDir.path}/temp_convert_output_${DateTime.now().millisecondsSinceEpoch}.$outputExt',
-      );
-
-      // Use the dpug_core converter by importing it directly
-      // For now, we'll use a simple approach by calling the converter programmatically
       if (format == 'dpug-to-dart') {
-        // Import and use dpug_core converter
-        final converter = await _getDpugToDartConverter();
-        final result = converter.dpugToDart(input);
-        return result;
+        return converter.dpugToDart(input);
+      } else if (format == 'dart-to-dpug') {
+        return converter.dartToDpug(input);
       } else {
-        // For dart-to-dpug, we'd need more complex setup
-        // For now, return a placeholder
-        return '// Converted from Dart to DPug\n$input';
+        throw Exception('Unsupported format: $format');
       }
-    } finally {
-      // Cleanup temp files
-      if (tempFile.existsSync()) tempFile.deleteSync();
+    } catch (e) {
+      throw Exception('Conversion failed: $e');
     }
-  }
-
-  Future<_SimpleConverter> _getDpugToDartConverter() async {
-    // This would normally import the converter from dpug_core
-    // For now, we'll create a simple placeholder
-    return _SimpleConverter();
-  }
-}
-
-class _SimpleConverter {
-  String dpugToDart(final String input) {
-    // Placeholder implementation - in real implementation,
-    // this would use the actual dpug_core converter
-    return '''
-// Generated from DPug
-class GeneratedWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: Text('Converted from: $input'),
-    );
-  }
-}
-''';
   }
 }

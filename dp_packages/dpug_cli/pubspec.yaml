@@ -2,18 +2,26 @@ name: dpug_cli
 description: Unified CLI for DPug - indentation-based Flutter/Dart syntax
 version: 1.0.0
 
+publish_to: none
+
 environment:
   sdk: ">=3.8.1 <4.0.0"
 
 dependencies:
   args: ^2.7.0
-  path: ^1.9.1
+  dpug_code_builder:
+    path: ../dpug_code_builder
+  dpug_core:
+    path: ../dpug_core
+  dpug_server:
+    path: ../dpug_server
   http: ^1.5.0
+  path: ^1.9.1
 
 dev_dependencies:
   lints: ^6.0.0
-  xsoulspace_lints: ^0.1.2
   test: ^1.26.3
+  xsoulspace_lints: ^0.1.2
 
 executables:
   dpug: bin/dpug.dart
