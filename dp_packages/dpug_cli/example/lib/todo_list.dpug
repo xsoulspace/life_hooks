@@ -1,0 +1,64 @@
+@stateful
+class TodoList
+  @listen List<String> todos = ['Learn DPUG', 'Build Flutter app', 'Test conversion']
+  @listen String newTodo = ''
+
+  void addTodo() =>
+    if newTodo.isNotEmpty
+      todos = [...todos, newTodo]
+      newTodo = ''
+
+  void removeTodo(int index) =>
+    todos = todos.where((todo) => todo != todos[index]).toList()
+
+  Widget get build =>
+    Scaffold
+      appBar:
+        AppBar
+          title: Text 'Todo List'
+      body:
+        Column
+          children:
+            Padding
+              padding: EdgeInsets.all(16.0)
+              child:
+                Row
+                  children:
+                    Expanded
+                      child:
+                        TextField
+                          controller: TextEditingController text: newTodo
+                          onChanged: (value) => newTodo = value
+                          decoration:
+                            InputDecoration
+                              hintText: 'Enter new todo...'
+                              border: OutlineInputBorder()
+                    SizedBox
+                      width: 10.0
+                    ElevatedButton
+                      onPressed: () => addTodo()
+                      child: Text 'Add'
+            Expanded
+              child:
+                if todos.isEmpty
+                  Center
+                    child:
+                      Text
+                        'No todos yet!'
+                        style:
+                          TextStyle
+                            fontSize: 18.0
+                            color: Colors.grey
+                else
+                  ListView.builder
+                    itemCount: todos.length
+                    itemBuilder: (context, index) =>
+                      Card
+                        margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0)
+                        child:
+                          ListTile
+                            title: Text todos[index]
+                            trailing:
+                              IconButton
+                                icon: Icon Icons.delete
+                                onPressed: () => removeTodo(index)

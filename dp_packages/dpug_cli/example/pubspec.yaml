@@ -1,0 +1,17 @@
+name: dpug_example
+description: Example for dpug_cli
+version: 1.0.0
+
+publish_to: none
+
+environment:
+  sdk: ">=3.8.1 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  lints: ^6.0.0
