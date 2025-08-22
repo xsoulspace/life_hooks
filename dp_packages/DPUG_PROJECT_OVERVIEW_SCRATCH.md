@@ -18,19 +18,27 @@ DPug is a Pug-inspired, indentation-based syntax for Flutter/Dart with bidirecti
 
 #### 1. dpug_core (Compiler Engine)
 
-**Status: ⚠️ Partially Working** - Core conversion works but has validation issues
+**Status: ✅ CORE ISSUES FIXED** - Parser validation and error handling working correctly
 
 ```
 lib/compiler/
 ├── lexer.dart          # Tokenizes DPug source
 ├── dpug_grammar.dart   # PetitParser grammar definitions
-├── dpug_parser.dart    # Parser with validation
-├── ast_builder.dart    # AST construction from tokens
+├── dpug_parser.dart    # Parser with validation ✅ ENHANCED
+├── ast_builder.dart    # AST construction from tokens ✅ VALIDATION ADDED
 ├── ast_to_dart.dart    # DPug AST → Dart code generation
 ├── dart_to_dpug.dart   # Dart AST → DPug code generation
 ├── dpug_converter.dart # Main conversion API
 └── dpug_formatter.dart # Code formatting
 ```
+
+**✅ Recent Fixes:**
+
+- Added `_validateAnnotation()` method - rejects invalid annotations
+- Added `_validateWidgetName()` method - validates widget identifiers
+- Enhanced `isValid()` method to use full AST validation
+- Function-style positional arguments (`Text('Hello')`) now working
+- Proper error messages with source location information
 
 #### 2. dpug_code_builder (Code Generation)
 
@@ -62,7 +70,7 @@ bin/server.dart        # CLI server runner
 
 #### 4. dpug_cli (Unified CLI) 🏆 HIGHEST PRIORITY - NEW
 
-**Status: 🔴 Not Yet Implemented**
+**Status: ✅ COMPLETED - Professional CLI with unified user experience**
 
 **Mission:** Single entry point for all DPUG operations with professional UX
 

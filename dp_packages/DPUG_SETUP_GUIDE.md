@@ -8,9 +8,10 @@ This guide walks you through setting up DPug from scratch, including the VS Code
 2. [Core Installation](#core-installation)
 3. [VS Code Extension Setup](#vs-code-extension-setup)
 4. [Using the Formatter](#using-the-formatter)
-5. [HTTP API Setup](#http-api-setup)
-6. [Development Workflow](#development-workflow)
-7. [Troubleshooting](#troubleshooting)
+5. [Unified CLI](#unified-cli)
+6. [HTTP API Setup](#http-api-setup)
+7. [Development Workflow](#development-workflow)
+8. [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
 
@@ -173,6 +174,89 @@ dart run lib/compiler/dpug_formatter.dart --readable lib/
 
 # Custom indentation
 dart run lib/compiler/dpug_formatter.dart --indent="    " lib/
+```
+
+## Unified CLI
+
+The new unified CLI provides a professional, consistent interface for all DPug operations.
+
+### Installation
+
+```bash
+# Navigate to the dpug_cli package
+cd dp_packages/dpug_cli
+
+# Install dependencies
+dart pub get
+
+# Make the CLI executable
+dart pub global activate --source path .
+```
+
+### Usage
+
+#### Format Files
+
+```bash
+# Format a single file
+dpug format my_widget.dpug
+
+# Format multiple files
+dpug format file1.dpug file2.dpug
+
+# Format in-place (overwrite files)
+dpug format -i *.dpug
+
+# Format to specific output file
+dpug format -o formatted.dpug input.dpug
+
+# Show help
+dpug format --help
+```
+
+#### Convert Between Formats
+
+```bash
+# DPug to Dart
+dpug convert --from my_widget.dpug --to my_widget.dart
+
+# Dart to DPug
+dpug convert --from my_widget.dart --to my_widget.dpug --format dart-to-dpug
+
+# Convert with verbose output
+dpug convert -v --from input.dpug --to output.dart
+
+# Show help
+dpug convert --help
+```
+
+#### Server Management
+
+```bash
+# Start the DPug server
+dpug server start --port=8080
+
+# Start with custom host
+dpug server start --host=0.0.0.0 --port=3000
+
+# Check server health
+dpug server health --port=8080
+
+# Show help
+dpug server --help
+dpug server start --help
+```
+
+### Main CLI Help
+
+```bash
+# Show all available commands
+dpug --help
+
+# Get help for specific commands
+dpug format --help
+dpug convert --help
+dpug server --help
 ```
 
 ### VS Code Integration

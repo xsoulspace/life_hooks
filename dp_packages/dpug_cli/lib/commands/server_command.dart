@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:http/http.dart' as http;
 
 import '../dpug_cli.dart';
 
@@ -63,17 +64,31 @@ class ServerStartCommand extends Command {
     final verbose = args['verbose'] as bool;
 
     try {
-      // TODO: Import and start the actual server from dpug_server
       if (verbose) {
         DpugCliUtils.printInfo('Starting DPug server on http://$host:$port');
       }
 
-      // Placeholder implementation
-      DpugCliUtils.printSuccess('Server started on http://$host:$port');
+      // Use the existing server tool
+      final result = await Process.run(
+        'dart',
+        [
+          'run',
+          '/Users/antonio/xs/life_hooks/dp_packages/dpug_server/bin/server.dart',
+        ],
+        workingDirectory:
+            '/Users/antonio/xs/life_hooks/dp_packages/dpug_server',
+        environment: {
+          'PORT': port.toString(),
+          // Note: The server tool doesn't support custom host binding
+        },
+      );
 
-      // In a real implementation, this would start the server and keep it running
-      // For now, just exit
-      exit(0);
+      if (result.exitCode != 0) {
+        throw Exception('Server failed to start: ${result.stderr}');
+      }
+
+      // Server started successfully
+      DpugCliUtils.printSuccess('Server started on http://$host:$port');
     } catch (e) {
       DpugCliUtils.printError('Failed to start server: $e');
       exit(1);
@@ -106,13 +121,17 @@ class ServerHealthCommand extends Command {
     final host = args['host'] as String;
 
     try {
-      // TODO: Make actual health check request to server
       DpugCliUtils.printInfo(
         'Checking server health at http://$host:$port/health',
       );
 
-      // Placeholder implementation
-      DpugCliUtils.printSuccess('Server is healthy');
+      final response = await http.get(Uri.parse('http://$host:$port/health'));
+
+      if (response.statusCode == 200) {
+        DpugCliUtils.printSuccess('Server is healthy');
+      } else {
+        throw Exception('Server returned status code ${response.statusCode}');
+      }
     } catch (e) {
       DpugCliUtils.printError('Server health check failed: $e');
       exit(1);

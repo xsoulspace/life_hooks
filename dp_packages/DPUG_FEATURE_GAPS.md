@@ -2,66 +2,189 @@
 
 ## Critical Missing Features
 
-### 1. Parser Validation & Error Handling
+### 1. Parser Validation & Error Handling ✅ COMPLETED
 
-**Current State:** Parser accepts invalid syntax and doesn't throw expected exceptions
+**Current State:** Parser now properly validates DPug syntax and throws appropriate exceptions
 
-**Issues:**
+**✅ Fixed Issues:**
 
-- `dpug_parser_test.dart` fails syntax validation
-- `dpug_core_test.dart` error handling test fails
-- Parser too permissive with malformed input
+- ✅ `dpug_parser_test.dart` syntax validation now passes
+- ✅ `dpug_core_test.dart` error handling test now passes
+- ✅ Parser rejects invalid annotations (`@invalid`, `@broken`)
+- ✅ Parser validates widget names (must be valid Dart identifiers)
+- ✅ Parser validates state field annotations (only `@listen` allowed)
+- ✅ Function-style positional arguments (`Text('Hello')`) now working
 
-**Required:**
+**Implementation Details:**
 
-```dart
-// Should reject invalid syntax
-const invalidDpug = '''
-@invalid
-class Broken
-  @broken what is this
-  Widget get build =>
-    UnknownWidget
-      ..invalid: property
-''';
+- Added `_validateAnnotation()` method in `ASTBuilder`
+- Added `_validateWidgetName()` method for identifier validation
+- Enhanced `isValid()` method to use full AST validation instead of just grammar parsing
+- Proper error messages with source location information
 
-// Should throw exception
-expect(() => converter.dpugToDart(invalidDpug), throwsA(isA<Exception>()));
-```
+**Test Results:**
 
-### 2. Code Generation Formatting
+- Error handling test: ✅ PASSES
+- Syntax validation test: ✅ PASSES
+- Function-style arguments: ✅ PASSES
 
-**Current State:** Inconsistent indentation and spacing in generated code
+### 2. Code Generation Formatting ⚠️ IN PROGRESS
 
-**Issues:**
+**Current State:** Code generation works but has formatting inconsistencies
 
-- `dpug_code_builder` tests fail due to formatting mismatches
-- Round-trip conversion doesn't preserve formatting
-- Missing newline handling in code generation
+**Remaining Issues:**
+
+1. **Extra Blank Lines Between Fields**
+
+   - Expected: Single blank line between class fields
+   - Actual: Double blank lines in some cases
+
+2. **Widget Indentation Issues**
+
+   - Expected: Proper 2-space indentation for nested widgets
+   - Actual: Inconsistent indentation in function-style syntax
+
+3. **Multi-line Callback Indentation**
+
+   - Expected: 2-space indentation for callback content
+   - Actual: 4-space or inconsistent indentation
+
+4. **Dart → DPug Conversion Formatting**
+
+   - Expected: DPug-style indentation with cascade syntax
+   - Actual: Function-style Dart syntax being preserved
+
+5. **Trailing Newlines**
+   - Expected: Consistent newline handling at end of files
+   - Actual: Missing or extra newlines in some cases
+
+**Test Failures:**
+
+- **dpug_test.dart**: 6 formatting-related test failures
+- **visitor_test.dart**: 4 round-trip conversion formatting failures
 
 **Examples of Issues:**
 
 ```dart
-// Expected
-class Counter extends StatefulWidget {
-  Counter({
-    super.key,
-    required this.count,
-  });
+// Issue 1: Extra blank lines
+// Expected:
+final int count;
+final String name;
 
-// Actual
-class Counter extends StatefulWidget {
-  Counter({
-    super.key,
-    required this.count,
-  });
+// Actual:
+final int count;
 
-  final int count;  // Extra newline missing
+final String name;
 
-  final String name;  // Extra newline present
+// Issue 2: Widget indentation
+// Expected:
+Widget get build =>
+  Column
+    Text
+      ..'Hello'
+
+// Actual:
+Widget get build =>
+Column(
+                children: [
+                  Text('Hello'),
+                ],
+              )
+
+// Issue 3: Callback indentation
+// Expected:
+..onPressed: () {
+  if (isEnabled) {
+    setState(() {
+      count++;
+    });
+  }
+}
+
+// Actual:
+..onPressed: () {
+      if (isEnabled) {
+        setState(() {
+          count++;
+        });
+      }
+    }
 ```
 
-### 3. Comments Support
+**Required Fixes:**
+
+1. **AST Visitors**: Update indentation logic in `dpug_to_dart_visitor.dart` and `dart_to_dpug_visitor.dart`
+2. **Widget Formatting**: Ensure consistent cascade vs function-style syntax
+3. **Newline Handling**: Standardize blank line insertion between class members
+4. **Callback Formatting**: Fix multi-line callback indentation
+5. **Round-trip Consistency**: Ensure DPug → Dart → DPug preserves formatting
+
+### 3. Unified CLI Architecture ✅ COMPLETED
+
+**Current State:** Professional CLI with commands for format, convert, and server
+
+**✅ Completed Features:**
+
+- ✅ **dpug_cli package**: Created unified CLI architecture
+- ✅ **Format command**: `dpug format [options] <files...>`
+- ✅ **Convert command**: `dpug convert --from input --to output`
+- ✅ **Server command**: `dpug server start/health`
+- ✅ **Professional UX**: Built-in help, error handling, consistent interface
+- ✅ **Ready for integration**: Framework in place for existing tools
+
+**Architecture:**
+
+```
+dpug_cli/
+├── bin/dpug.dart          # Main CLI entry point
+├── lib/commands/          # Command implementations
+│   ├── format_command.dart
+│   ├── convert_command.dart
+│   └── server_command.dart
+└── lib/dpug_cli.dart     # CLI framework
+```
+
+**User Experience:**
+
+```bash
+# Format files
+dpug format my_widget.dpug
+dpug format -i *.dpug
+
+# Convert between formats
+dpug convert --from input.dpug --to output.dart
+
+# Start server
+dpug server start --port=8080
+dpug server health
+```
+
+### 4. Existing CLI Tool Integration 🚧 PENDING
+
+**Current State:** Existing CLI tools need integration into unified architecture
+
+**Required Integration:**
+
+1. **Format Tool Integration**
+
+   - `dpug_core/bin/dpug_format.dart` → `dpug format` command
+   - `dpug_server/bin/format.dart` → `dpug format` command
+
+2. **Server Integration**
+
+   - `dpug_server/bin/server.dart` → `dpug server start` command
+
+3. **Converter Integration**
+   - `dpug_core` converter → `dpug convert` command
+
+**Implementation Plan:**
+
+- Update commands to use existing tool executables
+- Maintain backward compatibility
+- Add proper error handling and output formatting
+- Ensure consistent CLI experience
+
+### 5. Comments Support
 
 **Current State:** Partial implementation in TextMate grammar but not in parser
 

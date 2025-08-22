@@ -103,8 +103,43 @@ class FormatCommand extends Command {
   }
 
   Future<String> _callFormatter(final String input) async {
-    // TODO: Import and use the actual formatter from dpug_core
-    // For now, return input as-is
-    return input;
+    // Use the existing dpug_format.dart tool
+    final tempDir = Directory.systemTemp;
+    final tempFile = File(
+      '${tempDir.path}/temp_format_${DateTime.now().millisecondsSinceEpoch}.dpug',
+    );
+    final outputFile = File(
+      '${tempDir.path}/temp_format_output_${DateTime.now().millisecondsSinceEpoch}.dpug',
+    );
+
+    try {
+      // Write input to temp file
+      await tempFile.writeAsString(input);
+
+      // Run the existing formatter
+      final result = await Process.run(
+        'dart',
+        [
+          'run',
+          '/Users/antonio/xs/life_hooks/dp_packages/dpug_core/bin/dpug_format.dart',
+          '--output',
+          outputFile.path,
+          tempFile.path,
+        ],
+        workingDirectory: '/Users/antonio/xs/life_hooks/dp_packages/dpug_core',
+      );
+
+      if (result.exitCode != 0) {
+        throw Exception('Formatter failed: ${result.stderr}');
+      }
+
+      // Read the formatted output
+      final formatted = await outputFile.readAsString();
+      return formatted;
+    } finally {
+      // Cleanup temp files
+      if (tempFile.existsSync()) tempFile.deleteSync();
+      if (outputFile.existsSync()) outputFile.deleteSync();
+    }
   }
 }
