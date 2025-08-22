@@ -2,12 +2,12 @@ name: Code Quality & Dependencies
 
 on:
   push:
-    branches: [main, master, develop, exp/*]
+    branches: [main, develop]
   pull_request:
-    branches: [main, master, develop, exp/*]
-  schedule:
-    # Run weekly on Sundays
-    - cron: "0 2 * * 0"
+    branches: [main, develop]
+  # schedule:
+  #   # Run weekly on Sundays
+  #   - cron: "0 2 * * 0"
   workflow_dispatch:
 
 env:
