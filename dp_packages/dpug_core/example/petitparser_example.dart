@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:dpug_core/compiler/dpug_parser.dart';
 
 /// Example demonstrating PetitParser-based DPug parsing

@@ -1,7 +1,9 @@
 import 'package:petitparser/petitparser.dart';
 import 'package:petitparser/reflection.dart';
 
+import 'ast_builder.dart';
 import 'dpug_grammar.dart';
+import 'lexer.dart' as dpug_lexer;
 
 /// PetitParser-based DPug parser with enhanced error handling
 class DPugParser {
@@ -19,7 +21,15 @@ class DPugParser {
   }
 
   /// Check if the source is valid DPug syntax
-  bool isValid(final String source) => _parser.accept(source);
+  bool isValid(final String source) {
+    try {
+      final List<dpug_lexer.Token> tokens = dpug_lexer.Lexer(source).tokenize();
+      ASTBuilder(tokens).build();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 
   /// Get parser diagnostics and linting information
   List<String> lint() =>

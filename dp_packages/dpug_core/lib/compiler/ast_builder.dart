@@ -162,7 +162,9 @@ class ASTBuilder {
     // Collect annotations possibly on multiple lines
     while (_check(TokenType.annotation)) {
       final Token ann = _advance();
-      annotations.add(ann.value.substring(1));
+      final String annotationName = ann.value.substring(1);
+      _validateAnnotation(annotationName, ann);
+      annotations.add(annotationName);
       // Optional newline after annotation
       if (_check(TokenType.newline)) _advance();
     }
@@ -201,11 +203,12 @@ class ASTBuilder {
         if (_check(TokenType.annotation)) {
           final Token ann = _advance();
           final String annName = ann.value.substring(1);
-          if (annName == 'listen' || annName == 'state') {
+          if (annName == 'listen') {
             fields.add(_parseStateField(annName));
           } else {
-            // Unknown annotation: skip rest of line
-            _consumeLine();
+            throw StateError(
+              'Unknown state field annotation "@$annName" at ${ann.span}',
+            );
           }
         } else if (_check(TokenType.keyword) && _peek().value == 'Widget') {
           methods.add(_parseBuildGetter());
@@ -240,6 +243,7 @@ class ASTBuilder {
     print('DEBUG: About to parse widget name, current token: ${_peek()}');
     final Token nameTok = _expectIdentifierLike();
     final String widgetName = nameTok.value;
+    _validateWidgetName(widgetName, nameTok);
     print('DEBUG: Successfully parsed widget name: $widgetName');
     final Map<String, Expression> properties = <String, Expression>{};
     final List<ASTNode> children = <ASTNode>[];
@@ -544,5 +548,38 @@ class ASTBuilder {
     }
     print('DEBUG: Expected identifier but got: ${_peek()}');
     throw StateError('Expected identifier');
+  }
+
+  /// Validate that an annotation is supported
+  void _validateAnnotation(final String annotationName, final Token token) {
+    const Set<String> validAnnotations = {'stateful', 'listen'};
+
+    if (!validAnnotations.contains(annotationName)) {
+      throw StateError(
+        'Unknown annotation "@$annotationName" at ${token.span}',
+      );
+    }
+  }
+
+  /// Validate that a widget name is a valid Dart identifier
+  void _validateWidgetName(final String widgetName, final Token token) {
+    // Basic validation: must be a valid Dart identifier
+    if (widgetName.isEmpty) {
+      throw StateError('Empty widget name at ${token.span}');
+    }
+
+    // Check if it starts with a letter or underscore
+    if (!RegExp('^[a-zA-Z_]').hasMatch(widgetName)) {
+      throw StateError(
+        'Invalid widget name "$widgetName" at ${token.span}. Widget names must start with a letter or underscore.',
+      );
+    }
+
+    // Check if the rest contains only letters, digits, or underscores
+    if (!RegExp(r'^[a-zA-Z_][a-zA-Z0-9_]*$').hasMatch(widgetName)) {
+      throw StateError(
+        'Invalid widget name "$widgetName" at ${token.span}. Widget names can only contain letters, digits, and underscores.',
+      );
+    }
   }
 }
