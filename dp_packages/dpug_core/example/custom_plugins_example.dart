@@ -12,7 +12,9 @@ class ChangeNotifierPlugin implements AnnotationPlugin {
     required final ClassNode classNode,
     required final DpugConverter converter,
   }) {
-    throw StateError('@changeNotifier can only be applied to fields, not classes');
+    throw StateError(
+      '@changeNotifier can only be applied to fields, not classes',
+    );
   }
 
   @override
@@ -42,19 +44,100 @@ class ChangeNotifierPlugin implements AnnotationPlugin {
     required final ClassNode classNode,
     required final Map<String, dynamic> context,
   }) {
-    // Generate observable property code
+    // Generate ChangeNotifier property code
     return '''
-      // Observable field implementation
-      late final StreamController<${field.type}> _${field.name}Controller = StreamController.broadcast();
+      // ChangeNotifier field implementation
+      late final ${field.type} _${field.name}Notifier = ${field.type}();
 
-      Stream<${field.type}> get ${field.name}Stream => _${field.name}Controller.stream;
+      ${field.type} get ${field.name} => _${field.name}Notifier;
 
-      ${field.type} get ${field.name} => _${field.name}Value;
-      set ${field.name}(${field.type} value) {
-        _${field.name}Value = value;
-        _${field.name}Controller.add(value);
+      // Auto-dispose logic for stateful widgets
+      // This will be automatically called in the widget's dispose() method
+      void _dispose${field.name.toUpperCase()}() {
+        _${field.name}Notifier.dispose();
       }
     ''';
+  }
+
+  @override
+  dynamic generateClassCode({
+    required final String annotationName,
+    required final ClassNode classNode,
+    required final Map<String, dynamic> context,
+  }) {
+    // Check if this is a stateful widget and generate dispose logic
+    final hasStatefulAnnotation = classNode.annotations.contains('stateful');
+    if (hasStatefulAnnotation) {
+      // Find all @changeNotifier fields in this class
+      final changeNotifierFields = classNode.stateVariables
+          .where((final field) => field.annotation == 'changeNotifier')
+          .map((final field) => field.name)
+          .toList();
+
+      if (changeNotifierFields.isNotEmpty) {
+        return '''
+          // Auto-generated dispose logic for @changeNotifier fields
+          @override
+          void dispose() {
+            ${changeNotifierFields.map((final name) => '_dispose${name.toUpperCase()}();').join('\n            ')}
+            super.dispose();
+          }
+        ''';
+      }
+    }
+    return null;
+  }
+}
+
+/// Example: Creating a custom @stateless annotation plugin (complement to @stateful)
+class StatelessPlugin implements AnnotationPlugin {
+  @override
+  String get annotationName => 'stateless';
+
+  @override
+  void processClassAnnotation({
+    required final String annotationName,
+    required final ClassNode classNode,
+    required final DpugConverter converter,
+  }) {
+    print('Processing @stateless annotation for class ${classNode.name}');
+    // Validate that this class doesn't have state fields
+    if (classNode.stateVariables.isNotEmpty) {
+      throw StateError(
+        '@stateless classes cannot have state fields. Use @stateful instead.',
+      );
+    }
+  }
+
+  @override
+  void processFieldAnnotation({
+    required final String annotationName,
+    required final StateVariable field,
+    required final ClassNode classNode,
+    required final DpugConverter converter,
+  }) {
+    throw StateError('@stateless can only be applied to classes, not fields');
+  }
+
+  @override
+  dynamic generateClassCode({
+    required final String annotationName,
+    required final ClassNode classNode,
+    required final Map<String, dynamic> context,
+  }) {
+    // Return a special marker that indicates this should generate stateless code
+    return '__STATELESS_WIDGET__';
+  }
+
+  @override
+  dynamic generateFieldCode({
+    required final String annotationName,
+    required final StateVariable field,
+    required final ClassNode classNode,
+    required final Map<String, dynamic> context,
+  }) {
+    // @stateless doesn't generate field code
+    return null;
   }
 }
 
@@ -120,14 +203,15 @@ void main() {
   final registry = AnnotationPluginRegistry();
 
   // Register custom plugins
-  registry.registerPlugin(ObservablePlugin());
+  registry.registerPlugin(ChangeNotifierPlugin());
   registry.registerPlugin(PersistPlugin());
+  registry.registerPlugin(StatelessPlugin());
 
   // Now these annotations can be used in DPUG code:
   const dpugCode = r'''
   @stateful
-  class MyWidget
-    @observable @persist String username = 'guest'
+  class MyStatefulWidget
+    @changeNotifier @persist String username = 'guest'
     @listen int counter = 0
 
     Widget get build =>
@@ -138,6 +222,14 @@ void main() {
           ..onPressed: () => counter++
           Text
             ..'Count: $counter'
+
+  @stateless
+  class MyStatelessWidget
+    Widget get build =>
+      Container
+        ..padding: EdgeInsets.all(16)
+        Text
+          ..'This is a stateless widget'
   ''';
 
   // The converter will now use the registered plugins

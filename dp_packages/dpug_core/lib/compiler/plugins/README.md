@@ -68,6 +68,20 @@ class Counter
   @listen int count = 0
 ```
 
+### StatelessPlugin (`@stateless`)
+
+Handles stateless widget generation. Automatically validates that no state fields are present.
+
+```dpug
+@stateless
+class DisplayWidget
+  Widget get build =>
+    Container
+      ..padding: EdgeInsets.all(16)
+      Text
+        ..'Hello World'
+```
+
 ### ListenPlugin (`@listen`)
 
 Creates reactive state with getter/setter pairs that automatically call `setState()`.
@@ -76,14 +90,37 @@ Creates reactive state with getter/setter pairs that automatically call `setStat
 @listen int count = 0  // Generates: int get count => _count; set count(int value) => setState(() => _count = value);
 ```
 
+### ChangeNotifierPlugin (`@changeNotifier`)
+
+Creates ChangeNotifier-based state management with automatic disposal in stateful widgets.
+
+**Key Feature**: When used in `@stateful` widgets, automatically generates `dispose()` calls for all ChangeNotifier fields.
+
+```dpug
+@stateful
+class MyWidget
+  @changeNotifier MyChangeNotifier model = MyChangeNotifier()
+
+  Widget get build =>
+    Text
+      ..'Value: ${model.value}'
+
+// Automatically generates in the state class:
+@override
+void dispose() {
+  _disposeMODEL();  // Calls model.dispose()
+  super.dispose();
+}
+```
+
 ## Creating Custom Plugins
 
-### Example 1: Observable Plugin
+### Example 1: ChangeNotifier Plugin
 
 ```dart
-class ObservablePlugin implements AnnotationPlugin {
+class ChangeNotifierPlugin implements AnnotationPlugin {
   @override
-  String get annotationName => 'observable';
+  String get annotationName => 'changeNotifier';
 
   @override
   void processFieldAnnotation({
@@ -92,7 +129,7 @@ class ObservablePlugin implements AnnotationPlugin {
     required ClassNode classNode,
     required DpugConverter converter,
   }) {
-    print('Setting up observable field: ${field.name}');
+    print('Setting up ChangeNotifier field: ${field.name}');
   }
 
   @override
@@ -103,17 +140,44 @@ class ObservablePlugin implements AnnotationPlugin {
     required Map<String, dynamic> context,
   }) {
     return Code('''
-      // Observable field implementation
-      late final StreamController<${field.type}> _${field.name}Controller = StreamController.broadcast();
+      // ChangeNotifier field implementation
+      late final ${field.type} _${field.name}Notifier = ${field.type}();
 
-      Stream<${field.type}> get ${field.name}Stream => _${field.name}Controller.stream;
+      ${field.type} get ${field.name} => _${field.name}Notifier;
 
-      ${field.type} get ${field.name} => _${field.name}Value;
-      set ${field.name}(${field.type} value) {
-        _${field.name}Value = value;
-        _${field.name}Controller.add(value);
+      // Auto-dispose logic for stateful widgets
+      void _dispose${field.name.toUpperCase()}() {
+        _${field.name}Notifier.dispose();
       }
     ''');
+  }
+
+  @override
+  Spec? generateClassCode({
+    required String annotationName,
+    required ClassNode classNode,
+    required Map<String, dynamic> context,
+  }) {
+    // Check if this is a stateful widget and generate dispose logic
+    final hasStatefulAnnotation = classNode.annotations.contains('stateful');
+    if (hasStatefulAnnotation) {
+      final changeNotifierFields = classNode.stateVariables
+          .where((field) => field.annotation == 'changeNotifier')
+          .map((field) => field.name)
+          .toList();
+
+      if (changeNotifierFields.isNotEmpty) {
+        return Code('''
+          // Auto-generated dispose logic for @changeNotifier fields
+          @override
+          void dispose() {
+            ${changeNotifierFields.map((name) => '_dispose${name.toUpperCase()}();').join('\n            ')}
+            super.dispose();
+          }
+        ''');
+      }
+    }
+    return null;
   }
 }
 ```
@@ -123,10 +187,54 @@ Usage:
 ```dpug
 @stateful
 class MyWidget
-  @observable String status = 'idle'
+  @changeNotifier MyChangeNotifier model = MyChangeNotifier()
 ```
 
-### Example 2: Persistence Plugin
+### Example 2: Stateless Plugin
+
+```dart
+class StatelessPlugin implements AnnotationPlugin {
+  @override
+  String get annotationName => 'stateless';
+
+  @override
+  void processClassAnnotation({
+    required String annotationName,
+    required ClassNode classNode,
+    required DpugConverter converter,
+  }) {
+    print('Processing @stateless annotation for class ${classNode.name}');
+    // Validate that this class doesn't have state fields
+    if (classNode.stateVariables.isNotEmpty) {
+      throw StateError('@stateless classes cannot have state fields. Use @stateful instead.');
+    }
+  }
+
+  @override
+  Spec? generateClassCode({
+    required String annotationName,
+    required ClassNode classNode,
+    required Map<String, dynamic> context,
+  }) {
+    // Return a special marker that indicates this should generate stateless code
+    return Code('__STATELESS_WIDGET__');
+  }
+}
+```
+
+Usage:
+
+```dpug
+@stateless
+class DisplayWidget
+  Widget get build =>
+    Container
+      ..padding: EdgeInsets.all(16)
+      Text
+        ..'Hello World'
+```
+
+### Example 3: Persistence Plugin
 
 ```dart
 class PersistPlugin implements AnnotationPlugin {
@@ -172,14 +280,14 @@ void main() {
   final registry = AnnotationPluginRegistry();
 
   // Register custom plugins
-  registry.registerPlugin(ObservablePlugin());
+  registry.registerPlugin(ChangeNotifierPlugin());
   registry.registerPlugin(PersistPlugin());
 
   // Now these annotations can be used in DPUG code
   const dpugCode = '''
   @stateful
   class MyWidget
-    @observable @persist String username = 'guest'
+    @changeNotifier @persist String username = 'guest'
     @listen int counter = 0
   ''';
 
@@ -195,11 +303,59 @@ Plugins can be composed together for complex behavior:
 ```dpug
 @stateful
 class AdvancedWidget
-  @observable @persist @validate String email = ''
-  @computed double score
+  @changeNotifier @persist String email = ''
+  @listen int counter = 0
+
+@stateless
+class DisplayWidget
+  Widget get build =>
+    Text
+      ..'Email: $email'
 ```
 
 Each annotation is processed independently, allowing for rich combinations of behavior.
+
+## Automatic Resource Management
+
+The plugin system includes smart resource management features:
+
+### ChangeNotifier Disposal
+
+When using `@changeNotifier` in `@stateful` widgets, the plugin system automatically generates disposal logic:
+
+```dpug
+@stateful
+class MyWidget
+  @changeNotifier MyModel model = MyModel()
+
+  Widget get build =>
+    Text
+      ..'Value: ${model.value}'
+```
+
+**Automatically generates:**
+
+```dart
+@override
+void dispose() {
+  _disposeMODEL();  // Calls model.dispose()
+  super.dispose();
+}
+```
+
+This prevents memory leaks and follows Flutter best practices.
+
+### Validation
+
+The `@stateless` plugin automatically validates that no state fields are present:
+
+```dpug
+@stateless
+class MyWidget
+  @listen int counter = 0  // ❌ Compile error: @stateless cannot have state fields
+```
+
+This ensures architectural consistency and prevents common mistakes.
 
 ## Benefits
 
@@ -209,6 +365,10 @@ Each annotation is processed independently, allowing for rich combinations of be
 4. **Testability**: Each plugin can be tested independently
 5. **Backwards Compatibility**: Existing `@stateful` and `@listen` continue to work
 6. **Community Ecosystem**: Enables a marketplace of community-created plugins
+7. **Automatic Resource Management**: Prevents memory leaks with automatic disposal
+8. **Validation**: Built-in validation ensures architectural consistency
+9. **Composability**: Multiple annotations can work together seamlessly
+10. **Flutter Best Practices**: Enforces proper patterns like ChangeNotifier disposal
 
 ## Migration Guide
 
@@ -227,8 +387,14 @@ class Counter
 ```dpug
 @stateful
 class Counter
-  @observable int count = 0  // Using custom observable plugin
+  @changeNotifier CounterModel model = CounterModel()  // More powerful state management
   @listen int legacyField = 0  // Still works for backwards compatibility
+
+@stateless
+class DisplayWidget
+  Widget get build =>
+    Text
+      ..'Count: ${model.count}'
 ```
 
 ## Best Practices

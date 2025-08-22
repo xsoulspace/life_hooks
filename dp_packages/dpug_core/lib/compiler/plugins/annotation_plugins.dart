@@ -110,6 +110,10 @@ class StatefulAnnotationPlugin implements AnnotationPlugin {
   String get annotationName => 'stateful';
 
   @override
+  bool canHandle(final String annotationName) =>
+      annotationName == this.annotationName;
+
+  @override
   void processClassAnnotation({
     required final String annotationName,
     required final ClassNode classNode,
@@ -159,6 +163,10 @@ class StatefulAnnotationPlugin implements AnnotationPlugin {
 class ListenAnnotationPlugin implements AnnotationPlugin {
   @override
   String get annotationName => 'listen';
+
+  @override
+  bool canHandle(final String annotationName) =>
+      annotationName == this.annotationName;
 
   @override
   void processClassAnnotation({
@@ -212,6 +220,10 @@ class ListenAnnotationPlugin implements AnnotationPlugin {
 class ExampleCustomPlugin implements AnnotationPlugin {
   @override
   String get annotationName => 'computed';
+
+  @override
+  bool canHandle(final String annotationName) =>
+      annotationName == this.annotationName;
 
   @override
   void processClassAnnotation({
