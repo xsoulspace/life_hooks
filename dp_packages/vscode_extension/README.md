@@ -98,14 +98,50 @@ A new DPug file will be created with the converted code.
 
 ## Server Setup
 
-The extension requires a running DPug server. Start it with:
+The extension can automatically start and manage the DPug server. By default, the server starts automatically when you activate the extension.
+
+### Automatic Server Management
+
+The extension provides automatic server management:
+
+- **Auto-start**: Server starts automatically when extension activates
+- **Auto-stop**: Server stops automatically when extension deactivates
+- **Health checks**: Extension monitors server health and restarts if needed
+- **Manual control**: Use commands to manually start/stop/check server status
+
+### Manual Server Control
+
+You can also manually control the server using these commands:
+
+1. Open Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
+2. Run one of these commands:
+   - **DPug: Start Server** - Start the DPug server manually
+   - **DPug: Stop Server** - Stop the DPug server manually
+   - **DPug: Server Status** - Check server status
+
+### Configuration
+
+Control automatic server behavior in your settings:
+
+```json
+{
+  "dpug.server.autoStart": true,
+  "dpug.server.autoStop": true,
+  "dpug.server.host": "localhost",
+  "dpug.server.port": 8080
+}
+```
+
+### Manual Server Setup (Alternative)
+
+If you prefer to run the server manually:
 
 ```bash
-# From dpug_core package
-dart run ../dpug_server/bin/server.dart
+# From dpug_server package
+dart run bin/server.dart --port 8080
 
-# Or specify custom port
-dart run ../dpug_server/bin/server.dart --port 3000
+# Or use dpug_cli
+dpug server start --port 8080
 ```
 
 ## Examples
@@ -164,9 +200,84 @@ bun run test
 
 ### Debugging
 
-1. Open the extension in VS Code
-2. Press F5 to launch debug session
-3. This will open a new VS Code window with the extension loaded
+The extension provides comprehensive debugging configurations for both the extension host and language server.
+
+#### Quick Start
+
+1. Open the extension in VS Code (`vscode_extension` folder)
+2. Press F5 or go to Run & Debug panel (Ctrl+Shift+D)
+3. Select "Run Extension" and click the play button
+4. This opens a new VS Code window with the extension loaded
+
+#### Available Debug Configurations
+
+**Extension Debugging:**
+
+- **Run Extension**: Standard extension debugging with compilation
+- **Run Extension (Watch Mode)**: Extension debugging with automatic recompilation on file changes
+- **Attach to Extension Host**: Attach to a running extension host on port 9229
+
+**Language Server Debugging:**
+
+- **Debug Language Server**: Attach to the language server process (port 6009)
+- **Debug Extension and Server**: Combined debugging of both extension and language server
+
+**Testing:**
+
+- **Debug Extension Tests**: Run and debug extension tests
+
+#### Combined Debugging
+
+To debug both the extension and language server simultaneously:
+
+1. Use "Debug Extension + Server" compound configuration
+2. Or manually launch both:
+   - Start "Run Extension"
+   - Then start "Debug Language Server" in a second debug session
+
+#### Debugging Features
+
+**Extension Host:**
+
+- Set breakpoints in `src/extension.ts`
+- Debug command execution, document formatting, and conversions
+- Inspect extension context and workspace state
+
+**Language Server:**
+
+- Set breakpoints in `src/server/dpug-language-server.ts`
+- Debug LSP features: completion, hover, diagnostics, etc.
+- Monitor language server communication via output channels
+
+**Output Channels:**
+
+- **DPug**: Extension logs and errors
+- **DPug Language Server**: Language server logs and LSP communication
+
+#### Debug Tips
+
+1. **Source Maps**: The extension uses source maps for accurate debugging
+2. **Hot Reload**: Use watch mode for automatic recompilation
+3. **Language Server Port**: Server debugs on port 6009 by default
+4. **Extension Host Port**: Can attach to port 9229 for extension host debugging
+5. **Console Output**: Check VS Code's Debug Console for runtime logs
+
+#### Troubleshooting
+
+**Common Issues:**
+
+- **Extension not activating**: Check that `.dpug` files are being recognized
+- **Language server not starting**: Verify compilation completed successfully
+- **Breakpoints not hit**: Ensure source maps are generated and paths are correct
+- **Server connection fails**: Check if DPug HTTP server is running on the configured port
+
+**Debug Checklist:**
+
+1. ✅ Extension compiled successfully (check output panel)
+2. ✅ Source maps generated (check `out/` directory)
+3. ✅ DPug HTTP server running (default: localhost:8080)
+4. ✅ Language server port not in use (6009)
+5. ✅ Extension host port available if attaching (9229)
 
 ## File Structure
 

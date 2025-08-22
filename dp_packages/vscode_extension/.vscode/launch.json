@@ -1,0 +1,99 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
+      "outFiles": ["${workspaceFolder}/out/**/*.js"],
+      "preLaunchTask": "npm: compile",
+      "presentation": {
+        "group": "extension",
+        "order": 1
+      }
+    },
+    {
+      "name": "Run Extension (Watch Mode)",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
+      "outFiles": ["${workspaceFolder}/out/**/*.js"],
+      "preLaunchTask": "npm: watch",
+      "postDebugTask": "terminate-watch",
+      "presentation": {
+        "group": "extension",
+        "order": 2
+      }
+    },
+    {
+      "name": "Debug Language Server",
+      "type": "node",
+      "request": "attach",
+      "port": 6009,
+      "restart": true,
+      "protocol": "inspector",
+      "timeout": 10000,
+      "presentation": {
+        "group": "server",
+        "order": 1
+      },
+      "preLaunchTask": "npm: compile-server"
+    },
+    {
+      "name": "Debug Extension and Server",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
+      "outFiles": ["${workspaceFolder}/out/**/*.js"],
+      "preLaunchTask": "npm: compile",
+      "presentation": {
+        "group": "both",
+        "order": 1
+      },
+      "serverReadyAction": {
+        "pattern": "Language server listening on port 6009",
+        "uriFormat": "http://localhost:6009",
+        "action": "debugWithChrome"
+      }
+    },
+    {
+      "name": "Attach to Extension Host",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "restart": true,
+      "protocol": "inspector",
+      "timeout": 10000,
+      "presentation": {
+        "group": "extension",
+        "order": 3
+      }
+    },
+    {
+      "name": "Debug Extension Tests",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionTestsPath=${workspaceFolder}/out/test"
+      ],
+      "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
+      "preLaunchTask": "npm: pretest",
+      "presentation": {
+        "group": "test",
+        "order": 1
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Extension + Server",
+      "configurations": ["Run Extension", "Debug Language Server"],
+      "presentation": {
+        "group": "both",
+        "order": 2
+      }
+    }
+  ]
+}

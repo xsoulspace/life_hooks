@@ -50,6 +50,21 @@
         "command": "dpug.fromDart",
         "title": "Convert from Dart",
         "category": "DPug"
+      },
+      {
+        "command": "dpug.server.start",
+        "title": "Start Server",
+        "category": "DPug"
+      },
+      {
+        "command": "dpug.server.stop",
+        "title": "Stop Server",
+        "category": "DPug"
+      },
+      {
+        "command": "dpug.server.status",
+        "title": "Server Status",
+        "category": "DPug"
       }
     ],
     "menus": {
@@ -75,6 +90,15 @@
         {
           "command": "dpug.fromDart",
           "when": "resourceExtname == .dart"
+        },
+        {
+          "command": "dpug.server.start"
+        },
+        {
+          "command": "dpug.server.stop"
+        },
+        {
+          "command": "dpug.server.status"
         }
       ]
     },
@@ -101,6 +125,16 @@
           "type": "string",
           "default": "  ",
           "description": "Indentation string"
+        },
+        "dpug.server.autoStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically start DPug server when extension activates"
+        },
+        "dpug.server.autoStop": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically stop DPug server when extension deactivates"
         }
       }
     }

@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "ms-vscode.vscode-typescript-next",
+    "ms-vscode.extension-test-runner",
+    "ms-vscode.vscode-json",
+    "bradlc.vscode-tailwindcss"
+  ],
+  "unwantedRecommendations": ["ms-vscode.vscode-typescript"]
+}

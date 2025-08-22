@@ -1,0 +1,34 @@
+{
+  // Extension development settings
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  "typescript.suggest.autoImports": true,
+  "typescript.format.enable": true,
+
+  // Debugging settings
+  "debug.node.autoAttach": "on",
+  "debug.javascript.autoAttachFilter": "onlyWithFlag",
+
+  // Editor settings for TypeScript
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+
+  // File associations
+  "files.associations": {
+    "*.dpug": "dpug"
+  },
+
+  // DPug specific settings
+  "dpug.server.host": "localhost",
+  "dpug.server.port": 8080,
+  "dpug.formatting.formatOnSave": true,
+  "dpug.formatting.compact": false,
+  "dpug.formatting.indent": "  ",
+
+  // Extension development
+  "extensionDevelopment.autoStart": true,
+  "extensionDevelopment.debug": true
+}

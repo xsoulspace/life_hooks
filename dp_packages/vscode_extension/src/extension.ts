@@ -4,12 +4,30 @@ import {
   activateLanguageServer,
   deactivateLanguageServer,
 } from "./language-server";
+import { DpugServerManager } from "./server-manager";
 
 let outputChannel: vscode.OutputChannel;
+let serverManager: DpugServerManager;
 
 // Extension activation
-export function activate(context: vscode.ExtensionContext): void {
+export async function activate(
+  context: vscode.ExtensionContext
+): Promise<void> {
   outputChannel = vscode.window.createOutputChannel("DPug");
+  serverManager = new DpugServerManager(outputChannel);
+
+  outputChannel.appendLine("Activating DPug extension...");
+
+  // Start the DPug server automatically
+  const serverStarted = await serverManager.ensureServerRunning();
+  if (serverStarted) {
+    outputChannel.appendLine("✓ DPug server started successfully");
+  } else {
+    outputChannel.appendLine("⚠ Failed to start DPug server automatically");
+    vscode.window.showWarningMessage(
+      "Failed to start DPug server. Some features may not work. Please start it manually with 'dpug server start' or check the DPug output channel for details."
+    );
+  }
 
   // Register format command
   const formatCommand = vscode.commands.registerCommand(
@@ -27,6 +45,22 @@ export function activate(context: vscode.ExtensionContext): void {
   const fromDartCommand = vscode.commands.registerCommand(
     "dpug.fromDart",
     convertFromDart
+  );
+
+  // Register server management commands
+  const startServerCommand = vscode.commands.registerCommand(
+    "dpug.server.start",
+    startServerManually
+  );
+
+  const stopServerCommand = vscode.commands.registerCommand(
+    "dpug.server.stop",
+    stopServerManually
+  );
+
+  const serverStatusCommand = vscode.commands.registerCommand(
+    "dpug.server.status",
+    showServerStatus
   );
 
   // Register format on save
@@ -47,6 +81,9 @@ export function activate(context: vscode.ExtensionContext): void {
     formatCommand,
     toDartCommand,
     fromDartCommand,
+    startServerCommand,
+    stopServerCommand,
+    serverStatusCommand,
     formatOnSave
   );
 
@@ -54,15 +91,31 @@ export function activate(context: vscode.ExtensionContext): void {
   activateLanguageServer(context);
 
   outputChannel.appendLine(
-    "DPug extension activated with language server support"
+    "✓ DPug extension activated with language server support"
   );
+
+  // Show server status to user
+  const serverStatus = serverManager.getServerStatus();
+  if (serverStatus.ready) {
+    vscode.window.showInformationMessage(
+      "DPug extension activated. Server is running and ready."
+    );
+  }
 }
 
 // Extension deactivation
-export function deactivate(): void {
+export async function deactivate(): Promise<void> {
+  outputChannel.appendLine("Deactivating DPug extension...");
+
+  // Stop the DPug server
+  if (serverManager) {
+    await serverManager.stopServer(true); // Force stop on extension deactivation
+  }
+
   // Stop the language server
   deactivateLanguageServer();
 
+  outputChannel.appendLine("✓ DPug extension deactivated");
   outputChannel.dispose();
 }
 
@@ -177,4 +230,47 @@ async function convertFromDart(): Promise<void> {
     vscode.window.showErrorMessage(`Conversion failed: ${message}`);
     outputChannel.appendLine(`Conversion error: ${message}`);
   }
+}
+
+// Server management functions
+async function startServerManually(): Promise<void> {
+  try {
+    outputChannel.appendLine("Manually starting DPug server...");
+    const success = await serverManager.ensureServerRunning();
+
+    if (success) {
+      vscode.window.showInformationMessage("DPug server started successfully");
+      outputChannel.appendLine("✓ DPug server started manually");
+    } else {
+      vscode.window.showErrorMessage("Failed to start DPug server");
+      outputChannel.appendLine("✗ Failed to start DPug server manually");
+    }
+  } catch (error) {
+    vscode.window.showErrorMessage(`Error starting server: ${error}`);
+    outputChannel.appendLine(`Error starting server manually: ${error}`);
+  }
+}
+
+async function stopServerManually(): Promise<void> {
+  try {
+    outputChannel.appendLine("Manually stopping DPug server...");
+    await serverManager.stopServer();
+    vscode.window.showInformationMessage("DPug server stopped");
+    outputChannel.appendLine("✓ DPug server stopped manually");
+  } catch (error) {
+    vscode.window.showErrorMessage(`Error stopping server: ${error}`);
+    outputChannel.appendLine(`Error stopping server manually: ${error}`);
+  }
+}
+
+function showServerStatus(): void {
+  const status = serverManager.getServerStatus();
+
+  let statusMessage = "DPug Server Status:\n";
+  statusMessage += `Running: ${status.running ? "Yes" : "No"}\n`;
+  statusMessage += `Starting: ${status.starting ? "Yes" : "No"}\n`;
+  statusMessage += `Ready: ${status.ready ? "Yes" : "No"}`;
+
+  vscode.window.showInformationMessage(statusMessage);
+  outputChannel.appendLine(`Server status: ${JSON.stringify(status)}`);
 }
