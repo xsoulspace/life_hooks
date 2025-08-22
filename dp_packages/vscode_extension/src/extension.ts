@@ -226,8 +226,24 @@ async function convertFromDart(): Promise<void> {
     await vscode.window.showTextDocument(dpugDocument);
     outputChannel.appendLine("Converted Dart to DPug successfully");
   } catch (error: any) {
-    const message = error.response?.data || error.message || "Unknown error";
-    vscode.window.showErrorMessage(`Conversion failed: ${message}`);
+    let message = error.response?.data || error.message || "Unknown error";
+    let userMessage = `Conversion failed: ${message}`;
+
+    // Provide helpful error messages for common issues
+    if (message.includes("No supported class found")) {
+      userMessage =
+        "DPug conversion currently only supports StatefulWidget classes. Please convert your StatelessWidget to a StatefulWidget first.";
+      outputChannel.appendLine(
+        "DPug conversion only supports StatefulWidget classes"
+      );
+      outputChannel.appendLine("To convert a StatelessWidget, you can:");
+      outputChannel.appendLine("1. Wrap it in a StatefulWidget");
+      outputChannel.appendLine(
+        "2. Use the DPug syntax directly in a .dpug file"
+      );
+    }
+
+    vscode.window.showErrorMessage(userMessage);
     outputChannel.appendLine(`Conversion error: ${message}`);
   }
 }

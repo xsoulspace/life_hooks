@@ -27,7 +27,7 @@ export function activateLanguageServer(context: ExtensionContext): void {
     debug: {
       module: serverModule,
       transport: TransportKind.ipc,
-      options: { execArgv: ["--nolazy", "--inspect=6009"] },
+      options: { execArgv: ["--nolazy", "--inspect=6010"] },
     },
   };
 
