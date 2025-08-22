@@ -52,6 +52,11 @@ class Expression extends ASTNode {
   Expression(super.span);
 }
 
+class RawExpression extends Expression {
+  RawExpression(this.text, super.span);
+  final String text;
+}
+
 class IdentifierExpression extends Expression {
   IdentifierExpression(this.name, final FileSpan span) : super(span);
   final String name;
@@ -142,6 +147,65 @@ class ASTBuilder {
 
   bool _check(final TokenType type) => !_isAtEnd() && _peek().type == type;
 
+  bool _isTypeDeclaration() {
+    if (_isAtEnd()) return false;
+
+    final int savedPosition = _position;
+    try {
+      // Look for: type_name identifier =
+      // Examples: int age =, List<String> items =, String name =
+
+      // First token should be an identifier (type name)
+      if (!_check(TokenType.identifier)) return false;
+      _advance(); // consume type name
+
+      // Handle generic types like List<String>, Map<String, int>
+      if (_check(TokenType.symbol) && _peek().value == '<') {
+        _advance(); // consume '<'
+        // Skip generic type parameters
+        int depth = 1;
+        while (!_isAtEnd() && depth > 0) {
+          if (_check(TokenType.symbol)) {
+            if (_peek().value == '<') depth++;
+            if (_peek().value == '>') depth--;
+          }
+          _advance();
+        }
+      }
+
+      // Next should be an identifier (variable name)
+      if (!_check(TokenType.identifier)) return false;
+      _advance(); // consume variable name
+
+      // Next should be '=' (assignment operator)
+      if (!(_check(TokenType.operator) && _peek().value == '=')) return false;
+
+      return true;
+    } finally {
+      _position = savedPosition;
+    }
+  }
+
+  ASTNode _parseTypeDeclaration() {
+    // For now, we'll parse this as a simple expression node
+    // In a full implementation, this would create a proper type declaration node
+    final StringBuffer buffer = StringBuffer();
+    final Token firstToken = _peek(); // Save the first token for span
+
+    // Parse until we hit a newline or dedent
+    while (!_isAtEnd() &&
+           !_check(TokenType.newline) &&
+           !_check(TokenType.dedent)) {
+      buffer.write(_advance().value);
+    }
+
+    // Create a raw expression node for the type declaration
+    return RawExpression(
+      buffer.toString(),
+      firstToken.span, // Use the span from the first token
+    );
+  }
+
   ASTNode _parseTopLevel() {
     // Skip leading newlines
     while (_check(TokenType.newline)) {
@@ -153,6 +217,13 @@ class ASTBuilder {
       print('DEBUG: _parseTopLevel - parsing as class');
       return _parseClass();
     }
+
+    // Check if this looks like a type declaration (type name + identifier + assignment)
+    if (_isTypeDeclaration()) {
+      print('DEBUG: _parseTopLevel - parsing as type declaration');
+      return _parseTypeDeclaration();
+    }
+
     print('DEBUG: _parseTopLevel - parsing as widget');
     return _parseWidget();
   }

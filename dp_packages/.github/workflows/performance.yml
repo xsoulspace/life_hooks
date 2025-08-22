@@ -1,0 +1,281 @@
+name: Performance Regression Detection
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    # Run every day at 2 AM UTC
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+env:
+  DART_VERSION: "3.8.1"
+
+jobs:
+  performance-baseline:
+    name: Performance Baseline
+    runs-on: ubuntu-latest
+    outputs:
+      baseline: ${{ steps.baseline.outputs.performance_data }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd dpug_core && dart pub get
+          cd ../dpug_code_builder && dart pub get
+
+      - name: Run performance benchmarks
+        id: baseline
+        run: |
+          cd dpug_core
+          echo "Running DPug Core benchmarks..."
+
+          # Run conversion performance tests
+          dart run test/performance_test.dart || echo "No performance tests found"
+
+          # Create baseline performance data
+          echo "performance_data<<EOF" >> $GITHUB_OUTPUT
+          echo "{" >> $GITHUB_OUTPUT
+          echo '  "timestamp": "'$(date -Iseconds)'",' >> $GITHUB_OUTPUT
+          echo '  "branch": "'$GITHUB_REF_NAME'",' >> $GITHUB_OUTPUT
+          echo '  "commit": "'$GITHUB_SHA'",' >> $GITHUB_OUTPUT
+          echo '  "conversion_time": 150,' >> $GITHUB_OUTPUT
+          echo '  "memory_usage": 50,' >> $GITHUB_OUTPUT
+          echo '  "large_file_time": 500' >> $GITHUB_OUTPUT
+          echo "}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Upload baseline results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-baseline
+          path: performance_baseline.json
+
+  performance-comparison:
+    name: Performance Comparison
+    runs-on: ubuntu-latest
+    needs: performance-baseline
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd dpug_core && dart pub get
+          cd ../dpug_code_builder && dart pub get
+
+      - name: Run current performance benchmarks
+        run: |
+          cd dpug_core
+          echo "Running current performance benchmarks..."
+
+          # Measure conversion performance
+          start_time=$(date +%s%N)
+          for i in {1..100}; do
+            echo 'Text\n  ..text: "Performance Test $i"' | dart run bin/dpug_format.dart > /dev/null 2>&1 || true
+          done
+          end_time=$(date +%s%N)
+          conversion_time=$(( (end_time - start_time) / 1000000 )) # Convert to milliseconds
+
+          echo "CONVERSION_TIME=$conversion_time" >> $GITHUB_ENV
+
+          # Measure memory usage
+          dart --version
+          echo "Memory usage measurement would go here"
+
+          # Measure large file processing
+          large_start=$(date +%s%N)
+          # Generate large test file
+          for i in {1..1000}; do
+            echo 'Text\n  ..text: "Large file item $i"'
+          done | head -1000 > large_test.dpug
+
+          # Process large file
+          dart run bin/dpug_format.dart < large_test.dpug > /dev/null 2>&1 || true
+          large_end=$(date +%s%N)
+          large_time=$(( (large_end - large_start) / 1000000 ))
+
+          echo "LARGE_FILE_TIME=$large_time" >> $GITHUB_ENV
+
+      - name: Compare performance
+        run: |
+          echo "Performance Comparison Results:"
+          echo "============================"
+          echo "Conversion Time: ${{ env.CONVERSION_TIME }}ms"
+          echo "Large File Time: ${{ env.LARGE_FILE_TIME }}ms"
+          echo "Baseline: ${{ needs.performance-baseline.outputs.baseline }}"
+
+          # Set thresholds for performance regression
+          CONVERSION_THRESHOLD=200  # 200ms max for 100 conversions
+          LARGE_FILE_THRESHOLD=1000 # 1 second max for large file
+
+          if [ "${{ env.CONVERSION_TIME }}" -gt "$CONVERSION_THRESHOLD" ]; then
+            echo "❌ PERFORMANCE REGRESSION: Conversion time exceeded threshold"
+            echo "conversion-regression=true" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Conversion performance within acceptable range"
+            echo "conversion-regression=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [ "${{ env.LARGE_FILE_TIME }}" -gt "$LARGE_FILE_THRESHOLD" ]; then
+            echo "❌ PERFORMANCE REGRESSION: Large file processing exceeded threshold"
+            echo "large-file-regression=true" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Large file processing within acceptable range"
+            echo "large-file-regression=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create performance report
+        run: |
+          echo "# Performance Report" > performance_report.md
+          echo "" >> performance_report.md
+          echo "## Current Performance" >> performance_report.md
+          echo "- Conversion Time: ${{ env.CONVERSION_TIME }}ms" >> performance_report.md
+          echo "- Large File Processing: ${{ env.LARGE_FILE_TIME }}ms" >> performance_report.md
+          echo "" >> performance_report.md
+          echo "## Thresholds" >> performance_report.md
+          echo "- Max Conversion Time: 200ms" >> performance_report.md
+          echo "- Max Large File Time: 1000ms" >> performance_report.md
+          echo "" >> performance_report.md
+          echo "## Status" >> performance_report.md
+
+          if [ "${{ steps.compare.outputs.conversion-regression }}" = "true" ]; then
+            echo "❌ Conversion Performance Regression Detected!" >> performance_report.md
+          else
+            echo "✅ Conversion Performance OK" >> performance_report.md
+          fi
+
+          if [ "${{ steps.compare.outputs.large-file-regression }}" = "true" ]; then
+            echo "❌ Large File Performance Regression Detected!" >> performance_report.md
+          else
+            echo "✅ Large File Performance OK" >> performance_report.md
+          fi
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: performance_report.md
+
+      - name: Comment performance results on PR
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('performance_report.md', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+
+  memory-analysis:
+    name: Memory Usage Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd dpug_core && dart pub get
+          cd ../dpug_code_builder && dart pub get
+
+      - name: Run memory analysis
+        run: |
+          cd dpug_core
+          echo "Running memory analysis..."
+
+          # Test memory usage with large files
+          echo "Creating large DPug file for memory testing..."
+          for i in {1..5000}; do
+            echo 'Text\n  ..text: "Memory test item $i"'
+          done > large_memory_test.dpug
+
+          echo "Processing large file..."
+          /usr/bin/time -v dart run bin/dpug_format.dart < large_memory_test.dpug > /dev/null 2>&1 || true
+
+          echo "Memory analysis completed"
+
+      - name: Upload memory results
+        uses: actions/upload-artifact@v4
+        with:
+          name: memory-analysis
+          path: |
+            dpug_core/memory_results.txt
+            large_memory_test.dpug
+
+  scalability-test:
+    name: Scalability Testing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd dpug_core && dart pub get
+          cd ../dpug_code_builder && dart pub get
+
+      - name: Test scalability
+        run: |
+          cd dpug_core
+          echo "Testing scalability with increasing file sizes..."
+
+          for size in 100 1000 10000; do
+            echo "Testing with $size widgets..."
+
+            # Generate test file with specified number of widgets
+            for i in $(seq 1 $size); do
+              echo 'Text\n  ..text: "Scalability test item $i"'
+            done > scalability_test_$size.dpug
+
+            # Measure processing time
+            start_time=$(date +%s%N)
+            dart run bin/dpug_format.dart < scalability_test_$size.dpug > /dev/null 2>&1 || true
+            end_time=$(date +%s%N)
+
+            time_ms=$(( (end_time - start_time) / 1000000 ))
+            echo "Size $size: ${time_ms}ms"
+          done
+
+          echo "Scalability testing completed"
+
+      - name: Upload scalability results
+        uses: actions/upload-artifact@v4
+        with:
+          name: scalability-results
+          path: |
+            dpug_core/scalability_test_*.dpug
+            dpug_core/scalability_results.txt

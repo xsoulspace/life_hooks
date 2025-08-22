@@ -509,6 +509,576 @@ class Invalid
         );
         expect(emptyString, isEmpty);
       });
+
+      test('handles malformed builder patterns', () {
+        expect(() => Dpug.classBuilder().name(''), throwsException);
+        expect(
+          () => Dpug.classBuilder().field('', 'InvalidType'),
+          throwsException,
+        );
+        expect(
+          () => Dpug.widgetBuilder().buildMethod('invalid body'),
+          throwsException,
+        );
+      });
+
+      test('handles circular dependencies in specs', () {
+        final spec1 = DpugClassSpec(name: 'Class1');
+        final spec2 = DpugClassSpec(
+          name: 'Class2',
+          fields: [DpugFieldSpec(name: 'ref', type: 'Class1')],
+        );
+
+        // Should handle circular references gracefully
+        expect(() => Dpug.emitDpug(spec1), returnsNormally);
+        expect(() => Dpug.emitDpug(spec2), returnsNormally);
+      });
+
+      test('handles invalid type parameters', () {
+        expect(
+          () => Dpug.classBuilder().name('Test<T extends Unknown>'),
+          throwsException,
+        );
+        expect(
+          () => Dpug.classBuilder().name('Test<T, U, V extends List<Unknown>>'),
+          throwsException,
+        );
+      });
+
+      test('handles memory exhaustion with large specs', () {
+        final largeSpec = DpugClassSpec(
+          name: 'LargeClass',
+          fields: List.generate(
+            1000,
+            (final i) => DpugFieldSpec(name: 'field$i', type: 'String'),
+          ),
+          methods: List.generate(
+            500,
+            (final i) => DpugMethodSpec(
+              name: 'method$i',
+              returnType: 'void',
+              body: "print('method$i');",
+            ),
+          ),
+        );
+
+        // Should handle large specs without memory issues
+        expect(() => Dpug.emitDpug(largeSpec), returnsNormally);
+      });
+
+      test('handles concurrent builder usage', () {
+        // Test that builders can be used concurrently
+        final builder1 = Dpug.classBuilder().name('Class1');
+        final builder2 = Dpug.classBuilder().name('Class2');
+        final builder3 = Dpug.widgetBuilder()
+            .name('Widget1')
+            .type(WidgetType.stateless);
+
+        expect(builder1, isNotNull);
+        expect(builder2, isNotNull);
+        expect(builder3, isNotNull);
+      });
+
+      test('handles invalid widget configurations', () {
+        expect(
+          () => Dpug.widgetBuilder().name('').type(WidgetType.stateless),
+          throwsException,
+        );
+        expect(
+          () => Dpug.widgetBuilder()
+              .name('Test')
+              .type(WidgetType.stateful)
+              .stateField('', 'String', StateFieldAnnotation.listen),
+          throwsException,
+        );
+        expect(
+          () => Dpug.widgetBuilder().name('Test').buildMethod(''),
+          throwsException,
+        );
+      });
+
+      test('handles malformed expressions in specs', () {
+        final malformedSpec = DpugClassSpec(
+          name: 'Malformed',
+          methods: [
+            DpugMethodSpec(
+              name: 'test',
+              returnType: 'void',
+              body: 'invalid syntax here +++ === &&&',
+            ),
+          ],
+        );
+
+        // Should handle gracefully or throw appropriate error
+        expect(() => Dpug.emitDpug(malformedSpec), returnsNormally);
+      });
+
+      test('handles edge cases in type inference', () {
+        final dynamicSpec = DpugClassSpec(
+          name: 'DynamicClass',
+          fields: [
+            DpugFieldSpec(name: 'dynamicField', type: 'dynamic'),
+            DpugFieldSpec(name: 'varField', type: 'var'),
+            DpugFieldSpec(name: 'objectField', type: 'Object'),
+            DpugFieldSpec(name: 'nullField', type: 'Null'),
+          ],
+        );
+
+        expect(() => Dpug.emitDpug(dynamicSpec), returnsNormally);
+      });
+
+      test('handles deeply nested method calls', () {
+        final nestedSpec = DpugClassSpec(
+          name: 'NestedMethods',
+          methods: [
+            DpugMethodSpec(
+              name: 'deepMethod',
+              returnType: 'String',
+              body: '''
+final result = obj.method1()
+  .method2()
+  .method3()
+  .method4()
+  .method5();
+return result.toString();
+''',
+            ),
+          ],
+        );
+
+        expect(() => Dpug.emitDpug(nestedSpec), returnsNormally);
+      });
+
+      test('handles complex cascade operations', () {
+        final cascadeSpec = DpugClassSpec(
+          name: 'CascadeClass',
+          methods: [
+            DpugMethodSpec(
+              name: 'cascadeMethod',
+              returnType: 'void',
+              body: '''
+StringBuffer buffer = StringBuffer()
+  ..write('Hello')
+  ..write(' ')
+  ..write('World')
+  ..write('!')
+  ..clear()
+  ..write('Done');
+
+List<int> numbers = [1, 2, 3, 4, 5]
+  ..add(6)
+  ..add(7)
+  ..sort()
+  ..clear()
+  ..addAll([10, 20, 30]);
+
+Map<String, int> map = {'a': 1}
+  ..['b'] = 2
+  ..['c'] = 3
+  ..remove('a')
+  ..clear()
+  ..addAll({'x': 10, 'y': 20});
+''',
+            ),
+          ],
+        );
+
+        expect(() => Dpug.emitDpug(cascadeSpec), returnsNormally);
+      });
+
+      test('handles async/await patterns in methods', () {
+        final asyncSpec = DpugClassSpec(
+          name: 'AsyncClass',
+          methods: [
+            DpugMethodSpec(
+              name: 'asyncMethod',
+              returnType: 'Future<void>',
+              isAsync: true,
+              body: '''
+await Future.delayed(Duration(seconds: 1));
+final data = await fetchData();
+await processData(data);
+print('Async method completed');
+''',
+            ),
+            DpugMethodSpec(
+              name: 'generatorMethod',
+              returnType: 'Stream<int>',
+              isGenerator: true,
+              body: '''
+for (int i = 0; i < 10; i++) {
+  yield i;
+  await Future.delayed(Duration(milliseconds: 100));
+}
+''',
+            ),
+          ],
+        );
+
+        expect(() => Dpug.emitDpug(asyncSpec), returnsNormally);
+      });
+
+      test('handles complex conditional expressions', () {
+        final conditionalSpec = DpugClassSpec(
+          name: 'ConditionalClass',
+          methods: [
+            DpugMethodSpec(
+              name: 'complexCondition',
+              returnType: 'String',
+              body: '''
+bool condition1 = true;
+bool condition2 = false;
+int value = 42;
+
+String result = condition1 && !condition2 && value > 40
+  ? 'Complex condition met'
+  : condition1 || condition2
+    ? 'Partial condition met'
+    : 'No condition met';
+
+return result + (value >= 0 ? ' (positive)' : ' (negative)');
+''',
+            ),
+          ],
+        );
+
+        expect(() => Dpug.emitDpug(conditionalSpec), returnsNormally);
+      });
+
+      test('handles operator overloading in classes', () {
+        final operatorSpec = DpugClassSpec(
+          name: 'Vector',
+          fields: [
+            DpugFieldSpec(name: 'x', type: 'double'),
+            DpugFieldSpec(name: 'y', type: 'double'),
+          ],
+          constructors: [
+            DpugConstructorSpec(
+              parameters: [
+                DpugParameterSpec(name: 'x', type: 'double'),
+                DpugParameterSpec(name: 'y', type: 'double'),
+              ],
+              body: 'this.x = x;\nthis.y = y;',
+            ),
+          ],
+          methods: [
+            DpugMethodSpec(
+              name: 'operator +',
+              returnType: 'Vector',
+              parameters: [DpugParameterSpec(name: 'other', type: 'Vector')],
+              body: 'return Vector(x + other.x, y + other.y);',
+            ),
+            DpugMethodSpec(
+              name: 'operator -',
+              returnType: 'Vector',
+              parameters: [DpugParameterSpec(name: 'other', type: 'Vector')],
+              body: 'return Vector(x - other.x, y - other.y);',
+            ),
+            DpugMethodSpec(
+              name: 'operator *',
+              returnType: 'Vector',
+              parameters: [DpugParameterSpec(name: 'scalar', type: 'double')],
+              body: 'return Vector(x * scalar, y * scalar);',
+            ),
+          ],
+        );
+
+        expect(() => Dpug.emitDpug(operatorSpec), returnsNormally);
+      });
+
+      test('handles complex generic constraints', () {
+        final genericSpec = DpugClassSpec(
+          name: 'ComplexGeneric<T extends num, U, V extends List<U>>',
+          typeParameters: ['T extends num', 'U', 'V extends List<U>'],
+          methods: [
+            DpugMethodSpec(
+              name: 'process',
+              returnType: 'List<T>',
+              parameters: [
+                DpugParameterSpec(name: 'items', type: 'V'),
+                DpugParameterSpec(name: 'transformer', type: 'T Function(U)'),
+              ],
+              body: '''
+return items.map((item) => transformer(item)).toList();
+''',
+            ),
+          ],
+        );
+
+        expect(() => Dpug.emitDpug(genericSpec), returnsNormally);
+      });
+
+      test('handles builder pattern edge cases', () {
+        // Test builder with empty configurations
+        final emptyBuilder = Dpug.classBuilder().name('EmptyClass').build();
+
+        expect(emptyBuilder, isNotNull);
+
+        // Test builder with only fields
+        final fieldOnlyBuilder = Dpug.classBuilder()
+            .name('FieldOnly')
+            .field('test', 'String')
+            .build();
+
+        expect(fieldOnlyBuilder, isNotNull);
+
+        // Test builder with only methods
+        final methodOnlyBuilder = Dpug.classBuilder()
+            .name('MethodOnly')
+            .method('test', 'void', [], "print('test');")
+            .build();
+
+        expect(methodOnlyBuilder, isNotNull);
+
+        // Test widget builder with minimal configuration
+        final minimalWidget = Dpug.widgetBuilder()
+            .name('MinimalWidget')
+            .type(WidgetType.stateless)
+            .buildMethod('return Container();')
+            .build();
+
+        expect(minimalWidget, isNotNull);
+      });
+
+      test('handles complex widget builder scenarios', () {
+        final complexWidget = Dpug.widgetBuilder()
+            .name('ComplexWidget')
+            .type(WidgetType.stateful)
+            .field('title', 'String')
+            .field('initialCount', 'int')
+            .stateField('count', 'int', StateFieldAnnotation.listen)
+            .stateField('isLoading', 'bool', StateFieldAnnotation.setState)
+            .stateField(
+              'data',
+              'List<String>',
+              StateFieldAnnotation.changeNotifier,
+            )
+            .method('increment', 'void', [], 'count++;')
+            .method(
+              'loadData',
+              'Future<void>',
+              [],
+              'async { /* implementation */ }',
+              isAsync: true,
+            )
+            .buildMethod(r'''
+return Scaffold(
+  appBar: AppBar(title: Text(title)),
+  body: isLoading
+    ? CircularProgressIndicator()
+    : Column(
+        children: [
+          Text('Count: $count'),
+          for (String item in data)
+            ListTile(title: Text(item)),
+        ],
+      ),
+  floatingActionButton: FloatingActionButton(
+    onPressed: increment,
+    child: Icon(Icons.add),
+  ),
+);
+''')
+            .build();
+
+        expect(complexWidget, isNotNull);
+        expect(Dpug.emitDpug(complexWidget), contains('class ComplexWidget'));
+        expect(Dpug.emitDpug(complexWidget), contains('@stateful'));
+        expect(Dpug.emitDpug(complexWidget), contains('@listen int count'));
+        expect(
+          Dpug.emitDpug(complexWidget),
+          contains('@setState bool isLoading'),
+        );
+        expect(
+          Dpug.emitDpug(complexWidget),
+          contains('@changeNotifier List<String> data'),
+        );
+      });
+
+      test('handles error conditions in visitor patterns', () {
+        final malformedDartClass = cb.Class(
+          (final b) => b
+            ..name = ''
+            ..fields.add(
+              cb.Field(
+                (final b) => b
+                  ..name = ''
+                  ..type = cb.refer(''),
+              ),
+            ),
+        );
+
+        // Should handle gracefully
+        expect(() => Dpug.fromDart(malformedDartClass), returnsNormally);
+      });
+
+      test('handles large-scale code generation', () {
+        // Generate a large number of classes to test scalability
+        final largeScaleSpecs = List.generate(
+          100,
+          (final i) => DpugClassSpec(
+            name: 'GeneratedClass$i',
+            fields: List.generate(
+              10,
+              (final j) => DpugFieldSpec(name: 'field$j', type: 'String'),
+            ),
+            methods: List.generate(
+              5,
+              (final j) => DpugMethodSpec(
+                name: 'method$j',
+                returnType: 'void',
+                body: "print('method$j');",
+              ),
+            ),
+          ),
+        );
+
+        // Should handle large-scale generation without issues
+        for (final spec in largeScaleSpecs) {
+          expect(() => Dpug.emitDpug(spec), returnsNormally);
+        }
+      });
+
+      test('handles mixed content types in specs', () {
+        final mixedSpec = DpugClassSpec(
+          name: 'MixedContent',
+          annotations: [
+            const DpugAnnotationSpec(name: 'JsonSerializable'),
+            const DpugAnnotationSpec(name: 'Entity'),
+          ],
+          fields: [
+            DpugFieldSpec(name: 'stringField', type: 'String'),
+            DpugFieldSpec(name: 'intField', type: 'int'),
+            DpugFieldSpec(name: 'boolField', type: 'bool'),
+            DpugFieldSpec(name: 'listField', type: 'List<String>'),
+            DpugFieldSpec(name: 'mapField', type: 'Map<String, dynamic>'),
+          ],
+          methods: [
+            DpugMethodSpec(
+              name: 'syncMethod',
+              returnType: 'void',
+              body: "print('sync');",
+            ),
+            DpugMethodSpec(
+              name: 'asyncMethod',
+              returnType: 'Future<void>',
+              body: 'await Future.delayed(Duration(seconds: 1));',
+              isAsync: true,
+            ),
+            DpugMethodSpec(
+              name: 'generatorMethod',
+              returnType: 'Stream<int>',
+              body: 'for (int i = 0; i < 5; i++) yield i;',
+              isGenerator: true,
+            ),
+          ],
+        );
+
+        expect(() => Dpug.emitDpug(mixedSpec), returnsNormally);
+      });
+
+      test('handles recursive data structures', () {
+        final recursiveSpec = DpugClassSpec(
+          name: 'TreeNode',
+          fields: [
+            DpugFieldSpec(name: 'value', type: 'String'),
+            DpugFieldSpec(name: 'children', type: 'List<TreeNode>'),
+            DpugFieldSpec(name: 'parent', type: 'TreeNode?'),
+          ],
+          constructors: [
+            DpugConstructorSpec(
+              parameters: [DpugParameterSpec(name: 'value', type: 'String')],
+              body: '''
+this.value = value;
+this.children = [];
+this.parent = null;
+''',
+            ),
+          ],
+          methods: [
+            DpugMethodSpec(
+              name: 'addChild',
+              returnType: 'void',
+              parameters: [DpugParameterSpec(name: 'child', type: 'TreeNode')],
+              body: '''
+children.add(child);
+child.parent = this;
+''',
+            ),
+          ],
+        );
+
+        // Should handle self-referential types
+        expect(() => Dpug.emitDpug(recursiveSpec), returnsNormally);
+      });
+
+      test('handles complex import and export scenarios', () {
+        final importSpec = DpugClassSpec(
+          name: 'ImportedClass',
+          imports: [
+            'package:flutter/material.dart',
+            'package:provider/provider.dart',
+            'dart:async',
+            'dart:io',
+          ],
+          methods: [
+            DpugMethodSpec(
+              name: 'useImports',
+              returnType: 'Widget',
+              body: '''
+return StreamBuilder<FileSystemEntity>(
+  stream: Directory('.').list(),
+  builder: (context, snapshot) {
+    if (snapshot.hasData) {
+      return ListView(
+        children: snapshot.data!.map((entity) => ListTile(
+          title: Text(entity.path),
+        )).toList(),
+      );
+    }
+    return CircularProgressIndicator();
+  },
+);
+''',
+            ),
+          ],
+        );
+
+        expect(() => Dpug.emitDpug(importSpec), returnsNormally);
+      });
+
+      test('handles performance-critical operations', () {
+        final performanceSpec = DpugClassSpec(
+          name: 'PerformanceTest',
+          methods: [
+            DpugMethodSpec(
+              name: 'heavyComputation',
+              returnType: 'List<int>',
+              body: '''
+List<int> result = [];
+for (int i = 0; i < 1000000; i++) {
+  result.add(i * i);
+}
+return result;
+''',
+            ),
+            DpugMethodSpec(
+              name: 'memoryIntensive',
+              returnType: 'Map<String, List<int>>',
+              body: r'''
+Map<String, List<int>> result = {};
+for (int i = 0; i < 1000; i++) {
+  result['key$i'] = List.generate(1000, (j) => i * j);
+}
+return result;
+''',
+            ),
+          ],
+        );
+
+        // Should handle performance-critical code generation
+        expect(() => Dpug.emitDpug(performanceSpec), returnsNormally);
+      });
     });
   });
 }

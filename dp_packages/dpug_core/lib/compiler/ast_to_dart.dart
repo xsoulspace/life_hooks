@@ -15,6 +15,10 @@ class AstToDart {
       final String expr = _widgetToDartExpr(node);
       return 'Widget build(BuildContext context) {\n  return $expr;\n}';
     }
+    if (node is Expression) {
+      // For simple expressions, just return the expression as Dart code
+      return _exprToDart(node);
+    }
     throw StateError('Unsupported AST node: ${node.runtimeType}');
   }
 
@@ -144,6 +148,7 @@ class AstToDart {
       final String params = e.params.join(', ');
       return '($params) => ${_exprToDart(e.body)}';
     }
+    if (e is RawExpression) return e.text;
     return '';
   }
 

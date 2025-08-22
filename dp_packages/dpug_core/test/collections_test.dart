@@ -548,5 +548,809 @@ List<String> result = [for String name in names if name.length > 3 name.toUpperC
         expect(backToDpug, contains('name.toUpperCase()'));
       });
     });
+
+    group('Collection Edge Cases and Error Conditions', () {
+      test('handles empty collections of all types', () {
+        const dpugCode = '''
+List<int> emptyList = []
+List<String> emptyStringList = <String>[]
+Set<int> emptySet = {}
+Set<String> emptyStringSet = <String>{}
+Map<String, int> emptyMap = {}
+Map<int, bool> emptyIntBoolMap = <int, bool>{}
+Iterable<int> emptyIterable = [].map((x) => x)
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('List<int> emptyList = [];'));
+        expect(
+          dartCode,
+          contains('List<String> emptyStringList = <String>[];'),
+        );
+        expect(dartCode, contains('Set<int> emptySet = {};'));
+        expect(dartCode, contains('Set<String> emptyStringSet = <String>{};'));
+        expect(dartCode, contains('Map<String, int> emptyMap = {};'));
+        expect(
+          dartCode,
+          contains('Map<int, bool> emptyIntBoolMap = <int, bool>{};'),
+        );
+        expect(
+          dartCode,
+          contains('Iterable<int> emptyIterable = [].map((x) => x);'),
+        );
+      });
+
+      test('handles null values in collections', () {
+        const dpugCode = '''
+List<String?> nullableList = ['hello', null, 'world']
+Map<String, int?> nullableMap = {'a': 1, 'b': null, 'c': 3}
+Set<String?> nullableSet = {'hello', null, 'world'}
+
+String? firstNonNull = nullableList.firstWhere((x) => x != null, orElse: () => null)
+int? valueOrNull = nullableMap['missing']
+bool hasNull = nullableList.contains(null)
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(
+          dartCode,
+          contains("List<String?> nullableList = ['hello', null, 'world'];"),
+        );
+        expect(
+          dartCode,
+          contains(
+            "Map<String, int?> nullableMap = {'a': 1, 'b': null, 'c': 3};",
+          ),
+        );
+        expect(
+          dartCode,
+          contains("Set<String?> nullableSet = {'hello', null, 'world'};"),
+        );
+        expect(
+          dartCode,
+          contains(
+            'String? firstNonNull = nullableList.firstWhere((x) => x != null, orElse: () => null);',
+          ),
+        );
+        expect(
+          dartCode,
+          contains("int? valueOrNull = nullableMap['missing'];"),
+        );
+        expect(
+          dartCode,
+          contains('bool hasNull = nullableList.contains(null);'),
+        );
+      });
+
+      test('handles very large collections', () {
+        final largeList = List.generate(10000, (final i) => i).join(',');
+        final dpugCode = 'List<int> largeList = [$largeList]';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('List<int> largeList = ['));
+        expect(dartCode, contains('0,1,2,3,4,5,6,7,8,9,'));
+      });
+
+      test('handles deeply nested collections', () {
+        const dpugCode = '''
+List<List<List<int>>> deeplyNested = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
+Map<String, Map<String, List<int>>> nestedMap = {
+  'group1': {
+    'subgroup1': [1, 2, 3],
+    'subgroup2': [4, 5, 6]
+  },
+  'group2': {
+    'subgroup1': [7, 8, 9],
+    'subgroup2': [10, 11, 12]
+  }
+}
+Set<Set<int>> setOfSets = {{1, 2, 3}, {3, 4, 5}, {5, 6, 7}}
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(
+          dartCode,
+          contains(
+            'List<List<List<int>>> deeplyNested = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]];',
+          ),
+        );
+        expect(
+          dartCode,
+          contains('Map<String, Map<String, List<int>>> nestedMap = {'),
+        );
+        expect(dartCode, contains("'group1': {"));
+        expect(dartCode, contains("'subgroup1': [1, 2, 3],"));
+        expect(
+          dartCode,
+          contains(
+            'Set<Set<int>> setOfSets = {{1, 2, 3}, {3, 4, 5}, {5, 6, 7}};',
+          ),
+        );
+      });
+
+      test('handles collection operations that might fail', () {
+        const dpugCode = '''
+List<int> numbers = [1, 2, 3]
+int firstOrDefault = numbers.firstOrNull ?? -1
+int lastOrDefault = numbers.lastOrNull ?? -1
+int singleOrDefault = numbers.singleOrNull ?? -1
+
+List<int> empty = []
+int? emptyFirst = empty.firstOrNull
+int? emptyLast = empty.lastOrNull
+int? emptySingle = empty.singleOrNull
+
+// Operations that might throw on empty collections
+bool isEmpty = numbers.isEmpty
+bool isNotEmpty = numbers.isNotEmpty
+int length = numbers.length
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('List<int> numbers = [1, 2, 3];'));
+        expect(
+          dartCode,
+          contains('int firstOrDefault = numbers.firstOrNull ?? -1;'),
+        );
+        expect(
+          dartCode,
+          contains('int lastOrDefault = numbers.lastOrNull ?? -1;'),
+        );
+        expect(
+          dartCode,
+          contains('int singleOrDefault = numbers.singleOrNull ?? -1;'),
+        );
+        expect(dartCode, contains('List<int> empty = [];'));
+        expect(dartCode, contains('int? emptyFirst = empty.firstOrNull;'));
+        expect(dartCode, contains('int? emptyLast = empty.lastOrNull;'));
+        expect(dartCode, contains('int? emptySingle = empty.singleOrNull;'));
+        expect(dartCode, contains('bool isEmpty = numbers.isEmpty;'));
+        expect(dartCode, contains('bool isNotEmpty = numbers.isNotEmpty;'));
+        expect(dartCode, contains('int length = numbers.length;'));
+      });
+
+      test('handles out of bounds access patterns', () {
+        const dpugCode = '''
+List<int> numbers = [10, 20, 30]
+Map<String, int> map = {'a': 1, 'b': 2}
+
+int? safeGet(List<int> list, int index) => index < list.length ? list[index] : null
+int? safeGetMap(Map<String, int> map, String key) => map[key]
+
+int? outOfBounds1 = safeGet(numbers, 5)
+int? outOfBounds2 = safeGet(numbers, -1)
+int? missingKey = safeGetMap(map, 'missing')
+int? existingKey = safeGetMap(map, 'a')
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('List<int> numbers = [10, 20, 30];'));
+        expect(dartCode, contains("Map<String, int> map = {'a': 1, 'b': 2};"));
+        expect(
+          dartCode,
+          contains(
+            'int? safeGet(List<int> list, int index) => index < list.length ? list[index] : null;',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'int? safeGetMap(Map<String, int> map, String key) => map[key];',
+          ),
+        );
+        expect(dartCode, contains('int? outOfBounds1 = safeGet(numbers, 5);'));
+        expect(dartCode, contains('int? outOfBounds2 = safeGet(numbers, -1);'));
+        expect(
+          dartCode,
+          contains("int? missingKey = safeGetMap(map, 'missing');"),
+        );
+        expect(dartCode, contains("int? existingKey = safeGetMap(map, 'a');"));
+      });
+
+      test('handles concurrent collection access patterns', () {
+        const dpugCode = '''
+List<int> sharedList = [1, 2, 3, 4, 5]
+Map<String, int> sharedMap = {'key1': 10, 'key2': 20}
+Set<String> sharedSet = {'a', 'b', 'c'}
+
+// Concurrent access patterns
+int listLength = sharedList.length
+bool listContains = sharedList.contains(3)
+List<int> listCopy = List.from(sharedList)
+
+int mapSize = sharedMap.length
+bool mapContains = sharedMap.containsKey('key1')
+List<String> mapKeys = sharedMap.keys.toList()
+
+int setSize = sharedSet.length
+bool setContains = sharedSet.contains('a')
+Set<String> setCopy = Set.from(sharedSet)
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('List<int> sharedList = [1, 2, 3, 4, 5];'));
+        expect(
+          dartCode,
+          contains("Map<String, int> sharedMap = {'key1': 10, 'key2': 20};"),
+        );
+        expect(dartCode, contains("Set<String> sharedSet = {'a', 'b', 'c'};"));
+        expect(dartCode, contains('int listLength = sharedList.length;'));
+        expect(
+          dartCode,
+          contains('bool listContains = sharedList.contains(3);'),
+        );
+        expect(
+          dartCode,
+          contains('List<int> listCopy = List.from(sharedList);'),
+        );
+        expect(dartCode, contains('int mapSize = sharedMap.length;'));
+        expect(
+          dartCode,
+          contains("bool mapContains = sharedMap.containsKey('key1');"),
+        );
+        expect(
+          dartCode,
+          contains('List<String> mapKeys = sharedMap.keys.toList();'),
+        );
+        expect(dartCode, contains('int setSize = sharedSet.length;'));
+        expect(
+          dartCode,
+          contains("bool setContains = sharedSet.contains('a');"),
+        );
+        expect(
+          dartCode,
+          contains('Set<String> setCopy = Set.from(sharedSet);'),
+        );
+      });
+
+      test('handles collection modification during iteration patterns', () {
+        const dpugCode =
+            'List<int> numbers = [1, 2, 3, 4, 5]\n'
+            'List<int> safeCopy = List.from(numbers)\n\n'
+            'void safeIterate(List<int> list)\n'
+            '  for int i = 0; i < list.length; i++\n'
+            '    if list[i] % 2 == 0\n'
+            "      // This is safe because we're iterating over a copy\n"
+            "      print 'Even number: \${list[i]}'\n\n"
+            'void unsafeIterate(List<int> list)\n'
+            '  for int i = 0; i < list.length; i++\n'
+            '    if list[i] == 3\n'
+            '      // This could cause issues in real iteration\n'
+            '      list.removeAt(i)\n\n'
+            'safeIterate(safeCopy)\n'
+            'unsafeIterate(numbers)';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('List<int> numbers = [1, 2, 3, 4, 5];'));
+        expect(dartCode, contains('List<int> safeCopy = List.from(numbers);'));
+        expect(dartCode, contains('void safeIterate(List<int> list) {'));
+        expect(dartCode, contains('for (int i = 0; i < list.length; i++) {'));
+        expect(dartCode, contains('if (list[i] % 2 == 0) {'));
+        expect(dartCode, contains('void unsafeIterate(List<int> list) {'));
+        expect(dartCode, contains('if (list[i] == 3) {'));
+        expect(dartCode, contains('list.removeAt(i);'));
+        expect(dartCode, contains('safeIterate(safeCopy);'));
+        expect(dartCode, contains('unsafeIterate(numbers);'));
+      });
+
+      test('handles resource cleanup with collections', () {
+        const dpugCode =
+            'StreamController<List<int>> listController = StreamController<List<int>>()\n'
+            'StreamController<Map<String, int>> mapController = StreamController<Map<String, int>>()\n\n'
+            'List<StreamSubscription> subscriptions = []\n\n'
+            'void initStreams()\n'
+            '  subscriptions.add(\n'
+            "    listController.stream.listen((data) => print('Received list: \$data'))\n"
+            '  )\n'
+            '  subscriptions.add(\n'
+            "    mapController.stream.listen((data) => print('Received map: \$data'))\n"
+            '  )\n\n'
+            'void cleanupStreams()\n'
+            '  for StreamSubscription sub in subscriptions\n'
+            '    sub.cancel()\n'
+            '  subscriptions.clear()\n'
+            '  listController.close()\n'
+            '  mapController.close()\n\n'
+            'void addData()\n'
+            '  listController.add([1, 2, 3])\n'
+            "  mapController.add({'a': 1, 'b': 2})";
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(
+          dartCode,
+          contains(
+            'StreamController<List<int>> listController = StreamController<List<int>>();',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'StreamController<Map<String, int>> mapController = StreamController<Map<String, int>>();',
+          ),
+        );
+        expect(
+          dartCode,
+          contains('List<StreamSubscription> subscriptions = [];'),
+        );
+        expect(dartCode, contains('void initStreams() {'));
+        expect(dartCode, contains('subscriptions.add('));
+        expect(
+          dartCode,
+          contains(
+            r"listController.stream.listen((data) => print('Received list: $data'))",
+          ),
+        );
+        expect(dartCode, contains('void cleanupStreams() {'));
+        expect(
+          dartCode,
+          contains('for (StreamSubscription sub in subscriptions) {'),
+        );
+        expect(dartCode, contains('sub.cancel();'));
+        expect(dartCode, contains('subscriptions.clear();'));
+        expect(dartCode, contains('listController.close();'));
+        expect(dartCode, contains('mapController.close();'));
+        expect(dartCode, contains('void addData() {'));
+        expect(dartCode, contains('listController.add([1, 2, 3]);'));
+        expect(dartCode, contains("mapController.add({'a': 1, 'b': 2});"));
+      });
+
+      test('handles collection transformations and chaining', () {
+        const dpugCode = '''
+List<int> numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+// Complex chaining operations
+List<int> complexChain = numbers
+  .where((n) => n % 2 == 0)
+  .map((n) => n * n)
+  .where((n) => n > 10)
+  .toList()
+
+Map<int, String> numberMap = numbers
+  .where((n) => n % 3 == 0)
+  .map((n) => MapEntry(n, n.toString()))
+  .toMap()
+
+Set<int> numberSet = numbers
+  .where((n) => n > 5)
+  .toSet()
+
+List<List<int>> grouped = numbers
+  .groupBy((n) => n % 3)
+  .values
+  .toList()
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(
+          dartCode,
+          contains('List<int> numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];'),
+        );
+        expect(dartCode, contains('List<int> complexChain = numbers'));
+        expect(dartCode, contains('.where((n) => n % 2 == 0)'));
+        expect(dartCode, contains('.map((n) => n * n)'));
+        expect(dartCode, contains('.where((n) => n > 10)'));
+        expect(dartCode, contains('.toList();'));
+        expect(dartCode, contains('Map<int, String> numberMap = numbers'));
+        expect(dartCode, contains('.where((n) => n % 3 == 0)'));
+        expect(dartCode, contains('.map((n) => MapEntry(n, n.toString()))'));
+        expect(dartCode, contains('.toMap();'));
+        expect(dartCode, contains('Set<int> numberSet = numbers'));
+        expect(dartCode, contains('.where((n) => n > 5)'));
+        expect(dartCode, contains('.toSet();'));
+        expect(dartCode, contains('List<List<int>> grouped = numbers'));
+        expect(dartCode, contains('.groupBy((n) => n % 3)'));
+        expect(dartCode, contains('.values'));
+        expect(dartCode, contains('.toList();'));
+      });
+
+      test('handles collection sorting and ordering', () {
+        const dpugCode = '''
+List<int> numbers = [3, 1, 4, 1, 5, 9, 2, 6]
+List<String> words = ['zebra', 'apple', 'banana', 'cherry']
+
+List<int> ascending = numbers.sorted((a, b) => a.compareTo(b))
+List<int> descending = numbers.sorted((a, b) => b.compareTo(a))
+List<String> alphabetical = words.sorted((a, b) => a.compareTo(b))
+List<String> reverseAlpha = words.sorted((a, b) => b.compareTo(a))
+
+List<int> evenFirst = numbers.sorted((a, b) {
+  if a % 2 == 0 && b % 2 != 0 return -1
+  if a % 2 != 0 && b % 2 == 0 return 1
+  return a.compareTo(b)
+})
+
+List<String> byLength = words.sorted((a, b) => a.length.compareTo(b.length))
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(
+          dartCode,
+          contains('List<int> numbers = [3, 1, 4, 1, 5, 9, 2, 6];'),
+        );
+        expect(
+          dartCode,
+          contains(
+            "List<String> words = ['zebra', 'apple', 'banana', 'cherry'];",
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'List<int> ascending = numbers.sorted((a, b) => a.compareTo(b));',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'List<int> descending = numbers.sorted((a, b) => b.compareTo(a));',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'List<String> alphabetical = words.sorted((a, b) => a.compareTo(b));',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'List<String> reverseAlpha = words.sorted((a, b) => b.compareTo(a));',
+          ),
+        );
+        expect(
+          dartCode,
+          contains('List<int> evenFirst = numbers.sorted((a, b) {'),
+        );
+        expect(dartCode, contains('if (a % 2 == 0 && b % 2 != 0) return -1;'));
+        expect(dartCode, contains('if (a % 2 != 0 && b % 2 == 0) return 1;'));
+        expect(dartCode, contains('return a.compareTo(b);'));
+        expect(
+          dartCode,
+          contains(
+            'List<String> byLength = words.sorted((a, b) => a.length.compareTo(b.length));',
+          ),
+        );
+      });
+
+      test('handles collection partitioning and splitting', () {
+        const dpugCode = '''
+List<int> numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+List<String> words = ['hello', 'world', 'apple', 'banana', 'cat', 'dog']
+
+// Partition by predicate
+List<List<int>> evenOdd = numbers.partition((n) => n % 2 == 0)
+List<int> evenNumbers = evenOdd[0]
+List<int> oddNumbers = evenOdd[1]
+
+// Partition by length
+List<List<String>> shortLong = words.partition((word) => word.length <= 3)
+List<String> shortWords = shortLong[0]
+List<String> longWords = shortLong[1]
+
+// Split into chunks
+List<List<int>> chunks = numbers.chunk(3)
+List<List<String>> wordChunks = words.chunk(2)
+
+// Group by criteria
+Map<int, List<int>> byParity = numbers.groupBy((n) => n % 2)
+Map<int, List<String>> byLength = words.groupBy((word) => word.length)
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(
+          dartCode,
+          contains('List<int> numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];'),
+        );
+        expect(
+          dartCode,
+          contains(
+            "List<String> words = ['hello', 'world', 'apple', 'banana', 'cat', 'dog'];",
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'List<List<int>> evenOdd = numbers.partition((n) => n % 2 == 0);',
+          ),
+        );
+        expect(dartCode, contains('List<int> evenNumbers = evenOdd[0];'));
+        expect(dartCode, contains('List<int> oddNumbers = evenOdd[1];'));
+        expect(
+          dartCode,
+          contains(
+            'List<List<String>> shortLong = words.partition((word) => word.length <= 3);',
+          ),
+        );
+        expect(dartCode, contains('List<String> shortWords = shortLong[0];'));
+        expect(dartCode, contains('List<String> longWords = shortLong[1];'));
+        expect(
+          dartCode,
+          contains('List<List<int>> chunks = numbers.chunk(3);'),
+        );
+        expect(
+          dartCode,
+          contains('List<List<String>> wordChunks = words.chunk(2);'),
+        );
+        expect(
+          dartCode,
+          contains(
+            'Map<int, List<int>> byParity = numbers.groupBy((n) => n % 2);',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'Map<int, List<String>> byLength = words.groupBy((word) => word.length);',
+          ),
+        );
+      });
+
+      test('handles collection search and find operations', () {
+        const dpugCode = '''
+List<int> numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+List<String> words = ['hello', 'world', 'apple', 'banana', 'cat', 'dog']
+
+// Find operations
+int? firstEven = numbers.firstWhereOrNull((n) => n % 2 == 0)
+int? lastEven = numbers.lastWhereOrNull((n) => n % 2 == 0)
+int? singleEven = numbers.singleWhereOrNull((n) => n == 4)
+int? noMatch = numbers.firstWhereOrNull((n) => n > 100)
+
+String? longWord = words.firstWhereOrNull((word) => word.length > 5)
+String? shortWord = words.firstWhereOrNull((word) => word.length < 3)
+String? appleWord = words.firstWhereOrNull((word) => word == 'apple')
+
+// Index operations
+int? firstEvenIndex = numbers.indexWhere((n) => n % 2 == 0)
+int? lastEvenIndex = numbers.lastIndexWhere((n) => n % 2 == 0)
+int? appleIndex = words.indexWhere((word) => word == 'apple')
+int? missingIndex = words.indexWhere((word) => word == 'missing')
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(
+          dartCode,
+          contains('List<int> numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];'),
+        );
+        expect(
+          dartCode,
+          contains(
+            "List<String> words = ['hello', 'world', 'apple', 'banana', 'cat', 'dog'];",
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'int? firstEven = numbers.firstWhereOrNull((n) => n % 2 == 0);',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'int? lastEven = numbers.lastWhereOrNull((n) => n % 2 == 0);',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'int? singleEven = numbers.singleWhereOrNull((n) => n == 4);',
+          ),
+        );
+        expect(
+          dartCode,
+          contains('int? noMatch = numbers.firstWhereOrNull((n) => n > 100);'),
+        );
+        expect(
+          dartCode,
+          contains(
+            'String? longWord = words.firstWhereOrNull((word) => word.length > 5);',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'String? shortWord = words.firstWhereOrNull((word) => word.length < 3);',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            "String? appleWord = words.firstWhereOrNull((word) => word == 'apple');",
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'int? firstEvenIndex = numbers.indexWhere((n) => n % 2 == 0);',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'int? lastEvenIndex = numbers.lastIndexWhere((n) => n % 2 == 0);',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            "int? appleIndex = words.indexWhere((word) => word == 'apple');",
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            "int? missingIndex = words.indexWhere((word) => word == 'missing');",
+          ),
+        );
+      });
+
+      test('handles collection type casting and conversion', () {
+        const dpugCode = '''
+List<dynamic> dynamicList = [1, 'hello', 3.14, true]
+List<int> intList = dynamicList.whereType<int>().toList()
+List<String> stringList = dynamicList.whereType<String>().toList()
+List<double> doubleList = dynamicList.whereType<double>().toList()
+List<bool> boolList = dynamicList.whereType<bool>().toList()
+
+Map<dynamic, dynamic> dynamicMap = {'a': 1, 'b': 'hello', 'c': 3.14}
+Map<String, int> stringIntMap = dynamicMap.whereType<String, int>()
+Map<String, String> stringStringMap = dynamicMap.whereType<String, String>()
+
+List<num> numbers = [1, 2.5, 3, 4.0]
+List<int> ints = numbers.whereType<int>().toList()
+List<double> doubles = numbers.whereType<double>().toList()
+
+// Cast operations
+List<Object?> objects = [1, 'hello', null]
+List<String?> strings = objects.whereType<String?>().toList()
+List<int?> nullableInts = objects.whereType<int?>().toList()
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(
+          dartCode,
+          contains("List<dynamic> dynamicList = [1, 'hello', 3.14, true];"),
+        );
+        expect(
+          dartCode,
+          contains(
+            'List<int> intList = dynamicList.whereType<int>().toList();',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'List<String> stringList = dynamicList.whereType<String>().toList();',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'List<double> doubleList = dynamicList.whereType<double>().toList();',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'List<bool> boolList = dynamicList.whereType<bool>().toList();',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            "Map<dynamic, dynamic> dynamicMap = {'a': 1, 'b': 'hello', 'c': 3.14};",
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'Map<String, int> stringIntMap = dynamicMap.whereType<String, int>();',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'Map<String, String> stringStringMap = dynamicMap.whereType<String, String>();',
+          ),
+        );
+        expect(dartCode, contains('List<num> numbers = [1, 2.5, 3, 4.0];'));
+        expect(
+          dartCode,
+          contains('List<int> ints = numbers.whereType<int>().toList();'),
+        );
+        expect(
+          dartCode,
+          contains(
+            'List<double> doubles = numbers.whereType<double>().toList();',
+          ),
+        );
+        expect(
+          dartCode,
+          contains("List<Object?> objects = [1, 'hello', null];"),
+        );
+        expect(
+          dartCode,
+          contains(
+            'List<String?> strings = objects.whereType<String?>().toList();',
+          ),
+        );
+        expect(
+          dartCode,
+          contains(
+            'List<int?> nullableInts = objects.whereType<int?>().toList();',
+          ),
+        );
+      });
+
+      test('handles collection memory management patterns', () {
+        const dpugCode = '''
+// Weak collections (conceptual)
+Map<String, dynamic> cache = {}
+List<WeakReference> weakRefs = []
+
+void addToCache(String key, dynamic value)
+  if cache.length > 100
+    cache.clear()  // Simple cleanup strategy
+  cache[key] = value
+
+void cleanupWeakRefs()
+  weakRefs.removeWhere((ref) => ref.target == null)
+
+dynamic getFromCache(String key) => cache[key]
+
+void clearCache() => cache.clear()
+
+// Memory-efficient operations
+List<int> processLargeList(List<int> data)
+  // Process in chunks to manage memory
+  List<int> result = []
+  for int i = 0; i < data.length; i += 1000
+    int end = (i + 1000).clamp(0, data.length)
+    List<int> chunk = data.sublist(i, end)
+    result.addAll(chunk.map((n) => n * 2).toList())
+  return result
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('Map<String, dynamic> cache = {};'));
+        expect(dartCode, contains('List<WeakReference> weakRefs = [];'));
+        expect(
+          dartCode,
+          contains('void addToCache(String key, dynamic value) {'),
+        );
+        expect(dartCode, contains('if (cache.length > 100) {'));
+        expect(dartCode, contains('cache.clear();'));
+        expect(dartCode, contains('cache[key] = value;'));
+        expect(dartCode, contains('void cleanupWeakRefs() {'));
+        expect(
+          dartCode,
+          contains('weakRefs.removeWhere((ref) => ref.target == null);'),
+        );
+        expect(
+          dartCode,
+          contains('dynamic getFromCache(String key) => cache[key];'),
+        );
+        expect(dartCode, contains('void clearCache() => cache.clear();'));
+        expect(
+          dartCode,
+          contains('List<int> processLargeList(List<int> data) {'),
+        );
+        expect(dartCode, contains('List<int> result = [];'));
+        expect(
+          dartCode,
+          contains('for (int i = 0; i < data.length; i += 1000) {'),
+        );
+        expect(
+          dartCode,
+          contains('int end = (i + 1000).clamp(0, data.length);'),
+        );
+        expect(dartCode, contains('List<int> chunk = data.sublist(i, end);'));
+        expect(
+          dartCode,
+          contains('result.addAll(chunk.map((n) => n * 2).toList());'),
+        );
+        expect(dartCode, contains('return result;'));
+      });
+    });
   });
 }

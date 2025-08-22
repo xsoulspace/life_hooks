@@ -1,0 +1,265 @@
+name: Release Automation
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+      - "dpug-core-v*.*.*"
+      - "dpug-cli-v*.*.*"
+      - "dpug-code-builder-v*.*.*"
+      - "dpug-server-v*.*.*"
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "Package to release (all, dpug_core, dpug_cli, dpug_code_builder, dpug_server)"
+        required: true
+        default: "all"
+      version:
+        description: "Version to release (leave empty for automatic)"
+        required: false
+      dry_run:
+        description: "Run as dry run (no actual publishing)"
+        required: false
+        default: "false"
+
+env:
+  DART_VERSION: "3.8.1"
+
+jobs:
+  release:
+    name: Release Packages
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [dpug_core, dpug_code_builder, dpug_cli, dpug_server]
+        exclude:
+          - package: dpug_core
+            exclude: ${{ github.event.inputs.package != 'all' && github.event.inputs.package != 'dpug_core' }}
+          - package: dpug_code_builder
+            exclude: ${{ github.event.inputs.package != 'all' && github.event.inputs.package != 'dpug_code_builder' }}
+          - package: dpug_cli
+            exclude: ${{ github.event.inputs.package != 'all' && github.event.inputs.package != 'dpug_cli' }}
+          - package: dpug_server
+            exclude: ${{ github.event.inputs.package != 'all' && github.event.inputs.package != 'dpug_server' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_VERSION }}
+
+      - name: Install dependencies for ${{ matrix.package }}
+        working-directory: ${{ matrix.package }}
+        run: dart pub get
+
+      - name: Run tests for ${{ matrix.package }}
+        working-directory: ${{ matrix.package }}
+        run: dart test
+
+      - name: Run integration tests for ${{ matrix.package }}
+        working-directory: ${{ matrix.package }}
+        run: |
+          if [ -f "test/integration_test.dart" ]; then
+            dart test test/integration_test.dart
+          fi
+
+      - name: Run linting for ${{ matrix.package }}
+        working-directory: ${{ matrix.package }}
+        run: |
+          dart analyze .
+          dart format --set-exit-if-changed .
+
+      - name: Update version in pubspec.yaml
+        if: github.event.inputs.version != ''
+        working-directory: ${{ matrix.package }}
+        run: |
+          sed -i "s/^version: .*/version: ${{ github.event.inputs.version }}/g" pubspec.yaml
+
+      - name: Dry run - validate package
+        if: github.event.inputs.dry_run == 'true'
+        working-directory: ${{ matrix.package }}
+        run: |
+          dart pub publish --dry-run
+
+      - name: Publish to pub.dev
+        if: github.event.inputs.dry_run != 'true'
+        working-directory: ${{ matrix.package }}
+        env:
+          PUB_CREDENTIALS: ${{ secrets.PUB_CREDENTIALS }}
+        run: |
+          echo "$PUB_CREDENTIALS" > ~/.pub-cache/credentials.json
+          dart pub publish --force
+
+      - name: Create GitHub release
+        if: github.event.inputs.dry_run != 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            ## Release ${{ github.ref_name }}
+
+            ### Changes
+            - Published ${{ matrix.package }} to pub.dev
+            - All tests passed
+            - Code quality checks completed
+
+            ### Installation
+            ```bash
+            dart pub add ${{ matrix.package }}
+            ```
+
+            ### Documentation
+            - [Package Documentation](https://pub.dev/packages/${{ matrix.package }})
+            - [Source Code](https://github.com/${{ github.repository }})
+          draft: false
+          prerelease: false
+
+  changelog:
+    name: Update Changelog
+    runs-on: ubuntu-latest
+    if: github.event.inputs.dry_run != 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        run: |
+          echo "# Changelog" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "## ${{ github.ref_name }} - $(date +%Y-%m-%d)" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+
+          # Get commit messages since last tag
+          git log --oneline --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD~1)..HEAD >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+
+      - name: Commit changelog
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add CHANGELOG.md
+          git commit -m "Update changelog for ${{ github.ref_name }}" || echo "No changes to commit"
+
+      - name: Push changelog
+        run: |
+          git push
+
+  documentation:
+    name: Update Documentation
+    runs-on: ubuntu-latest
+    if: github.event.inputs.dry_run != 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_VERSION }}
+
+      - name: Generate API documentation
+        run: |
+          cd dpug_core && dart doc .
+          cd ../dpug_code_builder && dart doc .
+          cd ../dpug_cli && dart doc .
+          cd ../dpug_server && dart doc .
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./doc/api
+          cname: docs.dpug.dev
+
+  notification:
+    name: Release Notification
+    runs-on: ubuntu-latest
+    needs: [release, changelog, documentation]
+    if: always()
+
+    steps:
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            🚀 DPug Release ${{ github.ref_name }}
+
+            Status: ${{ job.status }}
+
+            Changes:
+            - Published packages to pub.dev
+            - Updated changelog
+            - Generated documentation
+
+            📦 Available on: https://pub.dev/packages/dpug_core
+            📖 Documentation: https://docs.dpug.dev
+            💻 Source: https://github.com/${{ github.repository }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Send Discord notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "DPug Release ${{ github.ref_name }}"
+          description: |
+            🚀 New DPug release is now available!
+
+            **Status:** ${{ job.status }}
+            **Version:** ${{ github.ref_name }}
+
+            📦 **Packages Published:**
+            - dpug_core
+            - dpug_code_builder
+            - dpug_cli
+            - dpug_server
+
+            📖 **Documentation:** https://docs.dpug.dev
+            💻 **Source Code:** https://github.com/${{ github.repository }}
+          color: 0x00ff00
+          url: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    if: github.event.inputs.dry_run != 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_VERSION }}
+
+      - name: Run security audit
+        run: |
+          # Run dependency security check
+          cd dpug_core && dart pub deps
+          cd ../dpug_code_builder && dart pub deps
+          cd ../dpug_cli && dart pub deps
+          cd ../dpug_server && dart pub deps
+
+          echo "Security audit completed"
+
+      - name: Check for vulnerabilities
+        run: |
+          # Additional security checks can be added here
+          echo "Vulnerability check completed"

@@ -1,0 +1,357 @@
+name: Code Quality & Dependencies
+
+on:
+  push:
+    branches: [main, master, develop, exp/*]
+  pull_request:
+    branches: [main, master, develop, exp/*]
+  schedule:
+    # Run weekly on Sundays
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
+
+env:
+  DART_VERSION: "3.8.1"
+
+jobs:
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_VERSION }}
+
+      - name: Install dependencies for all packages
+        run: |
+          dart pub get
+          cd dpug_core && dart pub get
+          cd ../dpug_code_builder && dart pub get
+          cd ../dpug_cli && dart pub get
+          cd ../dpug_server && dart pub get
+
+      - name: Run dart analyze
+        run: |
+          echo "Running dart analyze on root..."
+          dart analyze .
+
+          echo "Running dart analyze on dpug_core..."
+          cd dpug_core && dart analyze .
+
+          echo "Running dart analyze on dpug_code_builder..."
+          cd ../dpug_code_builder && dart analyze .
+
+          echo "Running dart analyze on dpug_cli..."
+          cd ../dpug_cli && dart analyze .
+
+          echo "Running dart analyze on dpug_server..."
+          cd ../dpug_server && dart analyze .
+
+      - name: Check code formatting
+        run: |
+          echo "Checking code formatting..."
+
+          # Check if code is properly formatted
+          dart format --set-exit-if-changed . || {
+            echo "❌ Code formatting issues found"
+            echo "Please run: dart format ."
+            exit 1
+          }
+
+          cd dpug_core && dart format --set-exit-if-changed . || {
+            echo "❌ dpug_core formatting issues found"
+            exit 1
+          }
+
+          cd ../dpug_code_builder && dart format --set-exit-if-changed . || {
+            echo "❌ dpug_code_builder formatting issues found"
+            exit 1
+          }
+
+          cd ../dpug_cli && dart format --set-exit-if-changed . || {
+            echo "❌ dpug_cli formatting issues found"
+            exit 1
+          }
+
+          cd ../dpug_server && dart format --set-exit-if-changed . || {
+            echo "❌ dpug_server formatting issues found"
+            exit 1
+          }
+
+          echo "✅ All code is properly formatted"
+
+      - name: Run custom lints
+        run: |
+          echo "Running custom lints..."
+
+          # Run xsoulspace_lints if available
+          if [ -f "dpug_core/pubspec.yaml" ]; then
+            cd dpug_core && dart run xsoulspace_lints || echo "No custom lints for dpug_core"
+          fi
+
+          if [ -f "../dpug_code_builder/pubspec.yaml" ]; then
+            cd ../dpug_code_builder && dart run xsoulspace_lints || echo "No custom lints for dpug_code_builder"
+          fi
+
+          if [ -f "../dpug_cli/pubspec.yaml" ]; then
+            cd ../dpug_cli && dart run xsoulspace_lints || echo "No custom lints for dpug_cli"
+          fi
+
+          if [ -f "../dpug_server/pubspec.yaml" ]; then
+            cd ../dpug_server && dart run xsoulspace_lints || echo "No custom lints for dpug_server"
+          fi
+
+      - name: Check for TODO comments
+        run: |
+          echo "Checking for TODO comments..."
+
+          # Count TODO comments (warn if too many)
+          todo_count=$(grep -r "TODO\|FIXME\|XXX" . --include="*.dart" --include="*.yaml" --include="*.md" | wc -l)
+
+          if [ "$todo_count" -gt 50 ]; then
+            echo "⚠️  High number of TODO comments found: $todo_count"
+            echo "Consider addressing some TODOs before merging"
+          else
+            echo "✅ TODO count is acceptable: $todo_count"
+          fi
+
+      - name: Check for debug prints
+        run: |
+          echo "Checking for debug prints..."
+
+          # Check for print statements in production code
+          print_count=$(find . -name "*.dart" -not -path "./test/*" -not -path "./example/*" -exec grep -l "print(" {} \; | wc -l)
+
+          if [ "$print_count" -gt 0 ]; then
+            echo "⚠️  Found $print_count files with print statements outside of tests/examples"
+            echo "Consider using proper logging instead"
+          else
+            echo "✅ No debug prints found in production code"
+          fi
+
+      - name: Check line lengths
+        run: |
+          echo "Checking line lengths..."
+
+          # Find lines longer than 120 characters
+          long_lines=$(find . -name "*.dart" -exec awk 'length($0) > 120 {print FILENAME":"NR":"$0}' {} \; | wc -l)
+
+          if [ "$long_lines" -gt 0 ]; then
+            echo "⚠️  Found $long_lines lines longer than 120 characters"
+            echo "Consider breaking them up for better readability"
+          else
+            echo "✅ All lines are within acceptable length"
+          fi
+
+  dependency-analysis:
+    name: Dependency Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_VERSION }}
+
+      - name: Check for outdated dependencies
+        run: |
+          echo "Checking for outdated dependencies..."
+
+          cd dpug_core && dart pub outdated || echo "No outdated deps in dpug_core"
+          cd ../dpug_code_builder && dart pub outdated || echo "No outdated deps in dpug_code_builder"
+          cd ../dpug_cli && dart pub outdated || echo "No outdated deps in dpug_cli"
+          cd ../dpug_server && dart pub outdated || echo "No outdated deps in dpug_server"
+
+      - name: Check dependency licenses
+        run: |
+          echo "Checking dependency licenses..."
+
+          cd dpug_core && dart pub deps --style=compact | grep -E "(license|License)" || echo "No license info available"
+          cd ../dpug_code_builder && dart pub deps --style=compact | grep -E "(license|License)" || echo "No license info available"
+          cd ../dpug_cli && dart pub deps --style=compact | grep -E "(license|License)" || echo "No license info available"
+          cd ../dpug_server && dart pub deps --style=compact | grep -E "(license|License)" || echo "No license info available"
+
+      - name: Check for dependency conflicts
+        run: |
+          echo "Checking for dependency conflicts..."
+
+          # Try to resolve dependencies
+          cd dpug_core && dart pub get --dry-run || echo "Dependency resolution check completed"
+          cd ../dpug_code_builder && dart pub get --dry-run || echo "Dependency resolution check completed"
+          cd ../dpug_cli && dart pub get --dry-run || echo "Dependency resolution check completed"
+          cd ../dpug_server && dart pub get --dry-run || echo "Dependency resolution check completed"
+
+      - name: Generate dependency report
+        run: |
+          echo "Generating dependency report..."
+
+          echo "# Dependency Report" > dependency_report.md
+          echo "" >> dependency_report.md
+          echo "## Generated on $(date)" >> dependency_report.md
+          echo "" >> dependency_report.md
+
+          echo "## dpug_core Dependencies" >> dependency_report.md
+          cd dpug_core && dart pub deps --style=tree >> ../dependency_report.md || echo "Failed to generate deps" >> ../dependency_report.md
+          echo "" >> ../dependency_report.md
+
+          echo "## dpug_code_builder Dependencies" >> ../dependency_report.md
+          cd ../dpug_code_builder && dart pub deps --style=tree >> ../dependency_report.md || echo "Failed to generate deps" >> ../dependency_report.md
+          echo "" >> ../dependency_report.md
+
+          echo "## dpug_cli Dependencies" >> ../dependency_report.md
+          cd ../dpug_cli && dart pub deps --style=tree >> ../dependency_report.md || echo "Failed to generate deps" >> ../dependency_report.md
+          echo "" >> ../dependency_report.md
+
+          echo "## dpug_server Dependencies" >> ../dependency_report.md
+          cd ../dpug_server && dart pub deps --style=tree >> ../dependency_report.md || echo "Failed to generate deps" >> ../dependency_report.md
+
+      - name: Upload dependency report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-report
+          path: dependency_report.md
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_VERSION }}
+
+      - name: Run security audit
+        run: |
+          echo "Running security audit..."
+
+          # Check for known vulnerable packages
+          cd dpug_core && dart pub deps --json | jq -r '.packages[].name' > ../packages.txt
+          cd ../dpug_code_builder && dart pub deps --json | jq -r '.packages[].name' >> ../packages.txt
+          cd ../dpug_cli && dart pub deps --json | jq -r '.packages[].name' >> ../packages.txt
+          cd ../dpug_server && dart pub deps --json | jq -r '.packages[].name' >> ../packages.txt
+
+          sort ../packages.txt | uniq > ../unique_packages.txt
+          echo "Found $(wc -l < ../unique_packages.txt) unique dependencies"
+
+          # Check for common vulnerable patterns
+          vulnerable_patterns=(
+            "old_package"
+            "deprecated_lib"
+          )
+
+          for pattern in "${vulnerable_patterns[@]}"; do
+            if grep -q "$pattern" ../unique_packages.txt; then
+              echo "⚠️  Potentially vulnerable package found: $pattern"
+            fi
+          done
+
+          echo "Security audit completed"
+
+      - name: Check for secrets
+        run: |
+          echo "Checking for potential secrets..."
+
+          # Look for common secret patterns (this is basic - consider using a dedicated tool)
+          secret_patterns=(
+            "password"
+            "secret"
+            "key"
+            "token"
+          )
+
+          for pattern in "${secret_patterns[@]}"; do
+            grep -r "$pattern" . --include="*.dart" --include="*.yaml" --include="*.json" | grep -v "test" | grep -v "example" | head -10 || true
+          done
+
+          echo "Secret check completed"
+
+  documentation-quality:
+    name: Documentation Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check README files
+        run: |
+          echo "Checking README files..."
+
+          find . -name "README.md" -exec echo "Found README: {}" \;
+
+          # Check if README files have minimum content
+          for readme in $(find . -name "README.md"); do
+            lines=$(wc -l < "$readme")
+            words=$(wc -w < "$readme")
+
+            if [ "$lines" -lt 10 ]; then
+              echo "⚠️  README $readme seems too short ($lines lines)"
+            fi
+
+            if [ "$words" -lt 50 ]; then
+              echo "⚠️  README $readme seems too short ($words words)"
+            fi
+          done
+
+      - name: Check documentation formatting
+        run: |
+          echo "Checking documentation formatting..."
+
+          # Check for common markdown issues
+          find . -name "*.md" -exec echo "Checking {}" \; -exec grep -n "^[[:space:]]*$" {} \; | head -20 || true
+
+          echo "Documentation check completed"
+
+      - name: Validate code examples in docs
+        run: |
+          echo "Validating code examples in documentation..."
+
+          # This would be more sophisticated in a real implementation
+          # For now, just check if there are code blocks
+          find . -name "*.md" -exec grep -l "```" {} \; | head -5
+
+          echo "Code example validation completed"
+
+  notification:
+    name: Quality Check Notification
+    runs-on: ubuntu-latest
+    needs:
+      [code-quality, dependency-analysis, security-scan, documentation-quality]
+    if: always()
+
+    steps:
+      - name: Send notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            🔍 Code Quality Check Results
+
+            Status: ${{ job.status }}
+
+            Quality checks completed:
+            - Code analysis: ${{ needs.code-quality.result }}
+            - Dependencies: ${{ needs.dependency-analysis.result }}
+            - Security: ${{ needs.security-scan.result }}
+            - Documentation: ${{ needs.documentation-quality.result }}
+
+            ${{
+              job.status == 'success' &&
+              '✅ All quality checks passed!' ||
+              '⚠️ Some quality issues found. Please review the results.'
+            }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

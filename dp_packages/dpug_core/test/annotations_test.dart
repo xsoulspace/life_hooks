@@ -709,5 +709,536 @@ class AnnotatedClass
         expect(backToDpug, contains('assert id != null'));
       });
     });
+
+    group('Annotation Edge Cases and Error Conditions', () {
+      test('handles empty and malformed annotations', () {
+        const dpugCode = '''
+@ class EmptyAnnotation
+  String field
+
+class MalformedAnnotation
+  @ String field1
+  @( invalid: 'syntax' String field2
+  @123Invalid int field3
+  @[] List<int> field4
+''';
+
+        // Should handle gracefully or throw appropriate errors
+        expect(() => converter.dpugToDart(dpugCode), returnsNormally);
+      });
+
+      test('handles very long annotation parameters', () {
+        final longString = 'a' * 1000;
+        final dpugCode = '''
+@CustomAnnotation(
+  veryLongParameter: '$longString',
+  anotherLongOne: '$longString',
+  nestedAnnotation: @Nested(param: '$longString')
+)
+class LongAnnotationClass
+  String field
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('veryLongParameter:'));
+        expect(dartCode, contains('anotherLongOne:'));
+        expect(dartCode, contains('nestedAnnotation:'));
+        expect(dartCode, contains('@Nested'));
+        expect(dartCode, contains('class LongAnnotationClass'));
+      });
+
+      test('handles deeply nested annotation parameters', () {
+        const dpugCode = '''
+@OuterAnnotation(
+  param1: @MiddleAnnotation(
+    param2: @InnerAnnotation(
+      param3: @DeepAnnotation(
+        param4: @VeryDeepAnnotation(
+          value: 'deep value',
+          number: 42
+        ),
+        list: [1, 2, @NestedInList(value: 'nested')]
+      ),
+      map: {'key': @NestedInMap(value: 'mapped')}
+    ),
+    array: [@ArrayAnnotation(value: 'array'), @AnotherArrayAnnotation(value: 'another')]
+  )
+)
+class DeeplyNestedAnnotations
+  String field
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('@OuterAnnotation('));
+        expect(dartCode, contains('@MiddleAnnotation('));
+        expect(dartCode, contains('@InnerAnnotation('));
+        expect(dartCode, contains('@DeepAnnotation('));
+        expect(dartCode, contains('@VeryDeepAnnotation('));
+        expect(dartCode, contains("value: 'deep value'"));
+        expect(dartCode, contains('number: 42'));
+        expect(dartCode, contains('@NestedInList'));
+        expect(dartCode, contains('@NestedInMap'));
+        expect(dartCode, contains('@ArrayAnnotation'));
+        expect(dartCode, contains('class DeeplyNestedAnnotations'));
+      });
+
+      test('handles annotations with complex parameter types', () {
+        const dpugCode = '''
+@ComplexAnnotation(
+  stringParam: 'hello',
+  intParam: 42,
+  doubleParam: 3.14,
+  boolParam: true,
+  nullParam: null,
+  listParam: [1, 2, 'three', true, null],
+  mapParam: {
+    'string': 'value',
+    'int': 42,
+    'bool': true,
+    'null': null,
+    'nested': {'inner': 'value'}
+  },
+  functionParam: (String s) => s.toUpperCase(),
+  typeParam: String,
+  symbolParam: #symbol,
+  durationParam: Duration(seconds: 30),
+  colorParam: Colors.blue,
+  iconParam: Icons.star
+)
+class ComplexAnnotationClass
+  String field
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('@ComplexAnnotation('));
+        expect(dartCode, contains("stringParam: 'hello'"));
+        expect(dartCode, contains('intParam: 42'));
+        expect(dartCode, contains('doubleParam: 3.14'));
+        expect(dartCode, contains('boolParam: true'));
+        expect(dartCode, contains('nullParam: null'));
+        expect(dartCode, contains("listParam: [1, 2, 'three', true, null]"));
+        expect(dartCode, contains('mapParam: {'));
+        expect(dartCode, contains("'string': 'value'"));
+        expect(dartCode, contains("'int': 42"));
+        expect(dartCode, contains('functionParam:'));
+        expect(dartCode, contains('typeParam: String'));
+        expect(dartCode, contains('symbolParam: #symbol'));
+        expect(dartCode, contains('durationParam: Duration(seconds: 30)'));
+        expect(dartCode, contains('colorParam: Colors.blue'));
+        expect(dartCode, contains('iconParam: Icons.star'));
+        expect(dartCode, contains('class ComplexAnnotationClass'));
+      });
+
+      test('handles annotations with special characters and Unicode', () {
+        const dpugCode = '''
+@UnicodeAnnotation(
+  emoji: '🚀🌟✨',
+  accented: 'café naïve résumé',
+  symbols: '©®™€£¥',
+  mixed: 'Hello 世界 🌍',
+  controlChars: '\u0000\u0001\u0002',
+  newlines: 'line1\nline2\nline3',
+  tabs: 'col1\tcol2\tcol3',
+  quotes: 'He said "Hello" and 'Goodbye'',
+  backslashes: 'path\\to\\file',
+  regex: r'[a-zA-Z0-9]+',
+  multiline: '''
+    This is a
+    multiline string
+    with special chars: @#\$%^&*()
+  '''
+)
+class UnicodeAnnotationClass
+  String field
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('@UnicodeAnnotation('));
+        expect(dartCode, contains("emoji: '🚀🌟✨'"));
+        expect(dartCode, contains("accented: 'café naïve résumé'"));
+        expect(dartCode, contains("symbols: '©®™€£¥'"));
+        expect(dartCode, contains("mixed: 'Hello 世界 🌍'"));
+        expect(dartCode, contains(r"controlChars: '\u0000\u0001\u0002'"));
+        expect(dartCode, contains(r"newlines: 'line1\nline2\nline3'"));
+        expect(dartCode, contains(r"tabs: 'col1\tcol2\tcol3'"));
+        expect(dartCode, contains(r'''quotes: 'He said "Hello" and \'Goodbye\''''));
+        expect(dartCode, contains(r"backslashes: 'path\\to\\file'"));
+        expect(dartCode, contains("regex: r'[a-zA-Z0-9]+'"));
+        expect(dartCode, contains('multiline:'));
+        expect(dartCode, contains('This is a'));
+        expect(dartCode, contains('multiline string'));
+        expect(dartCode, contains('class UnicodeAnnotationClass'));
+      });
+
+      test('handles annotations with mathematical and logical expressions', () {
+        const dpugCode = '''
+@MathAnnotation(
+  simpleMath: 1 + 2 * 3,
+  complexMath: (1 + 2) * (3 - 4) / 5,
+  booleanLogic: true && false || true,
+  comparison: 1 > 0 && 2 < 3 && 4 >= 4 && 5 <= 5 && 6 == 6 && 7 != 8,
+  nullCheck: value != null ? value : 'default',
+  typeCheck: value is String ? value : 'not string',
+  rangeCheck: value >= 0 && value <= 100,
+  bitwise: (1 << 2) | (3 & 5) ^ (7 >> 1),
+  ternary: condition ? 'true' : 'false'
+)
+class MathAnnotationClass
+  String field
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('@MathAnnotation('));
+        expect(dartCode, contains('simpleMath: 1 + 2 * 3'));
+        expect(dartCode, contains('complexMath: (1 + 2) * (3 - 4) / 5'));
+        expect(dartCode, contains('booleanLogic: true && false || true'));
+        expect(dartCode, contains('comparison: 1 > 0 && 2 < 3 && 4 >= 4 && 5 <= 5 && 6 == 6 && 7 != 8'));
+        expect(dartCode, contains("nullCheck: value != null ? value : 'default'"));
+        expect(dartCode, contains("typeCheck: value is String ? value : 'not string'"));
+        expect(dartCode, contains('rangeCheck: value >= 0 && value <= 100'));
+        expect(dartCode, contains('bitwise: (1 << 2) | (3 & 5) ^ (7 >> 1)'));
+        expect(dartCode, contains("ternary: condition ? 'true' : 'false'"));
+        expect(dartCode, contains('class MathAnnotationClass'));
+      });
+
+      test('handles annotations with collection literals and comprehensions', () {
+        const dpugCode = '''
+@CollectionAnnotation(
+  simpleList: [1, 2, 3, 4, 5],
+  stringList: ['hello', 'world', 'test'],
+  mixedList: [1, 'hello', true, null, 3.14],
+  emptyList: [],
+  nestedList: [[1, 2], [3, 4], [5, 6]],
+
+  simpleMap: {'a': 1, 'b': 2, 'c': 3},
+  stringMap: {'hello': 'world', 'foo': 'bar'},
+  mixedMap: {'int': 42, 'string': 'value', 'bool': true},
+  emptyMap: {},
+  nestedMap: {'outer': {'inner': 'value'}},
+
+  simpleSet: {1, 2, 3, 4, 5},
+  stringSet: {'hello', 'world', 'test'},
+  emptySet: {},
+
+  listComprehension: [for int i in 1..10 if i % 2 == 0 i * 2],
+  mapComprehension: {for String s in ['a', 'b', 'c'] s: s.toUpperCase()},
+  setComprehension: {for int i in 1..10 if i % 3 == 0 i},
+
+  spreadList: [0, ...[1, 2, 3], 4, ...[5, 6]],
+  spreadMap: {'a': 1, ...{'b': 2, 'c': 3}, 'd': 4},
+  conditionalCollection: [1, 2, if condition ...[3, 4, 5], 6]
+)
+class CollectionAnnotationClass
+  String field
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('@CollectionAnnotation('));
+        expect(dartCode, contains('simpleList: [1, 2, 3, 4, 5]'));
+        expect(dartCode, contains("stringList: ['hello', 'world', 'test']"));
+        expect(dartCode, contains("mixedList: [1, 'hello', true, null, 3.14]"));
+        expect(dartCode, contains('emptyList: []'));
+        expect(dartCode, contains('nestedList: [[1, 2], [3, 4], [5, 6]]'));
+        expect(dartCode, contains("simpleMap: {'a': 1, 'b': 2, 'c': 3}"));
+        expect(dartCode, contains("stringMap: {'hello': 'world', 'foo': 'bar'}"));
+        expect(dartCode, contains("mixedMap: {'int': 42, 'string': 'value', 'bool': true}"));
+        expect(dartCode, contains('emptyMap: {}'));
+        expect(dartCode, contains("nestedMap: {'outer': {'inner': 'value'}}"));
+        expect(dartCode, contains('simpleSet: {1, 2, 3, 4, 5}'));
+        expect(dartCode, contains("stringSet: {'hello', 'world', 'test'}"));
+        expect(dartCode, contains('emptySet: {}'));
+        expect(dartCode, contains('listComprehension: [for (int i = 1; i <= 10; i++) if (i % 2 == 0) i * 2]'));
+        expect(dartCode, contains("mapComprehension: {for (String s in ['a', 'b', 'c']) s: s.toUpperCase()}"));
+        expect(dartCode, contains('setComprehension: {for (int i = 1; i <= 10; i++) if (i % 3 == 0) i}'));
+        expect(dartCode, contains('spreadList: [0, ...[1, 2, 3], 4, ...[5, 6]]'));
+        expect(dartCode, contains("spreadMap: {'a': 1, ...{'b': 2, 'c': 3}, 'd': 4}"));
+        expect(dartCode, contains('conditionalCollection: [1, 2, if (condition) ...[3, 4, 5], 6]'));
+        expect(dartCode, contains('class CollectionAnnotationClass'));
+      });
+
+      test('handles annotations with function calls and method references', () {
+        const dpugCode = '''
+@FunctionAnnotation(
+  simpleCall: 'hello'.toUpperCase(),
+  methodCall: 'hello'.substring(0, 2),
+  staticCall: DateTime.now(),
+  constructorCall: Duration(seconds: 30),
+  cascadeCall: StringBuffer()..write('hello')..write('world'),
+  nestedCall: 'hello'.substring(0, 2).toUpperCase(),
+  functionCall: (String s) => s.length,
+  methodRef: String#toUpperCase,
+  getterCall: 'hello'.length,
+  operatorCall: 1 + 2 * 3,
+  conditionalCall: condition ? 'true'.length : 'false'.length
+)
+class FunctionAnnotationClass
+  String field
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('@FunctionAnnotation('));
+        expect(dartCode, contains("simpleCall: 'hello'.toUpperCase()"));
+        expect(dartCode, contains("methodCall: 'hello'.substring(0, 2)"));
+        expect(dartCode, contains('staticCall: DateTime.now()'));
+        expect(dartCode, contains('constructorCall: Duration(seconds: 30)'));
+        expect(dartCode, contains("cascadeCall: StringBuffer()..write('hello')..write('world')"));
+        expect(dartCode, contains("nestedCall: 'hello'.substring(0, 2).toUpperCase()"));
+        expect(dartCode, contains('functionCall: (String s) => s.length'));
+        expect(dartCode, contains('methodRef: String#toUpperCase'));
+        expect(dartCode, contains("getterCall: 'hello'.length"));
+        expect(dartCode, contains('operatorCall: 1 + 2 * 3'));
+        expect(dartCode, contains("conditionalCall: condition ? 'true'.length : 'false'.length"));
+        expect(dartCode, contains('class FunctionAnnotationClass'));
+      });
+
+      test('handles annotations with async and generator expressions', () {
+        const dpugCode = '''
+@AsyncAnnotation(
+  futureValue: Future.value(42),
+  delayedValue: Future.delayed(Duration(seconds: 1), () => 'delayed'),
+  microtaskValue: Future.microtask(() => 'microtask'),
+  syncValue: Future.sync(() => 'sync'),
+  completedFuture: Future(() => 'completed'),
+  errorFuture: Future.error('error'),
+  streamValue: Stream.fromIterable([1, 2, 3]),
+  periodicStream: Stream.periodic(Duration(seconds: 1), (i) => i),
+  emptyStream: Stream.empty(),
+  valueStream: Stream.value('hello'),
+  errorStream: Stream.error('stream error'),
+  generatorList: [for int i in 1..5 if i % 2 == 0 i],
+  generatorMap: {for String s in ['a', 'b', 'c'] s: s.length},
+  generatorSet: {for int i in 1..10 if i % 3 == 0 i}
+)
+class AsyncAnnotationClass
+  String field
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('@AsyncAnnotation('));
+        expect(dartCode, contains('futureValue: Future.value(42)'));
+        expect(dartCode, contains("delayedValue: Future.delayed(Duration(seconds: 1), () => 'delayed')"));
+        expect(dartCode, contains("microtaskValue: Future.microtask(() => 'microtask')"));
+        expect(dartCode, contains("syncValue: Future.sync(() => 'sync')"));
+        expect(dartCode, contains("completedFuture: Future(() => 'completed')"));
+        expect(dartCode, contains("errorFuture: Future.error('error')"));
+        expect(dartCode, contains('streamValue: Stream.fromIterable([1, 2, 3])'));
+        expect(dartCode, contains('periodicStream: Stream.periodic(Duration(seconds: 1), (i) => i)'));
+        expect(dartCode, contains('emptyStream: Stream.empty()'));
+        expect(dartCode, contains("valueStream: Stream.value('hello')"));
+        expect(dartCode, contains("errorStream: Stream.error('stream error')"));
+        expect(dartCode, contains('generatorList: [for (int i = 1; i <= 5; i++) if (i % 2 == 0) i]'));
+        expect(dartCode, contains("generatorMap: {for (String s in ['a', 'b', 'c']) s: s.length}"));
+        expect(dartCode, contains('generatorSet: {for (int i = 1; i <= 10; i++) if (i % 3 == 0) i}'));
+        expect(dartCode, contains('class AsyncAnnotationClass'));
+      });
+
+      test('handles annotations with enum values and constants', () {
+        const dpugCode = '''
+@EnumAnnotation(
+  simpleEnum: MyEnum.value1,
+  anotherEnum: Status.active,
+  priorityEnum: Priority.high,
+  listOfEnums: [MyEnum.value1, MyEnum.value2, MyEnum.value3],
+  mapOfEnums: {
+    'first': MyEnum.value1,
+    'second': MyEnum.value2,
+    'third': MyEnum.value3
+  },
+  constValue: const MyClass('hello'),
+  finalValue: final MyClass('world'),
+  staticConst: MyClass.staticConst,
+  staticFinal: MyClass.staticFinal
+)
+class EnumAnnotationClass
+  String field
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('@EnumAnnotation('));
+        expect(dartCode, contains('simpleEnum: MyEnum.value1'));
+        expect(dartCode, contains('anotherEnum: Status.active'));
+        expect(dartCode, contains('priorityEnum: Priority.high'));
+        expect(dartCode, contains('listOfEnums: [MyEnum.value1, MyEnum.value2, MyEnum.value3]'));
+        expect(dartCode, contains('mapOfEnums: {'));
+        expect(dartCode, contains("'first': MyEnum.value1"));
+        expect(dartCode, contains("'second': MyEnum.value2"));
+        expect(dartCode, contains("'third': MyEnum.value3"));
+        expect(dartCode, contains("constValue: const MyClass('hello')"));
+        expect(dartCode, contains("finalValue: final MyClass('world')"));
+        expect(dartCode, contains('staticConst: MyClass.staticConst'));
+        expect(dartCode, contains('staticFinal: MyClass.staticFinal'));
+        expect(dartCode, contains('class EnumAnnotationClass'));
+      });
+
+      test('handles annotations with type parameters and bounds', () {
+        const dpugCode = '''
+@GenericAnnotation(
+  simpleType: String,
+  genericType: List<String>,
+  boundedType: T extends num,
+  multipleBounds: T extends Object & Comparable<T>,
+  nestedGeneric: Map<String, List<int>>,
+  functionType: bool Function(String),
+  complexFunctionType: T Function<U>(List<U>) where T extends Object,
+  voidFunctionType: void Function(),
+  genericClassType: MyGenericClass<String, int>,
+  futureType: Future<String>,
+  streamType: Stream<int>
+)
+class GenericAnnotationClass
+  String field
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('@GenericAnnotation('));
+        expect(dartCode, contains('simpleType: String'));
+        expect(dartCode, contains('genericType: List<String>'));
+        expect(dartCode, contains('boundedType: T extends num'));
+        expect(dartCode, contains('multipleBounds: T extends Object & Comparable<T>'));
+        expect(dartCode, contains('nestedGeneric: Map<String, List<int>>'));
+        expect(dartCode, contains('functionType: bool Function(String)'));
+        expect(dartCode, contains('complexFunctionType: T Function<U>(List<U>) where T extends Object'));
+        expect(dartCode, contains('voidFunctionType: void Function()'));
+        expect(dartCode, contains('genericClassType: MyGenericClass<String, int>'));
+        expect(dartCode, contains('futureType: Future<String>'));
+        expect(dartCode, contains('streamType: Stream<int>'));
+        expect(dartCode, contains('class GenericAnnotationClass'));
+      });
+
+      test('handles multiple annotations on the same element', () {
+        const dpugCode = '''
+@FirstAnnotation(value: 'first')
+@SecondAnnotation(name: 'second', count: 2)
+@ThirdAnnotation(
+  complex: true,
+  items: ['a', 'b', 'c'],
+  config: {'key': 'value'}
+)
+@JsonSerializable()
+@Entity(tableName: 'users')
+@Table(name: 'users', schema: 'public')
+@Deprecated('Use NewClass instead')
+@visibleForTesting
+@protected
+@Required()
+@NotNull()
+@Size(min: 1, max: 100)
+@Pattern(regexp: r'^[a-zA-Z0-9]+$')
+class MultiAnnotationClass
+  @FirstAnnotation('field1')
+  @SecondAnnotation(name: 'field2')
+  @JsonKey(name: 'user_name')
+  @Column(name: 'username', nullable: false)
+  @NotNull()
+  @Size(min: 3, max: 50)
+  String field1
+
+  @SecondAnnotation(name: 'field2')
+  @ThirdAnnotation(value: 42)
+  @JsonKey(ignore: true)
+  @Transient()
+  @observable
+  String field2
+
+  @FirstAnnotation('method1')
+  @SecondAnnotation(name: 'method2')
+  @override
+  @Test()
+  @Benchmark()
+  void method1()
+
+  @ThirdAnnotation(value: 'method2')
+  @Deprecated('Use method1 instead')
+  @protected
+  @Transaction()
+  Future<void> method2() async
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains("@FirstAnnotation(value: 'first')"));
+        expect(dartCode, contains("@SecondAnnotation(name: 'second', count: 2)"));
+        expect(dartCode, contains('@ThirdAnnotation('));
+        expect(dartCode, contains('complex: true'));
+        expect(dartCode, contains("items: ['a', 'b', 'c']"));
+        expect(dartCode, contains('@JsonSerializable()'));
+        expect(dartCode, contains("@Entity(tableName: 'users')"));
+        expect(dartCode, contains("@Table(name: 'users', schema: 'public')"));
+        expect(dartCode, contains("@Deprecated('Use NewClass instead')"));
+        expect(dartCode, contains('@visibleForTesting'));
+        expect(dartCode, contains('@protected'));
+        expect(dartCode, contains('@Required()'));
+        expect(dartCode, contains('@NotNull()'));
+        expect(dartCode, contains('@Size(min: 1, max: 100)'));
+        expect(dartCode, contains(r"@Pattern(regexp: r'^[a-zA-Z0-9]+$')"));
+        expect(dartCode, contains('class MultiAnnotationClass'));
+        expect(dartCode, contains("@FirstAnnotation('field1')"));
+        expect(dartCode, contains("@SecondAnnotation(name: 'field2')"));
+        expect(dartCode, contains("@JsonKey(name: 'user_name')"));
+        expect(dartCode, contains("@Column(name: 'username', nullable: false)"));
+        expect(dartCode, contains('@NotNull()'));
+        expect(dartCode, contains('@Size(min: 3, max: 50)'));
+        expect(dartCode, contains("@FirstAnnotation('method1')"));
+        expect(dartCode, contains("@SecondAnnotation(name: 'method2')"));
+        expect(dartCode, contains('@override'));
+        expect(dartCode, contains('@Test()'));
+        expect(dartCode, contains('@Benchmark()'));
+        expect(dartCode, contains('void method1()'));
+        expect(dartCode, contains("@ThirdAnnotation(value: 'method2')"));
+        expect(dartCode, contains("@Deprecated('Use method1 instead')"));
+        expect(dartCode, contains('@protected'));
+        expect(dartCode, contains('@Transaction()'));
+        expect(dartCode, contains('Future<void> method2() async'));
+      });
+
+      test('handles annotations with error conditions and edge cases', () {
+        const dpugCode = '''
+@AnnotationWithErrors(
+  nullValue: null,
+  undefinedValue: undefined,
+  circularRef: circularRef,
+  invalidSyntax: @InvalidAnnotation(,
+  unclosedString: 'hello,
+  unclosedMap: {'key': 'value',
+  unclosedList: [1, 2, 3,
+  invalidNumber: 42.5.7,
+  invalidBoolean: maybe,
+  invalidIdentifier: 123invalid,
+  divisionByZero: 1 / 0,
+  infinity: 1.0 / 0.0,
+  negativeInfinity: -1.0 / 0.0,
+  nan: 0.0 / 0.0,
+  veryLargeNumber: 999999999999999999999999999999999999999999999999,
+  verySmallNumber: 0.000000000000000000000000000000000000000000000001,
+  emptyString: '',
+  whitespaceOnly: '   \t\n   ',
+  multilineError: '''
+    This has an error: @Invalid(
+    Unclosed bracket
+  '''
+,
+  nestedError: @Outer(@Inner(1, 2, 3, invalid: syntax))
+)
+class ErrorAnnotationClass
+  String field
+''';
+
+        // Should handle gracefully or throw appropriate errors
+        expect(() => converter.dpugToDart(dpugCode), returnsNormally);
+      });
+
+      test('handles annotations with memory and performance considerations', () {
+        final largeAnnotation = List.generate(1000, (final i) => '@LargeAnnotation_$i(value: $i)').join('\n');
+        final dpugCode = '''
+$largeAnnotation
+class MemoryTestClass
+  String field
+''';
+
+        final dartCode = converter.dpugToDart(dpugCode);
+        expect(dartCode, contains('@LargeAnnotation_0(value: 0)'));
+        expect(dartCode, contains('@LargeAnnotation_999(value: 999)'));
+        expect(dartCode, contains('class MemoryTestClass'));
+      });
+    });
   });
 }

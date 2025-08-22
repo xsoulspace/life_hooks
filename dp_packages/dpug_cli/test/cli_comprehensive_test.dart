@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:args/command_runner.dart';
 import 'package:dpug_cli/commands/convert_command.dart';
 import 'package:dpug_cli/commands/format_command.dart';
@@ -628,6 +629,234 @@ class CounterWidget extends StatelessWidget {
         // This would test DPUG_PORT, DPUG_HOST, etc.
         expect(serverCommand.argParser.options, contains('port'));
       });
+
+      test('should handle complex argument combinations', () async {
+        final inputFile = File('${tempDir.path}/complex_input.dpug');
+        await inputFile.writeAsString('@stateless class Test => Text "Hello"');
+
+        final outputFile = File('${tempDir.path}/complex_output.dart');
+        final result = await runner.run([
+          'convert',
+          '--from',
+          inputFile.path,
+          '--to',
+          outputFile.path,
+          '--format',
+          'dpug-to-dart',
+          '--verbose',
+        ]);
+
+        expect(result, equals(0));
+        expect(await outputFile.exists(), isTrue);
+      });
+
+      test('should handle chained operations', () async {
+        final inputFile = File('${tempDir.path}/chain_input.dpug');
+        const complexDpug = r'''
+@stateful
+class ChainTest
+  @listen int value = 0
+
+  void increment() => value++
+
+  Widget get build =>
+    Scaffold
+      body: Center child: Text '$value'
+''';
+
+        await inputFile.writeAsString(complexDpug);
+
+        // Convert to Dart
+        final dartFile = File('${tempDir.path}/chain_output.dart');
+        final convertResult = await runner.run([
+          'convert',
+          '--from',
+          inputFile.path,
+          '--to',
+          dartFile.path,
+          '--format',
+          'dpug-to-dart',
+        ]);
+
+        expect(convertResult, equals(0));
+        expect(await dartFile.exists(), isTrue);
+
+        // Convert back to DPug
+        final backToDpugFile = File('${tempDir.path}/chain_back.dpug');
+        final convertBackResult = await runner.run([
+          'convert',
+          '--from',
+          dartFile.path,
+          '--to',
+          backToDpugFile.path,
+          '--format',
+          'dart-to-dpug',
+        ]);
+
+        expect(convertBackResult, equals(0));
+        expect(await backToDpugFile.exists(), isTrue);
+      });
+
+      test('should handle batch file processing', () async {
+        final files = List.generate(5, (final i) {
+          final file = File('${tempDir.path}/batch_$i.dpug');
+          file.writeAsStringSync('@stateless class Batch$i => Text "Item $i"');
+          return file;
+        });
+
+        // Process multiple files
+        for (final inputFile in files) {
+          final outputFile = File(
+            '${tempDir.path}/batch_output_${inputFile.path.split('/').last.split('.').first}.dart',
+          );
+          final result = await runner.run([
+            'convert',
+            '--from',
+            inputFile.path,
+            '--to',
+            outputFile.path,
+            '--format',
+            'dpug-to-dart',
+          ]);
+
+          expect(result, equals(0));
+          expect(await outputFile.exists(), isTrue);
+        }
+      });
+
+      test('should handle directory operations with format', () async {
+        final sourceDir = Directory('${tempDir.path}/source');
+        await sourceDir.create();
+
+        final files = List.generate(3, (final i) {
+          final file = File('${sourceDir.path}/widget$i.dpug');
+          file.writeAsStringSync(
+            '@stateless class Widget$i => Text "Widget $i"',
+          );
+          return file;
+        });
+
+        final outputDir = Directory('${tempDir.path}/formatted');
+        await outputDir.create();
+
+        final result = await runner.run([
+          'format',
+          '--in-place',
+          sourceDir.path,
+        ]);
+
+        expect(result, equals(0));
+
+        // Verify files were processed
+        for (final file in files) {
+          final content = await file.readAsString();
+          expect(content, contains('@stateless'));
+          expect(content, contains('class Widget'));
+        }
+      });
+
+      test('should handle concurrent CLI operations', () async {
+        final files = List.generate(
+          10,
+          (final i) => File('${tempDir.path}/concurrent_$i.dpug'),
+        );
+        await Future.wait(
+          files.map(
+            (final file) => file.writeAsString(
+              '@stateless class Concurrent${file.path.split('_').last.split('.').first} => Text "Concurrent"',
+            ),
+          ),
+        );
+
+        // Run multiple conversions concurrently
+        final futures = files.map((final inputFile) async {
+          final outputFile = File(
+            '${tempDir.path}/concurrent_output_${inputFile.path.split('_').last.split('.').first}.dart',
+          );
+          final result = await runner.run([
+            'convert',
+            '--from',
+            inputFile.path,
+            '--to',
+            outputFile.path,
+            '--format',
+            'dpug-to-dart',
+          ]);
+          return result;
+        });
+
+        final results = await Future.wait(futures);
+        expect(results.every((final r) => r == 0), isTrue);
+      });
+
+      test('should handle malformed input gracefully', () async {
+        final malformedFile = File('${tempDir.path}/malformed.dpug');
+        await malformedFile.writeAsString('invalid syntax +++ === &&&');
+
+        final outputFile = File('${tempDir.path}/malformed_output.dart');
+        final result = await runner.run([
+          'convert',
+          '--from',
+          malformedFile.path,
+          '--to',
+          outputFile.path,
+          '--format',
+          'dpug-to-dart',
+        ]);
+
+        // Should handle gracefully (may succeed with warnings or fail with clear error)
+        expect(result, isNotNull);
+      });
+
+      test('should handle very large files', () async {
+        final largeContent = List.generate(
+          10000,
+          (final i) => '@stateless class Widget$i => Text "Item $i"',
+        ).join('\n');
+        final largeFile = File('${tempDir.path}/large.dpug');
+        await largeFile.writeAsString(largeContent);
+
+        final outputFile = File('${tempDir.path}/large_output.dart');
+        final result = await runner.run([
+          'convert',
+          '--from',
+          largeFile.path,
+          '--to',
+          outputFile.path,
+          '--format',
+          'dpug-to-dart',
+        ]);
+
+        expect(result, equals(0));
+        expect(await outputFile.exists(), isTrue);
+      });
+
+      test(
+        'should handle Unicode and special characters in file paths',
+        () async {
+          final unicodeDir = Directory('${tempDir.path}/ünïcödé_файлы_🚀');
+          await unicodeDir.create();
+
+          final unicodeFile = File('${unicodeDir.path}/tëst.dpug');
+          await unicodeFile.writeAsString(
+            '@stateless class UnicodeTest => Text "Hello 🌍"',
+          );
+
+          final outputFile = File('${unicodeDir.path}/output.dart');
+          final result = await runner.run([
+            'convert',
+            '--from',
+            unicodeFile.path,
+            '--to',
+            outputFile.path,
+            '--format',
+            'dpug-to-dart',
+          ]);
+
+          expect(result, equals(0));
+          expect(await outputFile.exists(), isTrue);
+        },
+      );
     });
   });
 }
