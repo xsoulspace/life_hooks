@@ -48,12 +48,16 @@ class DpugEmitter extends BaseVisitor<String> {
               bodyBuffer.writeln('$_indentation$fieldStr');
             }
 
+            // Ensure single blank line after fields if there are methods
+            if (s.stateFields.isNotEmpty &&
+                s.methods.isNotEmpty &&
+                config.spaceBetweenMembers) {
+              bodyBuffer.writeln();
+            }
+
             // Write methods
             if (s.methods.isNotEmpty) {
-              if (s.stateFields.isNotEmpty && config.spaceBetweenMembers) {
-                bodyBuffer.writeln();
-              }
-
+              // Note: blank line already added above if needed
               first = true;
               for (final method in s.methods) {
                 if (!first && config.spaceBetweenMembers) bodyBuffer.writeln();
@@ -116,9 +120,9 @@ class DpugEmitter extends BaseVisitor<String> {
     // Write widget name with inline positional args if present
     if (s.positionalArgs.isNotEmpty) {
       final args = s.positionalArgs.map((final a) => a.accept(this)).join(', ');
-      buffer.writeln('$_indentation${s.name}($args)');
+      buffer.write('$_indentation${s.name}($args)');
     } else {
-      buffer.writeln('$_indentation${s.name}');
+      buffer.write('$_indentation${s.name}');
     }
 
     // Handle properties and children

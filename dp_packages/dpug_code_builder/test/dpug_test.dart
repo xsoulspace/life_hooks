@@ -2,19 +2,19 @@ import 'package:dpug_code_builder/dpug_code_builder.dart';
 import 'package:test/test.dart';
 
 const _dartCode = '''
-class TodoList extends StatefulWidget {
-  TodoList({
-    super.key,
-    required this.todos,
-    required this.newTodo,
-  });
+  class TodoList extends StatefulWidget {
+    TodoList({
+      super.key,
+      required this.todos,
+      required this.newTodo,
+    });
 
   final List<Todo> todos;
   final String newTodo;
 
-  @override
-  State<TodoList> createState() => _TodoListState();
-}
+    @override
+    State<TodoList> createState() => _TodoListState();
+  }
 
 class _TodoListState extends State<TodoList> {
   late List<Todo> _todos = widget.todos;
@@ -26,19 +26,20 @@ class _TodoListState extends State<TodoList> {
   String get newTodo => _newTodo;
   set newTodo(String value) => setState(() => _newTodo = value);
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        TextFormField(
-          initialValue: newTodo,
-          onChanged: (value) => newTodo = value,
-        ),
-      ],
-    );
+    @override
+    Widget build(BuildContext context) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          TextFormField(
+            initialValue: newTodo,
+            onChanged: (value) => newTodo = value,
+          )
+        ],
+      );
+    }
   }
-}''';
+''';
 
 const _dpugCode = '''
 @stateful

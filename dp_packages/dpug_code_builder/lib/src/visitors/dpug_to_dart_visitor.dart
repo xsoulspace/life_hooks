@@ -10,6 +10,7 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   final _emitter = cb.DartEmitter();
   final _formatter = ds.DartFormatter(
     languageVersion: ds.DartFormatter.latestLanguageVersion,
+    indent: 2,
   );
 
   @override
@@ -40,13 +41,19 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   @override
   cb.Spec visitClass(final DpugClassSpec spec, [final cb.Spec? context]) {
     if (spec.annotations.any((final a) => a.name == 'stateful')) {
-      final library = cb.Library(
-        (final b) =>
-            b..body.addAll([_buildWidgetClass(spec), _buildStateClass(spec)]),
+      // Generate classes directly instead of using a Library
+      final widgetClass = _buildWidgetClass(spec);
+      final stateClass = _buildStateClass(spec);
+
+      // Format each class separately to avoid indentation issues
+      final widgetCode = _formatter.format(
+        widgetClass.accept(_emitter).toString(),
+      );
+      final stateCode = _formatter.format(
+        stateClass.accept(_emitter).toString(),
       );
 
-      // Convert library to formatted string
-      return cb.Code(_formatter.format(library.accept(_emitter).toString()));
+      return cb.Code('$widgetCode\n\n$stateCode');
     }
 
     final classSpec = cb.Class(
@@ -67,14 +74,34 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
   cb.Spec visitStateField(
     final DpugStateFieldSpec spec, [
     final cb.Spec? context,
-  ]) => cb.Field(
-    (final b) => b
-      ..name = spec.name
-      ..type = cb.refer(spec.type)
-      ..modifier = cb.FieldModifier.final$
-      ..annotations.add(spec.annotation.accept(this) as cb.Expression)
-      ..assignment = spec.initializer?.accept(this) as cb.Code?,
-  );
+  ]) {
+    // Context indicates if this is for widget class or state class
+    // If context is provided, this is for state class and should have initializer
+    // If no context, this is for widget class and should not have initializer
+    if (context != null) {
+      // State class field - include initializer
+      final initializer = spec.initializer?.accept(this);
+      final assignment = initializer != null
+          ? cb.Code(initializer.accept(_emitter).toString())
+          : null;
+
+      return cb.Field(
+        (final b) => b
+          ..name = '_${spec.name}'
+          ..modifier = cb.FieldModifier.var$
+          ..type = cb.refer('late ${spec.type}')
+          ..assignment = assignment,
+      );
+    } else {
+      // Widget class field - no initializer, no annotations
+      return cb.Field(
+        (final b) => b
+          ..name = spec.name
+          ..type = cb.refer(spec.type)
+          ..modifier = cb.FieldModifier.final$,
+      );
+    }
+  }
 
   @override
   cb.Spec visitMethod(final DpugMethodSpec spec, [final cb.Spec? context]) =>
@@ -255,7 +282,7 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
     final DpugAnnotationSpec spec, [
     final cb.Spec? context,
   ]) => cb
-      .refer('@${spec.name}')
+      .refer(spec.name)
       .call(
         spec.arguments
             .map((final a) => a.accept(this) as cb.Expression)
@@ -306,14 +333,7 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
         ),
       )
       ..fields.addAll(
-        spec.stateFields.map(
-          (final f) => cb.Field(
-            (final b) => b
-              ..name = f.name
-              ..modifier = cb.FieldModifier.final$
-              ..type = cb.refer(f.type),
-          ),
-        ),
+        spec.stateFields.map((final f) => f.accept(this) as cb.Field),
       )
       ..methods.add(
         cb.Method(
@@ -331,19 +351,15 @@ class DpugToDartSpecVisitor implements DpugSpecVisitor<cb.Spec> {
     (final b) => b
       ..name = '_${spec.name}State'
       ..extend = cb.refer('State<${spec.name}>')
-      ..fields.addAll(spec.stateFields.map(_buildStateField))
+      ..fields.addAll(
+        spec.stateFields.map(
+          (final f) => f.accept(this, const cb.Code('state')) as cb.Field,
+        ),
+      )
       ..methods.addAll([
         ...spec.stateFields.expand(_buildStateAccessors),
         ...spec.methods.map((final m) => m.accept(this) as cb.Method),
       ]),
-  );
-
-  cb.Field _buildStateField(final DpugStateFieldSpec field) => cb.Field(
-    (final b) => b
-      ..name = '_${field.name}'
-      ..modifier = cb.FieldModifier.var$
-      ..type = cb.refer('late ${field.type}')
-      ..assignment = cb.Code('widget.${field.name}'),
   );
 
   Iterable<cb.Method> _buildStateAccessors(final DpugStateFieldSpec field) => [

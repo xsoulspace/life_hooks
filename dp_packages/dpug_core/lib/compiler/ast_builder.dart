@@ -1,6 +1,7 @@
 import 'package:source_span/source_span.dart';
 
 import 'lexer.dart';
+import 'plugins/annotation_plugins.dart';
 
 abstract class ASTNode {
   ASTNode(this.span);
@@ -552,11 +553,16 @@ class ASTBuilder {
 
   /// Validate that an annotation is supported
   void _validateAnnotation(final String annotationName, final Token token) {
-    const Set<String> validAnnotations = {'stateful', 'listen'};
+    final registry = AnnotationPluginRegistry();
 
-    if (!validAnnotations.contains(annotationName)) {
-      throw StateError(
-        'Unknown annotation "@$annotationName" at ${token.span}',
+    // Check if annotation is supported by any plugin
+    if (!registry.isAnnotationSupported(annotationName)) {
+      // For now, allow unknown annotations to pass through
+      // In the future, this could be configurable (strict mode vs permissive mode)
+      print('Warning: Unknown annotation "@$annotationName" at ${token.span}');
+      print('No plugin registered to handle this annotation.');
+      print(
+        'Consider creating a custom plugin or using a built-in annotation.',
       );
     }
   }
