@@ -6,7 +6,9 @@ import '../specs/state_field_spec.dart';
 import '../visitors/dpug_emitter.dart';
 
 class DartWidgetCodeGenerator {
-  final _formatter = DartFormatter();
+  final _formatter = DartFormatter(
+    languageVersion: DartFormatter.latestLanguageVersion,
+  );
   final _emitter = DartEmitter();
   final _dpugEmitter = DpugEmitter();
 

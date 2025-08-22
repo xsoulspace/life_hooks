@@ -4,21 +4,21 @@ environment:
   sdk: ^3.8.1
 
 dependencies:
-  analyzer: ^6.8.0
+  analyzer: ^8.1.1
   args: ^2.7.0
-  build: ^2.4.1
-  code_builder: ^4.10.0
-  dart_style: ^2.3.4
+  build: ^3.0.2
+  code_builder: ^4.10.1
+  dart_style: ^3.1.2
   dpug_code_builder:
     path: ../dpug_code_builder
   petitparser: ^7.0.1
   source_span: ^1.10.0
 
 dev_dependencies:
-  analyzer_plugin: ^0.11.3
-  build_runner: ^2.4.8
-  build_test: ^2.2.0
+  analyzer_plugin: ^0.13.7
+  build_runner: ^2.7.0
+  build_test: ^3.3.2
   lints: ^6.0.0
-  source_gen: ^1.5.0
-  test: ^1.24.0
+  source_gen: ^3.1.0
+  test: ^1.26.3
   xsoulspace_lints: ^0.1.2
