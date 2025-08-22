@@ -85,13 +85,13 @@ cd dp_packages/vscode_extension
 2. **Install Dependencies**
 
 ```bash
-npm install
+bun install
 ```
 
 3. **Build Extension**
 
 ```bash
-npm run compile
+bun run compile
 ```
 
 4. **Launch Extension Development Host**
@@ -275,6 +275,10 @@ dp_packages/
 ├── dpug_server/        # HTTP API server
 │   ├── lib/           # Server implementation
 │   └── test/           # Server tests
+├── dpug_cli/           # 🏆 Unified CLI package (NEW)
+│   ├── bin/dpug.dart   # Main CLI entry point
+│   ├── lib/commands/   # Command implementations
+│   └── test/           # CLI tests
 └── vscode_extension/   # VS Code extension
     ├── src/           # TypeScript source
     └── syntaxes/      # TextMate grammars
@@ -297,6 +301,10 @@ dart test test/dpug_parser_test.dart
 cd ../dpug_server
 dart test test/server_test.dart
 
+# CLI tests (after implementation)
+cd ../dpug_cli
+dart test test/
+
 # Code builder tests
 cd ../dpug_code_builder
 dart test test/dpug_code_builder_test.dart
@@ -305,7 +313,38 @@ dart test test/dpug_code_builder_test.dart
 find . -name "*test*.dart" -exec dart test {} \;
 ```
 
-### 3. Adding New Features
+### 3. Unified CLI Usage (After Implementation)
+
+```bash
+# Install the unified CLI globally
+cd dp_packages/dpug_cli
+dart pub global activate --source path .
+
+# Or from pub.dev (when published):
+dart pub global activate dpug
+
+# Basic usage
+dpug --help
+dpug format --help
+dpug convert --help
+dpug server --help
+
+# Format files
+dpug format path/to/file.dpug
+dpug format src/ --recursive
+
+# Convert between formats
+dpug convert --from=input.dpug --to=output.dart
+dpug convert --from=input.dart --to=output.dpug
+
+# Server management
+dpug server start --port=8080
+dpug server stop
+dpug server health
+dpug server logs --follow
+```
+
+### 4. Adding New Features
 
 #### Adding a New Widget
 

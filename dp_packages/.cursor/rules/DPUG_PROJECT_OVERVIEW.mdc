@@ -1,0 +1,471 @@
+---
+alwaysApply: true
+---
+
+# DPUG Project Overview
+
+## Project Mission
+
+DPug is a Pug-inspired, indentation-based syntax for Flutter/Dart with bidirectional conversion (DPug ↔ Dart). It aims to provide a more concise and readable way to write Flutter widgets while maintaining full compatibility with existing Dart/Flutter ecosystem.
+
+## Architecture Overview
+
+### Package Structure
+
+- **dpug_core**: Core compiler engine (lexer, parser, AST, converters)
+- **dpug_code_builder**: Code generation utilities and IR/specs
+- **dpug_server**: HTTP API server for conversion/formatting
+- **dpug_cli**: 🏆 Unified CLI package (HIGHEST PRIORITY - NEW)
+- **vscode_extension**: VS Code extension with language server support
+
+### Key Components
+
+#### 1. dpug_core (Compiler Engine)
+
+```
+lib/compiler/
+├── lexer.dart          # Tokenizes DPug source
+├── dpug_grammar.dart   # PetitParser grammar definitions
+├── dpug_parser.dart    # Parser with validation
+├── ast_builder.dart    # AST construction from tokens
+├── ast_to_dart.dart    # DPug AST → Dart code generation
+├── dart_to_dpug.dart   # Dart AST → DPug code generation
+├── dpug_converter.dart # Main conversion API
+└── dpug_formatter.dart # Code formatting
+```
+
+#### 2. dpug_code_builder (Code Generation)
+
+```
+lib/src/
+├── builders/          # Code generation builders
+├── specs/            # IR specifications (23 files)
+├── visitors/         # AST visitors
+└── formatters/       # Formatting configurations
+```
+
+#### 3. dpug_server (HTTP API)
+
+```
+lib/server.dart        # Shelf-based HTTP server
+bin/server.dart        # CLI server runner
+```
+
+**API Endpoints:**
+
+- `POST /dpug/to-dart` - DPug → Dart conversion
+- `POST /dart/to-dpug` - Dart → DPug conversion
+- `POST /format/dpug` - DPug formatting
+- `GET /health` - Health check
+
+#### 4. dpug_cli (Unified CLI) 🏆 HIGHEST PRIORITY - NEW
+
+**Mission:** Single entry point for all DPUG operations with professional UX
+
+**User Experience:**
+
+```bash
+# Install once
+dart pub global activate dpug
+
+# Use everywhere
+dpug format file.dpug
+dpug convert --from=input.dpug --to=output.dart
+dpug server start --port=8080
+dpug server health
+```
+
+**Benefits:**
+
+- **Single Tool Philosophy**: One command for all DPUG operations
+- **Professional UX**: Follows established CLI patterns (like Flutter/Dart)
+- **Easy Discovery**: Built-in help and command completion
+- **Consistent Interface**: Unified error handling and output formatting
+
+**Architecture:**
+
+```
+dpug_cli/
+├── bin/dpug.dart          # Main CLI entry point
+├── lib/commands/          # Command implementations
+│   ├── format.dart       # Format command
+│   ├── convert.dart      # Convert command
+│   └── server.dart       # Server management
+└── lib/dpug_cli.dart     # CLI framework
+```
+
+#### 5. vscode_extension (IDE Support)
+
+```
+src/
+├── extension.ts       # Main extension logic
+├── language-server.ts # Language server integration
+└── server/
+    └── dpug-language-server.ts # LSP implementation
+syntaxes/dpug.tmGrammar.json    # Syntax highlighting
+```
+
+## Current Implementation Status
+
+1. **Core Conversion**: DPug ↔ Dart round-trip conversion works
+2. **HTTP Server**: All endpoints functional with proper error handling
+3. **VS Code Extension**: Basic functionality with conversion commands
+4. **Language Server**: Provides completion, hover, signatures
+5. **Syntax Highlighting**: TextMate grammar for .dpug files
+
+## Development Workflow
+
+### Prerequisites
+
+- Dart SDK 3.8.1+
+- Flutter 3.32+
+- Node.js 18+ (for VS Code extension)
+- VS Code 1.74.0+
+
+### Local Development Setup
+
+```bash
+# 1. Install dependencies for all packages
+cd dp_packages/dpug_core && dart pub get
+cd ../dpug_code_builder && dart pub get
+cd ../dpug_server && dart pub get
+cd ../dpug_cli && dart pub get  # NEW: Unified CLI package
+cd ../vscode_extension && bun install
+
+# 2. Run tests to check current status
+cd dp_packages/dpug_core && dart test
+cd ../dpug_code_builder && dart test
+cd ../dpug_server && dart test
+cd ../dpug_cli && dart test  # NEW: CLI tests
+
+# 3. Test unified CLI (after implementation)
+cd dp_packages/dpug_cli
+dart run bin/dpug.dart --help
+dart run bin/dpug.dart server start --port=8080
+
+# 4. Alternative: Start individual server
+cd dp_packages/dpug_server
+dart run bin/server.dart --port=8080
+
+# 5. Test VS Code extension (F5 in VS Code)
+cd dp_packages/vscode_extension
+code .  # Then press F5
+```
+
+### Testing Strategy
+
+```bash
+# Unit tests
+dart test test/
+
+# Integration tests
+dart test test/dpug_converter_test.dart
+
+# Golden tests (when implemented)
+dart test test/dpug_converter_golden_test.dart
+```
+
+## Syntax Reference
+
+### Basic DPug Syntax
+
+```dpug
+# Comments
+@stateful
+class Counter
+  @listen int count = 0
+
+  Widget get build =>
+    Column
+      Text
+        ..text: "Count: $count"
+      ElevatedButton
+        ..onPressed: () => count++
+        ..child:
+          Text
+            ..text: "Increment"
+```
+
+### Key Language Constructs
+
+- **Indentation**: 2 spaces (configurable)
+- **Widgets**: PascalCase identifiers at column start
+- **Properties**: `..property: value` (cascade syntax)
+- **Children**: Nested by indentation
+- **State**: `@stateful` class + `@listen` fields
+- **Expressions**: Dart expressions supported
+
+## File Organization Standards
+
+### Code Style
+
+- **Dart**: Follow `lints` and `xsoulspace_lints` rules
+- **TypeScript**: ESLint configuration in VS Code extension
+- **Naming**: PascalCase for classes, camelCase for variables
+- **Imports**: Relative imports within packages, absolute for cross-package
+
+### Testing
+
+- **Unit Tests**: All public APIs should have tests
+- **Integration Tests**: End-to-end conversion testing
+- **Golden Tests**: For regression testing of code generation
+
+### Documentation
+
+- **API Docs**: Generated from doc comments
+- **Examples**: Working examples in each package
+- **READMEs**: Package-level documentation
+
+## Deployment & Distribution
+
+### VS Code Extension
+
+```bash
+cd dp_packages/vscode_extension
+bun run compile
+# Package as .vsix for marketplace
+```
+
+### Server Deployment
+
+```bash
+# As standalone server
+dart run dp_packages/dpug_server/bin/server.dart
+
+# Or as library in other applications
+import 'package:dpug_server/server.dart';
+```
+
+# DPUG Project Overview
+
+## Project Mission
+
+DPug is a Pug-inspired, indentation-based syntax for Flutter/Dart with bidirectional conversion (DPug ↔ Dart). It aims to provide a more concise and readable way to write Flutter widgets while maintaining full compatibility with existing Dart/Flutter ecosystem.
+
+## Architecture Overview
+
+### Package Structure
+
+- **dpug_core**: Core compiler engine (lexer, parser, AST, converters)
+- **dpug_code_builder**: Code generation utilities and IR/specs
+- **dpug_server**: HTTP API server for conversion/formatting
+- **dpug_cli**: 🏆 Unified CLI package (HIGHEST PRIORITY - NEW)
+- **vscode_extension**: VS Code extension with language server support
+
+### Key Components
+
+#### 1. dpug_core (Compiler Engine)
+
+```
+lib/compiler/
+├── lexer.dart          # Tokenizes DPug source
+├── dpug_grammar.dart   # PetitParser grammar definitions
+├── dpug_parser.dart    # Parser with validation
+├── ast_builder.dart    # AST construction from tokens
+├── ast_to_dart.dart    # DPug AST → Dart code generation
+├── dart_to_dpug.dart   # Dart AST → DPug code generation
+├── dpug_converter.dart # Main conversion API
+└── dpug_formatter.dart # Code formatting
+```
+
+#### 2. dpug_code_builder (Code Generation)
+
+```
+lib/src/
+├── builders/          # Code generation builders
+├── specs/            # IR specifications (23 files)
+├── visitors/         # AST visitors
+└── formatters/       # Formatting configurations
+```
+
+#### 3. dpug_server (HTTP API)
+
+```
+lib/server.dart        # Shelf-based HTTP server
+bin/server.dart        # CLI server runner
+```
+
+**API Endpoints:**
+
+- `POST /dpug/to-dart` - DPug → Dart conversion
+- `POST /dart/to-dpug` - Dart → DPug conversion
+- `POST /format/dpug` - DPug formatting
+- `GET /health` - Health check
+
+#### 4. dpug_cli (Unified CLI) 🏆 HIGHEST PRIORITY - NEW
+
+**Mission:** Single entry point for all DPUG operations with professional UX
+
+**User Experience:**
+
+```bash
+# Install once
+dart pub global activate dpug
+
+# Use everywhere
+dpug format file.dpug
+dpug convert --from=input.dpug --to=output.dart
+dpug server start --port=8080
+dpug server health
+```
+
+**Benefits:**
+
+- **Single Tool Philosophy**: One command for all DPUG operations
+- **Professional UX**: Follows established CLI patterns (like Flutter/Dart)
+- **Easy Discovery**: Built-in help and command completion
+- **Consistent Interface**: Unified error handling and output formatting
+
+**Architecture:**
+
+```
+dpug_cli/
+├── bin/dpug.dart          # Main CLI entry point
+├── lib/commands/          # Command implementations
+│   ├── format.dart       # Format command
+│   ├── convert.dart      # Convert command
+│   └── server.dart       # Server management
+└── lib/dpug_cli.dart     # CLI framework
+```
+
+#### 5. vscode_extension (IDE Support)
+
+```
+src/
+├── extension.ts       # Main extension logic
+├── language-server.ts # Language server integration
+└── server/
+    └── dpug-language-server.ts # LSP implementation
+syntaxes/dpug.tmGrammar.json    # Syntax highlighting
+```
+
+## Current Implementation Status
+
+1. **Core Conversion**: DPug ↔ Dart round-trip conversion works
+2. **HTTP Server**: All endpoints functional with proper error handling
+3. **VS Code Extension**: Basic functionality with conversion commands
+4. **Language Server**: Provides completion, hover, signatures
+5. **Syntax Highlighting**: TextMate grammar for .dpug files
+
+## Development Workflow
+
+### Prerequisites
+
+- Dart SDK 3.8.1+
+- Flutter 3.32+
+- Node.js 18+ (for VS Code extension)
+- VS Code 1.74.0+
+
+### Local Development Setup
+
+```bash
+# 1. Install dependencies for all packages
+cd dp_packages/dpug_core && dart pub get
+cd ../dpug_code_builder && dart pub get
+cd ../dpug_server && dart pub get
+cd ../dpug_cli && dart pub get  # NEW: Unified CLI package
+cd ../vscode_extension && bun install
+
+# 2. Run tests to check current status
+cd dp_packages/dpug_core && dart test
+cd ../dpug_code_builder && dart test
+cd ../dpug_server && dart test
+cd ../dpug_cli && dart test  # NEW: CLI tests
+
+# 3. Test unified CLI (after implementation)
+cd dp_packages/dpug_cli
+dart run bin/dpug.dart --help
+dart run bin/dpug.dart server start --port=8080
+
+# 4. Alternative: Start individual server
+cd dp_packages/dpug_server
+dart run bin/server.dart --port=8080
+
+# 5. Test VS Code extension (F5 in VS Code)
+cd dp_packages/vscode_extension
+code .  # Then press F5
+```
+
+### Testing Strategy
+
+```bash
+# Unit tests
+dart test test/
+
+# Integration tests
+dart test test/dpug_converter_test.dart
+
+# Golden tests (when implemented)
+dart test test/dpug_converter_golden_test.dart
+```
+
+## Syntax Reference
+
+### Basic DPug Syntax
+
+```dpug
+# Comments
+@stateful
+class Counter
+  @listen int count = 0
+
+  Widget get build =>
+    Column
+      Text
+        ..text: "Count: $count"
+      ElevatedButton
+        ..onPressed: () => count++
+        ..child:
+          Text
+            ..text: "Increment"
+```
+
+### Key Language Constructs
+
+- **Indentation**: 2 spaces (configurable)
+- **Widgets**: PascalCase identifiers at column start
+- **Properties**: `..property: value` (cascade syntax)
+- **Children**: Nested by indentation
+- **State**: `@stateful` class + `@listen` fields
+- **Expressions**: Dart expressions supported
+
+## File Organization Standards
+
+### Code Style
+
+- **Dart**: Follow `lints` and `xsoulspace_lints` rules
+- **TypeScript**: ESLint configuration in VS Code extension
+- **Naming**: PascalCase for classes, camelCase for variables
+- **Imports**: Relative imports within packages, absolute for cross-package
+
+### Testing
+
+- **Unit Tests**: All public APIs should have tests
+- **Integration Tests**: End-to-end conversion testing
+- **Golden Tests**: For regression testing of code generation
+
+### Documentation
+
+- **API Docs**: Generated from doc comments
+- **Examples**: Working examples in each package
+- **READMEs**: Package-level documentation
+
+## Deployment & Distribution
+
+### VS Code Extension
+
+```bash
+cd dp_packages/vscode_extension
+bun run compile
+# Package as .vsix for marketplace
+```
+
+### Server Deployment
+
+```bash
+# As standalone server
+dart run dp_packages/dpug_server/bin/server.dart
+
+# Or as library in other applications
+import 'package:dpug_server/server.dart';
+```
