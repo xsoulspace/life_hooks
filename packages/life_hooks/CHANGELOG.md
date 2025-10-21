@@ -1,3 +1,9 @@
+## 0.2.0
+
+- chore: flutter_hooks: ^0.21.3+1
+- chore: xsoulspace_foundation: ^0.2.2
+- chore: xsoulspace_ui_foundation: ^0.2.3
+
 ## 0.1.1
 
 - chore: added xsoulspace_ui_foundation for DeviceRuntimeType
