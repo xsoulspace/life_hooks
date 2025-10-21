@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:dpug_core/dpug_core.dart';
 
@@ -28,6 +29,9 @@ class FormatCommand extends Command {
       );
   }
   @override
+  ArgResults? argResults;
+
+  @override
   String get name => 'format';
 
   @override
@@ -37,7 +41,9 @@ class FormatCommand extends Command {
   @override
   Future<void> run() async {
     final args = argResults;
-    if (args == null) return;
+    if (args == null) {
+      throw StateError('argResults not initialized');
+    }
 
     final files = args.rest;
     final writeInPlace = args['in-place'] as bool;
@@ -110,5 +116,17 @@ class FormatCommand extends Command {
     } catch (e) {
       throw Exception('Formatting failed: $e');
     }
+  }
+
+  /// Direct method for testing - formats a file
+  Future<void> formatFile(final String filePath) async {
+    final args = ['--in-place', filePath];
+    argResults = argParser.parse(args);
+    await run();
+  }
+
+  /// Initialize argResults for testing
+  void initializeArgs(final List<String> args) {
+    argResults = argParser.parse(args);
   }
 }

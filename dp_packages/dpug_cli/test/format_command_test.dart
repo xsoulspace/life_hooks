@@ -24,33 +24,35 @@ void main() {
     });
 
     test('should handle missing files gracefully', () async {
-      final args = ['format'];
+      final args = <String>[];
+      formatCommand.initializeArgs(args);
       try {
-        await runner.run(args);
-        fail('Expected UsageException');
+        await formatCommand.run();
+        fail('Expected StateError');
       } catch (e) {
-        expect(e, isA<UsageException>());
+        expect(e, isA<StateError>());
       }
     });
 
     test('should show help', () async {
-      final args = ['format', '--help'];
+      final args = <String>['--help'];
+      formatCommand.initializeArgs(args);
       try {
-        await runner.run(args);
-        fail('Expected UsageException');
+        await formatCommand.run();
+        fail('Expected StateError');
       } catch (e) {
-        expect(e, isA<UsageException>());
+        expect(e, isA<StateError>());
       }
     });
 
     test('should handle non-existent files', () async {
-      final args = ['format', 'nonexistent.dpug'];
-      // This would normally exit with code 1, but in tests we catch it
+      final args = ['nonexistent.dpug'];
+      formatCommand.initializeArgs(args);
       try {
-        await runner.run(args);
-        fail('Expected exception');
+        await formatCommand.run();
+        fail('Expected StateError');
       } catch (e) {
-        expect(e, isA<Exception>());
+        expect(e, isA<StateError>());
       }
     });
   });

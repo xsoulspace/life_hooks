@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:dpug_core/dpug_core.dart';
 
@@ -34,6 +35,9 @@ class ConvertCommand extends Command {
       );
   }
   @override
+  ArgResults? argResults;
+
+  @override
   String get name => 'convert';
 
   @override
@@ -45,7 +49,9 @@ class ConvertCommand extends Command {
   @override
   Future<void> run() async {
     final args = argResults;
-    if (args == null) return;
+    if (args == null) {
+      throw StateError('argResults not initialized');
+    }
 
     final inputPath = args['from'] as String;
     final outputPath = args['to'] as String?;
@@ -89,5 +95,17 @@ class ConvertCommand extends Command {
     } catch (e) {
       throw Exception('Conversion failed: $e');
     }
+  }
+
+  /// Direct method for testing - converts file to file
+  Future<void> convertFile(final String fromPath, final String toPath) async {
+    final args = ['--from', fromPath, '--to', toPath];
+    argResults = argParser.parse(args);
+    await run();
+  }
+
+  /// Initialize argResults for testing
+  void initializeArgs(final List<String> args) {
+    argResults = argParser.parse(args);
   }
 }
