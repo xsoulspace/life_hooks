@@ -1,3 +1,8 @@
+## 0.3.0
+
+- chore: xsoulspace_ui_foundation: ^0.3.1
+- removed support for keyboard visibility
+
 ## 0.2.1
 
 - chore: xsoulspace_foundation: ^0.3.0
